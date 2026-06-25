@@ -4,7 +4,7 @@
 :::{admonition} 概述
 :class: overview
 
-- kernel 在不同的内存空间（寄存器、寄存器、SMEM、GMEM、TMEM）。
+- A kernel runs over a thread hierarchy（thread → warp → warpgroup → CTA → cluster → grid），并跨 distinct memory spaces（registers、SMEM、GMEM、TMEM）访问数据。
 - 计算分为 CUDA cores 和 Tensor Cores；像 TMA 这样的专用引擎会移动为其提供数据的数据。
 - kernel 是一个 pipeline，可通过这些内存空间暂存数据，并在独立计算和数据移动引擎之间进行手工操作；反复出现的目标是让这些引擎立即保持忙碌。
 :::
