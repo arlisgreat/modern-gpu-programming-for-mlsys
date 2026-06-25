@@ -334,14 +334,13 @@
     setLabel('lbl3', 'SMEM operands', smem.cx + 6, (smem.top + tc.bottom) / 2);
 
     /* 4. RF → TC path for descriptors and optional .rs A operand */
-    var rfDescX = rf.cx - 26;
     var tcDescX = tc.cx + 22;
-    setElbow('arr4', rfDescX, rf.top - G, rfDescX, yDesc, tcDescX, yDesc, tcDescX, tc.bottom + G);
-    setLabel('lbl4', 'descs + A(.rs)', (rfDescX + tcDescX) / 2, yDesc - 7, 'middle');
+    setElbow('arr4', rf.right + G, rf.cy, rf.right + G, yDesc, tcDescX, yDesc, tcDescX, tc.bottom + G);
+    setLabel('lbl4', 'descs + A(.rs)', (rf.right + tcDescX) / 2, yDesc - 7, 'middle');
 
-    /* 5. TC → RF (accumulators remain in registers) */
+    /* 5. TC → RF (accumulators remain in registers, upper bridge) */
     var tcAccX = tc.cx + 44;
-    var rfAccX = rf.cx + 22;
+    var rfAccX = rf.cx + 24;
     setElbow('arr5', tcAccX, tc.bottom + G, tcAccX, yAcc, rfAccX, yAcc, rfAccX, rf.top - G);
     setLabel('lbl5', 'accumulate', (tcAccX + rfAccX) / 2, yAcc - 7, 'middle');
 
