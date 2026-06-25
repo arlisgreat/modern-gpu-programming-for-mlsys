@@ -129,7 +129,7 @@
     <div class="sm-box" id="smBox" style="margin-bottom:0;">
       <div class="sm-label">Streaming Multiprocessor (SM)</div>
 
-      <!-- Compute row: TC (col1), empty (col2), CUDA Core (col3) -->
+      <!-- Compute row: TC (col1), empty (col2), CUDA Cores (col3) -->
       <div class="row-compute">
         <div class="hw-unit u-tc" data-unit="tc" id="boxTC">
           <div class="hw-name">Tensor Core (tcgen05)</div>
@@ -137,7 +137,7 @@
         </div>
         <div></div>
         <div class="hw-unit u-cuda" data-unit="cuda" id="boxCUDA">
-          <div class="hw-name">CUDA Core</div>
+          <div class="hw-name">CUDA Cores</div>
           <div class="hw-sub">FP/INT units</div>
         </div>
       </div>
@@ -212,14 +212,14 @@
           <polygon points="0 0,7 2.5,0 5" fill="#dc2626"/>
         </marker>
       </defs>
-      <!-- Store path (dashed): RF → SMEM — hidden by default -->
-      <path id="arr6" stroke="#dc2626" stroke-width="2" fill="none" marker-end="url(#ah-red)" style="display:none;"/>
-      <text id="lbl6" class="arrow-label" fill="#dc2626" style="display:none;"></text>
+      <!-- Store path (dashed): RF → SMEM -->
+      <path id="arr6" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ah-red)"/>
+      <text id="lbl6" class="arrow-label" fill="#dc2626"></text>
       <!-- Store path (dashed): SMEM → TMA -->
-      <path id="arr7" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#ah-blue)"/>
+      <path id="arr7" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ah-blue)"/>
       <text id="lbl7" class="arrow-label" fill="#3b82f6"></text>
       <!-- Store path (dashed): TMA → HBM -->
-      <path id="arr8" stroke="#3b82f6" stroke-width="2" fill="none" marker-end="url(#ah-blue)"/>
+      <path id="arr8" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ah-blue)"/>
       <text id="lbl8" class="arrow-label" fill="#3b82f6"></text>
     </svg>
   </div>
@@ -227,7 +227,7 @@
   <!-- Detail panel -->
   <div class="detail-panel empty" id="detailPanel">
     <div class="dp-title" id="dpTitle"></div>
-    <div class="dp-body" id="dpBody">Click a hardware unit to see details. Solid arrows = load path, dashed arrows = store path.</div>
+    <div class="dp-body" id="dpBody">点击一个硬件单元查看说明。实线表示 load path，虚线表示 store path。</div>
   </div>
 
 
@@ -238,32 +238,32 @@
     tma: {
       title: 'TMA Engine — Hardware Data Mover',
       color: '#3b82f6',
-      body: 'Dedicated DMA engine that copies tensor tiles between <strong>HBM</strong> and <strong>Shared Memory</strong>. Only 1 thread dispatches; HW handles address calculation and swizzling.<br><code>cp.async.bulk.tensor</code>'
+      body: '专用 DMA engine，在 <strong>HBM</strong> 和 <strong>Shared Memory</strong> 之间搬运 tensor tiles。通常由 1 个 thread 发起，硬件负责地址计算和 swizzling。<br><code>cp.async.bulk.tensor</code>'
     },
     tc: {
       title: 'Tensor Core (tcgen05) — 5th-gen MMA',
       color: '#059669',
-      body: 'Reads A, B from <strong>SMEM</strong>, accumulates into <strong>TMEM</strong>. Supports 128×256 tiles in one instruction. Single thread issues MMA; HW distributes across 128 lanes.<br><code>tcgen05.mma</code> &middot; <code>tcgen05.commit</code>'
+      body: '从 <strong>SMEM</strong> 读取 A/B operands，并把 accumulator 写入 <strong>TMEM</strong>。一个 elected thread 发出 MMA，硬件在 Tensor Core 上执行 tiled MMA work。<br><code>tcgen05.mma</code> &middot; <code>tcgen05.commit</code>'
     },
     smem: {
       title: 'Shared Memory (SMEM) — 228 KB',
       color: '#8b5cf6',
-      body: 'On-chip scratchpad shared by all threads in a CTA. Staging area for <strong>TMA loads</strong> (HBM&rarr;SMEM) and <strong>TMA stores</strong> (SMEM&rarr;HBM). Swizzled layout avoids bank conflicts.'
+      body: 'CTA 内 threads 共享的 on-chip scratchpad。它是 <strong>TMA loads</strong>（HBM&rarr;SMEM）和 <strong>TMA stores</strong>（SMEM&rarr;HBM）的 staging area；swizzled layout 用来避免 bank conflicts。'
     },
     tmem: {
       title: 'Tensor Memory (TMEM) — New in Blackwell',
       color: '#f59e0b',
-      body: 'HW-managed memory private to the SM. 128 lanes &times; N columns of fp32. tcgen05 MMA accumulates here &mdash; no register pressure. <code>tcgen05.ld</code> reads data out for writeback.'
+      body: 'Blackwell Tensor Core 数据路径中的 Tensor Memory。TMEM 在 SM 上，按 CTA 显式分配/释放；逻辑上是 128 lanes &times; up to 512 32-bit columns。<code>tcgen05.mma</code> 在这里累加，<code>tcgen05.ld</code> 读出到 registers 做 writeback。'
     },
     rf: {
       title: 'Register File',
       color: '#dc2626',
-      body: 'Private per-thread. Writeback: TMEM &rarr; Registers via <code>tcgen05.ld</code> (fp32), then cast fp32&rarr;fp16, store to SMEM, TMA writes back to HBM.'
+      body: 'per-thread private storage。writeback 路径是：TMEM 通过 <code>tcgen05.ld</code> 读到 registers（fp32），再 cast fp32&rarr;fp16，store 到 SMEM，最后由 TMA 写回 HBM。'
     },
     cuda: {
-      title: 'CUDA Core — Scalar FP/INT Units',
+      title: 'CUDA Cores — Scalar FP/INT Units',
       color: '#6b7280',
-      body: 'General-purpose compute units. Handle fp32&rarr;fp16 casts, address arithmetic, loop control, and data reformatting during writeback. Operate on data in <strong>registers</strong>.'
+      body: '通用 scalar compute units。writeback 期间处理 fp32&rarr;fp16 cast、address arithmetic、loop control 和 data reformatting；操作的数据主要在 <strong>registers</strong> 中。'
     }
   };
 
@@ -295,7 +295,7 @@
     panel.classList.add('empty');
     panel.style.borderColor = '';
     titleEl.textContent = '';
-    bodyEl.innerHTML = 'Click a hardware unit to see details. Arrows show the GEMM data path.';
+    bodyEl.innerHTML = '点击一个硬件单元查看说明。箭头展示 GEMM data path。';
   }
 
   /* ── Arrow positioning (rectangular paths) ─────────────── */
