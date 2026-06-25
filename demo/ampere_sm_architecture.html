@@ -129,13 +129,13 @@
     <div class="sm-box" id="smBox" style="margin-bottom:0;">
       <div class="sm-label">Streaming Multiprocessor (SM)</div>
 
-      <!-- Compute row: TC (col2), CUDA Cores (col3) -->
+      <!-- Compute row: TC (col1), empty (col2), CUDA Cores (col3) -->
       <div class="row-compute">
-        <div></div>
         <div class="hw-unit u-tc" data-unit="tc" id="boxTC">
           <div class="hw-name">Tensor Core (mma.sync)</div>
           <div class="hw-sub">3rd-gen MMA</div>
         </div>
+        <div></div>
         <div class="hw-unit u-cuda" data-unit="cuda" id="boxCUDA">
           <div class="hw-name">CUDA Cores</div>
           <div class="hw-sub">FP/INT units</div>
@@ -148,11 +148,11 @@
           <div class="hw-name">Shared Memory (SMEM)</div>
           <div class="hw-sub">CTA staging</div>
         </div>
+        <div></div>
         <div class="hw-unit u-rf" data-unit="rf" id="boxRF">
           <div class="hw-name">Register File</div>
           <div class="hw-sub">fragments + accumulators</div>
         </div>
-        <div></div>
       </div>
 
       <!-- LD/ST row: col1 only (aligned with SMEM) -->
@@ -326,21 +326,26 @@
     setRect('arr2', ldst.cx, ldst.top - G, smem.cx, smem.bottom + G);
     setLabel('lbl2', 'cp.async / LD/ST', ldst.cx - 6, (ldst.top + smem.bottom) / 2, 'end');
 
-    /* 3. SMEM → RF (ldmatrix fragments, routed above the memory row) */
-    var y3bridge = (tc.bottom + smem.top) / 2;
-    var rfInX = rf.left + 24;
-    setElbow('arr3', smem.cx, smem.top - G, smem.cx, y3bridge, rfInX, y3bridge, rfInX, rf.top - G);
-    setLabel('lbl3', 'ldmatrix', (smem.cx + rfInX) / 2, y3bridge - 7, 'middle');
+    var yMmaIn = tc.bottom + 8;
+    var yLd = (tc.bottom + smem.top) / 2;
+    var yAcc = smem.top - 8;
 
-    /* 4. RF → TC (mma.sync reads fragments) */
-    var upX = rf.cx - 16;
-    setRect('arr4', upX, rf.top - G, upX, tc.bottom + G);
-    setLabel('lbl4', 'mma.sync', upX - 6, (rf.top + tc.bottom) / 2, 'end');
+    /* 3. SMEM → RF (ldmatrix fragments, routed through the gap) */
+    var rfLdX = rf.cx - 22;
+    setElbow('arr3', smem.cx, smem.top - G, smem.cx, yLd, rfLdX, yLd, rfLdX, rf.top - G);
+    setLabel('lbl3', 'ldmatrix', (smem.cx + rfLdX) / 2, yLd - 7, 'middle');
+
+    /* 4. RF → TC (mma.sync reads register fragments) */
+    var rfMmaX = rf.cx - 44;
+    var tcMmaX = tc.cx - 22;
+    setElbow('arr4', rfMmaX, rf.top - G, rfMmaX, yMmaIn, tcMmaX, yMmaIn, tcMmaX, tc.bottom + G);
+    setLabel('lbl4', 'mma.sync', (rfMmaX + tcMmaX) / 2, yMmaIn - 7, 'middle');
 
     /* 5. TC → RF (accumulators remain in registers) */
-    var downX = rf.cx + 16;
-    setRect('arr5', downX, tc.bottom + G, downX, rf.top - G);
-    setLabel('lbl5', 'accumulate', downX + 6, (rf.top + tc.bottom) / 2);
+    var tcAccX = tc.cx + 22;
+    var rfAccX = rf.cx + 22;
+    setElbow('arr5', tcAccX, tc.bottom + G, tcAccX, yAcc, rfAccX, yAcc, rfAccX, rf.top - G);
+    setLabel('lbl5', 'accumulate', (tcAccX + rfAccX) / 2, yAcc - 7, 'middle');
 
     /* 6. RF → SMEM (ordinary stores for epilogue staging) */
     var y6bot = rf.bottom + 22;
