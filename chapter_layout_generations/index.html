@@ -334,6 +334,10 @@ registers back to SMEM with ordinary stores
 </pre></div>
 </div>
 <p>Ampere layout 的大部分故事都遵循这条路径。 kernel 必须以可有效加载的形式将块存储在共享内存中，然后使用 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 生成 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 所需的寄存器片段。</p>
+<div style="overflow-x:auto;">
+<iframe src="../demo/ampere_sm_architecture.html" title="Ampere SM architecture" loading="lazy"
+        style="width:100%; min-width:1320px; height:680px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
+</div><p><em>交互式：Ampere SM data path，展示 <code class="docutils literal notranslate"><span class="pre">cp.async</span></code>/LD/ST staging、<code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>、<code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 以及 accumulator 留在 Register File 中。</em></p>
 </section>
 <section id="ampere-tensor-core">
 <h2>Ampere Tensor Core 的期望是什么<a class="headerlink" href="#ampere-tensor-core" title="Link to this heading">#</a></h2>
@@ -403,6 +407,10 @@ ldmatrix.sync.aligned.m8n8.x4.shared.b16
 <p>Hopper 更改 Tensor Core 路径的输入侧。 Hopper <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 不需要将每个操作数加载到 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 的寄存器中，而是可以直接从共享内存读取操作数。</p>
 <p>B 操作数是从共享内存矩阵描述符中读取的。 A 操作数可以从共享内存描述符或寄存器中读取，给出 <code class="docutils literal notranslate"><span class="pre">.ss</span></code> 和 <code class="docutils literal notranslate"><span class="pre">.rs</span></code> 形式。</p>
 <p>这会删除源自 SMEM 的操作数的显式 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 步骤。它不会删除 layout 要求。 Tensor Core 仍然希望操作数以精确的共享内存格式存储。不同之处在于，现在通过矩阵描述符向硬件描述格式。</p>
+<div style="overflow-x:auto;">
+<iframe src="../demo/hopper_sm_architecture.html" title="Hopper SM architecture" loading="lazy"
+        style="width:100%; min-width:1320px; height:680px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
+</div><p><em>交互式：Hopper SM data path，展示 TMA load 到 SMEM、<code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 通过 SMEM descriptor 读取 operands，以及 accumulator 仍写入 Register File。</em></p>
 </section>
 <section id="hopper-tensor-core">
 <h2>Hopper Tensor Core 的期望是什么<a class="headerlink" href="#hopper-tensor-core" title="Link to this heading">#</a></h2>
