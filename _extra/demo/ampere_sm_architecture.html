@@ -326,24 +326,22 @@
     setRect('arr2', ldst.cx, ldst.top - G, smem.cx, smem.bottom + G);
     setLabel('lbl2', 'cp.async / LD/ST', ldst.cx - 6, (ldst.top + smem.bottom) / 2, 'end');
 
-    var yMmaIn = tc.bottom + 8;
-    var yLd = (tc.bottom + smem.top) / 2;
-    var yAcc = smem.top - 8;
+    var midX = (smem.right + rf.left) / 2;
+    var yMma = tc.bottom + 8;
+    var yAcc = smem.top - 10;
 
-    /* 3. SMEM → RF (ldmatrix fragments, routed through the gap) */
-    var rfLdX = rf.cx - 22;
-    setElbow('arr3', smem.cx, smem.top - G, smem.cx, yLd, rfLdX, yLd, rfLdX, rf.top - G);
-    setLabel('lbl3', 'ldmatrix', (smem.cx + rfLdX) / 2, yLd - 7, 'middle');
+    /* 3. SMEM → RF (ldmatrix fragments, horizontal across memory row) */
+    setRect('arr3', smem.right + G, smem.cy, rf.left - G, rf.cy);
+    setLabel('lbl3', 'ldmatrix', midX, smem.cy - 8, 'middle');
 
-    /* 4. RF → TC (mma.sync reads register fragments) */
-    var rfMmaX = rf.cx - 44;
+    /* 4. RF → TC (mma.sync reads register fragments, upper side route) */
     var tcMmaX = tc.cx - 22;
-    setElbow('arr4', rfMmaX, rf.top - G, rfMmaX, yMmaIn, tcMmaX, yMmaIn, tcMmaX, tc.bottom + G);
-    setLabel('lbl4', 'mma.sync', (rfMmaX + tcMmaX) / 2, yMmaIn - 7, 'middle');
+    setElbow('arr4', rf.right + G, rf.cy, rf.right + G, yMma, tcMmaX, yMma, tcMmaX, tc.bottom + G);
+    setLabel('lbl4', 'mma.sync', (rf.right + tcMmaX) / 2, yMma - 7, 'middle');
 
-    /* 5. TC → RF (accumulators remain in registers) */
+    /* 5. TC → RF (accumulators remain in registers, upper bridge) */
     var tcAccX = tc.cx + 22;
-    var rfAccX = rf.cx + 22;
+    var rfAccX = rf.cx + 24;
     setElbow('arr5', tcAccX, tc.bottom + G, tcAccX, yAcc, rfAccX, yAcc, rfAccX, rf.top - G);
     setLabel('lbl5', 'accumulate', (tcAccX + rfAccX) / 2, yAcc - 7, 'middle');
 
