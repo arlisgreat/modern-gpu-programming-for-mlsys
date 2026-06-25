@@ -146,11 +146,11 @@
       <div class="row-mem">
         <div class="hw-unit u-smem" data-unit="smem" id="boxSMEM">
           <div class="hw-name">Shared Memory (SMEM)</div>
-          <div class="hw-sub">descriptor operands</div>
+          <div class="hw-sub">matrix data</div>
         </div>
         <div class="hw-unit u-rf" data-unit="rf" id="boxRF">
           <div class="hw-name">Register File</div>
-          <div class="hw-sub">wgmma accumulators</div>
+          <div class="hw-sub">descriptors + accumulators</div>
         </div>
         <div></div>
       </div>
@@ -235,22 +235,22 @@
     tma: {
       title: 'TMA Engine — bulk tensor mover',
       color: '#3b82f6',
-      body: 'Hopper 引入的 bulk tensor data mover，在 <strong>GMEM</strong> 和 <strong>SMEM</strong> 之间搬运 tensor tiles。TMA descriptor 描述 shape、stride、layout/swizzle，硬件负责大块地址生成和搬运。<br><code>cp.async.bulk.tensor</code>'
+      body: 'Hopper 引入的 bulk tensor data mover，在 <strong>GMEM</strong> 和 <strong>SMEM</strong> 之间搬运 tensor tiles。TMA descriptor 描述 shape、stride、layout/swizzle，硬件负责大块地址生成和搬运；store 方向可以把 SMEM 写回 GMEM。<br><code>cp.async.bulk.tensor</code>'
     },
     tc: {
       title: 'Tensor Core (wgmma) — warpgroup MMA',
       color: '#059669',
-      body: '<code>wgmma</code> 以 warpgroup 为执行粒度。常见路径中，operands 通过 SMEM matrix descriptors 提供，Tensor Core 直接按 descriptor/swizzle 读取 SMEM；accumulators 写回 per-thread registers。<br><code>wgmma.mma_async</code>'
+      body: '<code>wgmma</code> 以 warpgroup 为执行粒度。常见 <code>.ss</code> 路径中，A/B matrix data 在 <strong>SMEM</strong>，而 SMEM descriptors 是传给指令的 register operands；Tensor Core 按 descriptor/swizzle 读取 SMEM，accumulators 写回 per-thread registers。<br><code>wgmma.mma_async</code>'
     },
     smem: {
-      title: 'Shared Memory (SMEM) — descriptor operands',
+      title: 'Shared Memory (SMEM) — matrix data',
       color: '#8b5cf6',
-      body: 'CTA 内 threads 共享的 on-chip scratchpad。Hopper 的核心变化是让 <code>wgmma</code> 通过 SMEM matrix descriptor 读取 operands；descriptor 命名 start address、stride 和 swizzle mode。'
+      body: 'CTA 内 threads 共享的 on-chip scratchpad。Hopper 的核心变化是 matrix data 可以留在 <strong>SMEM</strong> 中，<code>wgmma</code> 通过 register-held SMEM descriptors 解释 start address、stride 和 swizzle mode 后读取它。'
     },
     rf: {
       title: 'Register File',
       color: '#dc2626',
-      body: 'per-thread private storage。Hopper 输入侧可以绕过 <code>ldmatrix</code> 直接从 SMEM descriptor 供给 Tensor Core，但 <code>wgmma</code> accumulators 仍保留在 registers，直到 epilogue 写回。没有 Blackwell 的 <strong>TMEM</strong> accumulator space。'
+      body: 'per-thread private storage。Hopper 的 registers 保存 <code>wgmma</code> accumulators，也保存指向 SMEM operands 的 descriptors；在 <code>.rs</code> 形式中，A operand 还可以来自 register fragments。没有 Blackwell 的 <strong>TMEM</strong> accumulator space。'
     },
     cuda: {
       title: 'CUDA Cores — Scalar FP/INT Units',
@@ -329,12 +329,12 @@
     /* 3. SMEM → TC (descriptor operand path) */
     var x3mid = (smem.right + tc.left) / 2;
     setElbow('arr3', smem.right + G, smem.cy, x3mid, smem.cy, x3mid, tc.cy, tc.left - G, tc.cy);
-    setLabel('lbl3', 'wgmma .ss', (smem.right + tc.left) / 2, smem.cy - 8, 'middle');
+    setLabel('lbl3', 'matrix data', (smem.right + tc.left) / 2, smem.cy - 8, 'middle');
 
-    /* 4. Optional RF → TC path for .rs form */
+    /* 4. RF → TC path for descriptors and optional .rs A operand */
     var upX = rf.cx - 16;
     setRect('arr4', upX, rf.top - G, upX, tc.bottom + G);
-    setLabel('lbl4', 'optional .rs', upX - 6, (rf.top + tc.bottom) / 2, 'end');
+    setLabel('lbl4', 'descs + A(.rs)', upX - 6, (rf.top + tc.bottom) / 2, 'end');
 
     /* 5. TC → RF (accumulators remain in registers) */
     var downX = rf.cx + 16;
