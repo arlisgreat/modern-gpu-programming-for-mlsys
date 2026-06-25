@@ -342,7 +342,7 @@
 <h3>GEMM 数据路径<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <p>本教程中的每项优化都取决于数据所在的位置及其移动方式，因此值得在编写任何代码之前将其映射出来。从本质上讲，Blackwell GEMM kernel 仅围绕两个活动进行组织：在内存之间移动 tile 以及在它们上进行计算。下图跟踪了一个 tile 在从输入到输出的过程中所接触到的每个内存：</p>
 <p><img alt="内存数据流" src="../_images/memory_dataflow.png" /></p>
-<p>上图显示了以后每次优化都会编辑但不会替换的基线路径。从左到右读取：操作数块首先从 GMEM 移动到 SMEM； <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 然后消耗 SMEM 操作数并将累加器写入 TMEM；最后，epilogue 将 TMEM 读回寄存器，然后将结果存储到 GMEM。请记住这条链，因为下面的每一步都会改变这些跃点之一“如何”发生；它永远不会改变啤酒花本身。</p>
+<p>上图显示了以后每次优化都会编辑但不会替换的基线路径。从左到右读取：操作数块首先从 GMEM 移动到 SMEM； <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 然后消耗 SMEM 操作数并将累加器写入 TMEM；最后，epilogue 将 TMEM 读回寄存器，然后将结果存储到 GMEM。请记住这条链，因为下面的每一步都会改变某个 hop 的实现方式；它不会改变这些 hop 本身。</p>
 </section>
 </section>
 <section id="id3">
