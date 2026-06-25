@@ -40,7 +40,7 @@ $$\text{TFLOPS} = \frac{2 \times M \times N \times K}{t_{\text{seconds}} \times 
 
 ![*内存数据流*](../img/memory_dataflow.png)
 
-上图显示了以后每次优化都会编辑但不会替换的基线路径。从左到右读取：操作数块首先从 GMEM 移动到 SMEM； `tcgen05.mma` 然后消耗 SMEM 操作数并将累加器写入 TMEM；最后，epilogue 将 TMEM 读回寄存器，然后将结果存储到 GMEM。请记住这条链，因为下面的每一步都会改变这些跃点之一“如何”发生；它永远不会改变啤酒花本身。
+上图显示了以后每次优化都会编辑但不会替换的基线路径。从左到右读取：操作数块首先从 GMEM 移动到 SMEM； `tcgen05.mma` 然后消耗 SMEM 操作数并将累加器写入 TMEM；最后，epilogue 将 TMEM 读回寄存器，然后将结果存储到 GMEM。请记住这条链，因为下面的每一步都会改变某个 hop 的实现方式；它不会改变这些 hop 本身。
 
 ## 优化路径
 
