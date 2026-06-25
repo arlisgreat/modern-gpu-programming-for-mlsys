@@ -1,0 +1,448 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Advanced: Cluster Launch Control &#8212; Modern GPU Programming For MLSys</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=5a4e551b" />
+    <link rel="stylesheet" type="text/css" href="../_static/demo-embed.css?v=654c0d46" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'chapter_clc/index';</script>
+    <script src="../_static/demo-embed.js?v=8c30191a"></script>
+    <link rel="icon" href="../_static/mlc-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Introduction to TIRx" href="../chapter_intro_tirx/index.html" />
+    <link rel="prev" title="Async Coordination: mbarriers" href="../chapter_async_barriers/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/mlc-logo-with-text-landscape.svg" class="logo__image only-light" alt="Modern GPU Programming For MLSys - Home"/>
+    <img src="../_static/mlc-logo-with-text-landscape.svg" class="logo__image only-dark pst-js-only" alt="Modern GPU Programming For MLSys - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, Understanding the GPU</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU Execution Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">What Makes a Kernel Fast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">Data Layout and Its Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core Operand Layouts Across GPU Generations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">Async Data Movement: TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tensor_cores/index.html">Tensor Cores: <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">Special Memory: TMEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">Async Coordination: mbarriers</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Advanced: Cluster Launch Control</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx Overview</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">Introduction to TIRx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tirx_layout_api/index.html">TIRx Layout API</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part III, GEMM: Tiled to SOTA</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">Building a Tiled GEMM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">Pipelining GEMM with TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">Scaling GEMM with Warp Specialization and Clusters</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, Flash Attention 4</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">Flash Attention 4</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">Debugging Warp-Specialized Kernels</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/language_reference/index.html">TIRx Language Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/parser_utils.html">Parser utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/data_types.html">Data types and expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/buffers.html">Buffers and memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/control_flow.html">Control flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/threads_sync.html">CUDA C++/PTX intrinsics</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Advanced: Cluster Launch Control</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-two-instructions">The Two Instructions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-work-stealing-loop">The Work-Stealing Loop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relation-to-persistent-gemm">Relation to Persistent GEMM</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="advanced-cluster-launch-control">
+<span id="chap-clc"></span><h1>Advanced: Cluster Launch Control<a class="headerlink" href="#advanced-cluster-launch-control" title="Link to this heading">#</a></h1>
+<div class="overview admonition">
+<p class="admonition-title">Overview</p>
+<ul class="simple">
+<li><p>A persistent kernel keeps a fixed set of CTAs or CTA clusters resident (often sized so there is roughly one active work owner per SM, though not relying on a guaranteed 1:1 mapping) and has them loop over many output tiles instead of launching one CTA per tile.</p></li>
+<li><p>Cluster Launch Control is the Blackwell hardware mechanism that lets a resident cluster ask for another tile at runtime. It is a hardware work-stealing path built around two PTX instructions: one instruction requests work, and the other reads back whether the request succeeded.</p></li>
+<li><p>The main benefit is better tail behavior. When tiles have uneven cost, or when the number of tiles does not divide evenly across the available SMs, CTAs that finish early can pull more work instead of sitting idle.</p></li>
+</ul>
+</div>
+<p>A persistent GEMM does not treat the CUDA grid as a fixed one-CTA-per-output-tile launch. Instead, it launches a smaller set of long-lived CTAs or CTA clusters. Each one computes a tile, advances to another tile, computes again, and keeps going until the output space is finished. This is the execution pattern built up in <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">Scaling GEMM with Warp Specialization and Clusters</span></a>.</p>
+<p>Once the kernel is persistent, the main scheduling question becomes simple: after a CTA or cluster finishes its current tile, where does the next tile come from?</p>
+<p>The simplest answer is a static formula. For example, the kernel can compute the tile coordinate from the CTA id, then advance by a grid stride. That is easy to implement, and it works well when all tiles have roughly the same cost and the tile count is evenly distributed across the GPU. But the schedule is decided before the work actually runs. If a few tiles take longer, or if the last few tiles are unevenly assigned, some SMs finish their share early while others are still working through the tail.</p>
+<p>Cluster Launch Control, or CLC, changes that scheduling model. Instead of deciding the whole assignment up front, a persistent cluster can ask the hardware grid scheduler for another not-yet-launched cluster’s work. If the request succeeds, the current cluster takes over that cluster coordinate and computes the corresponding tile. If the request fails, there is no more work to steal, and the loop exits.</p>
+<p>This is not the same thing as thread block clusters themselves. Thread block clusters (CTAs launched together, with cluster-level synchronization and access to distributed shared memory) were introduced with Hopper (<a class="reference internal" href="../chapter_background/index.html#chap-background"><span class="std std-ref">GPU Execution Model</span></a>). CLC is the Blackwell addition that makes scheduling over those cluster coordinates dynamic. The cluster is already the unit of launch; CLC lets an already-running cluster cancel a pending launch and inherit its coordinates.</p>
+<section id="the-two-instructions">
+<h2>The Two Instructions<a class="headerlink" href="#the-two-instructions" title="Link to this heading">#</a></h2>
+<p>Cluster Launch Control is exposed through two PTX instructions. The first instruction sends an asynchronous request to the grid scheduler. The second instruction reads the response.</p>
+<p>The request instruction is <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.try_cancel.async</span></code>.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> asks the scheduler to cancel the launch of a pending cluster and return that cluster’s coordinates to the caller. The response is written to shared memory as a 16-byte record. Since the request is asynchronous, the instruction does not wait for the response to arrive. Instead, completion is reported through an <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code>, using the same barrier-and-phase model used by TMA.</p>
+<p>This is an important detail because it means CLC does not introduce a new waiting model. The kernel issues the request, associates it with a barrier, and later waits on the barrier before reading the response. The response arrival is signaled through the barrier with byte-count completion, in the same general style as other asynchronous hardware operations (see <a class="reference internal" href="../chapter_async_barriers/index.html#chap-async-barriers"><span class="std std-ref">Async Coordination: mbarriers</span></a>).</p>
+<p>Once the barrier has fired, the kernel uses the query instructions.</p>
+<p>The first query is <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.is_canceled</span></code>. It returns a predicate telling the kernel whether the cancellation succeeded. A true predicate means the scheduler found a pending cluster launch, canceled it, and returned its coordinate. A false predicate means there was no pending work left to take.</p>
+<p>Only when <code class="docutils literal notranslate"><span class="pre">is_canceled</span></code> is true should the kernel read the coordinate. It does that with <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.get_first_ctaid</span></code>, which extracts the first CTA id of the canceled cluster. That CTA id is a coordinate vector, usually read as <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code>, and the kernel decodes it into the output tile it should compute next.</p>
+<p>There is no numeric sentinel tile id in this protocol. The kernel branches on the predicate. If the predicate is true, the coordinate is valid. If the predicate is false, the work-stealing loop is done.</p>
+<p>Under the hood, this shape follows directly from what CLC is doing. The hardware is not allocating an abstract task from a software queue. It is canceling a cluster launch that has not happened yet. A successful response therefore contains a real cluster coordinate. A failed response simply means the launch queue has been exhausted.</p>
+</section>
+<section id="the-work-stealing-loop">
+<h2>The Work-Stealing Loop<a class="headerlink" href="#the-work-stealing-loop" title="Link to this heading">#</a></h2>
+<p>With those two instructions, the persistent scheduler becomes a short loop.</p>
+<p>At any point in the loop, the cluster has one tile it is responsible for computing. Before it starts that tile, it sends a <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> request for the next one. The request runs asynchronously. While the scheduler is working on that request, the cluster computes its current tile.</p>
+<p>After the current tile is finished, the cluster waits on the <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> associated with the <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> response. Once the response is ready, it calls <code class="docutils literal notranslate"><span class="pre">query_cancel.is_canceled</span></code>. If the predicate is true, it calls <code class="docutils literal notranslate"><span class="pre">query_cancel.get_first_ctaid</span></code>, decodes the returned coordinate, and uses that as the next tile. If the predicate is false, there is no more work left, and the cluster exits.</p>
+<p>In code shape, the loop is:</p>
+<ol class="arabic simple">
+<li><p>issue <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> for a possible next tile;</p></li>
+<li><p>compute the current tile while the request is in flight;</p></li>
+<li><p>wait for the response barrier;</p></li>
+<li><p>query whether the cancellation succeeded;</p></li>
+<li><p>either continue with the returned coordinate or exit.</p></li>
+</ol>
+<p>The placement of the request is what makes the loop useful. The cluster does not wait until it has finished the current tile before asking for more work. It asks first, then computes. That overlaps the scheduler request with useful work. By the time the current tile is done, the answer for the next tile is often already available.</p>
+<p>This is the same basic reason persistent kernels use asynchronous copies and tensor-core barriers elsewhere. The kernel avoids putting a long-latency operation directly on the critical path. CLC applies the same idea to tile scheduling: ask for the next unit of work early, compute the current unit, then consume the scheduling result when it is needed.</p>
+</section>
+<section id="relation-to-persistent-gemm">
+<h2>Relation to Persistent GEMM<a class="headerlink" href="#relation-to-persistent-gemm" title="Link to this heading">#</a></h2>
+<p>The persistent GEMM in <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">Scaling GEMM with Warp Specialization and Clusters</span></a> uses a static scheduler for the main walkthrough. A static scheduler is easier to explain because the next tile can be computed directly from loop state. For example, a scheduler such as <code class="docutils literal notranslate"><span class="pre">ClusterPersistentScheduler2D</span></code> can assign tiles using a grid-stride pattern over the output tile space.</p>
+<p>CLC is the dynamic replacement for that static assignment. The outer loop stays the same: each resident cluster repeatedly computes one output tile and then advances to another. What changes is where the next tile comes from. With the static scheduler, the next tile is computed by a formula. With CLC, the next tile is returned by hardware work stealing.</p>
+<p>That difference matters most near the tail of the launch. In a static schedule, the remaining work may not be evenly distributed. Some SMs may run out of assigned tiles while others still have several left. With CLC, the cluster that finishes early asks for another pending cluster coordinate. As long as there is work left in the launch queue, early finishers keep pulling more tiles.</p>
+<p>It also matters when tile cost is not uniform. Some GEMM tiles may take different paths because of boundaries, masking, sparsity, grouped scheduling, or fused work around the main matrix multiply. A static schedule assumes the tile assignment is good enough before any of those costs are observed. CLC does not need that assumption. It assigns more work only after a cluster becomes available.</p>
+<p>In TIRx, CLC can therefore be exposed as a dynamic tile scheduler. The programming model does not need to change the computation of a tile. The tile body is the same persistent GEMM body used by the static scheduler. The scheduler changes from “compute my next tile coordinate from a formula” to “ask hardware for the next available cluster coordinate.” The result is the same persistent loop, but with hardware-driven work distribution instead of a fixed launch-time schedule.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../chapter_async_barriers/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Async Coordination: mbarriers</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../chapter_intro_tirx/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Introduction to TIRx</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-two-instructions">The Two Instructions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-work-stealing-loop">The Work-Stealing Loop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relation-to-persistent-gemm">Relation to Persistent GEMM</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MLC Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, MLC Community.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

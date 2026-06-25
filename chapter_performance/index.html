@@ -1,0 +1,599 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>What Makes a Kernel Fast &#8212; Modern GPU Programming For MLSys</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=5a4e551b" />
+    <link rel="stylesheet" type="text/css" href="../_static/demo-embed.css?v=654c0d46" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'chapter_performance/index';</script>
+    <script src="../_static/demo-embed.js?v=8c30191a"></script>
+    <link rel="icon" href="../_static/mlc-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Layout and Its Notation" href="../chapter_data_layout/index.html" />
+    <link rel="prev" title="GPU Execution Model" href="../chapter_background/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/mlc-logo-with-text-landscape.svg" class="logo__image only-light" alt="Modern GPU Programming For MLSys - Home"/>
+    <img src="../_static/mlc-logo-with-text-landscape.svg" class="logo__image only-dark pst-js-only" alt="Modern GPU Programming For MLSys - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, Understanding the GPU</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU Execution Model</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">What Makes a Kernel Fast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">Data Layout and Its Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core Operand Layouts Across GPU Generations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">Async Data Movement: TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tensor_cores/index.html">Tensor Cores: <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">Special Memory: TMEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">Async Coordination: mbarriers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_clc/index.html">Advanced: Cluster Launch Control</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx Overview</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">Introduction to TIRx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tirx_layout_api/index.html">TIRx Layout API</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part III, GEMM: Tiled to SOTA</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">Building a Tiled GEMM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">Pipelining GEMM with TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">Scaling GEMM with Warp Specialization and Clusters</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, Flash Attention 4</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">Flash Attention 4</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">Debugging Warp-Specialized Kernels</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/language_reference/index.html">TIRx Language Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/parser_utils.html">Parser utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/data_types.html">Data types and expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/buffers.html">Buffers and memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/control_flow.html">Control flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx_guide/language_reference/cuda/threads_sync.html">CUDA C++/PTX intrinsics</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>What Makes a Kernel Fast</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-roofline-model">The Roofline Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arithmetic-intensity-of-common-workloads">Arithmetic Intensity of Common Workloads</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#elementwise-and-reductions">Elementwise and Reductions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gemm">GEMM</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attention">Attention</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-arithmetic-intensity-is-low">When Arithmetic Intensity Is Low</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-optimization-ladder">The Optimization Ladder</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlap-is-the-main-lever">Overlap Is the Main Lever</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#occupancy-and-resource-pressure">Occupancy and Resource Pressure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-buys-later">What This Buys Later</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="what-makes-a-kernel-fast">
+<span id="chap-performance"></span><h1>What Makes a Kernel Fast<a class="headerlink" href="#what-makes-a-kernel-fast" title="Link to this heading">#</a></h1>
+<div class="overview admonition">
+<p class="admonition-title">Overview</p>
+<ul class="simple">
+<li><p>The roofline model gives a kernel a performance ceiling. The ceiling is set by either memory bandwidth or compute throughput.</p></li>
+<li><p>Arithmetic intensity decides which ceiling applies. It is the amount of useful arithmetic work done per byte moved.</p></li>
+<li><p>Low arithmetic intensity means the kernel is memory-bound. The main ways out are to move fewer bytes, reuse data more, fuse operations, or use smaller dtypes.</p></li>
+<li><p>High arithmetic intensity means the kernel can be compute-bound. The main task is then to keep the Tensor Cores busy.</p></li>
+<li><p>In modern GPU kernels, the main lever is overlap. TMA, Tensor Cores, epilogues, and stores should run at the same time whenever the dependency graph allows it.</p></li>
+</ul>
+</div>
+<p>A kernel is only fast relative to a ceiling. A number like 330 TFLOP/s may look large by itself, but it means something very different on a GPU that can sustain on the order of 2 PFLOP/s on dense fp16 or bf16 Tensor Core work. Without a ceiling, it is hard to tell whether a kernel is close to the hardware limit or still leaving most of the chip idle.</p>
+<p>The roofline model gives that ceiling. It separates the kernel into two basic activities: moving bytes and doing arithmetic. If the kernel cannot move data fast enough, memory bandwidth sets the limit. If the kernel has enough data reuse and enough arithmetic work, compute throughput sets the limit.</p>
+<p>The numbers in this chapter use the NVIDIA B200 as the running example. Following the convention from <a class="reference internal" href="../chapter_background/index.html#chap-background"><span class="std std-ref">GPU Execution Model</span></a>, we use round ceilings for reasoning: roughly 2 PFLOP/s of dense fp16 or bf16 Tensor Core throughput, and roughly 8 TB/s of HBM3e bandwidth. The exact values depend on the specific device, clock, power limit, and measurement setup, so they should be read as order-of-magnitude limits rather than datasheet constants.</p>
+<section id="the-roofline-model">
+<h2>The Roofline Model<a class="headerlink" href="#the-roofline-model" title="Link to this heading">#</a></h2>
+<p>Every kernel moves data and does arithmetic. The roofline model bounds the kernel by the slower of those two paths.</p>
+<p>The compute ceiling is the maximum arithmetic throughput of the hardware. For a Tensor Core GEMM on B200, the relevant ceiling is the Tensor Core throughput. For a scalar or elementwise kernel, the relevant ceiling may instead be CUDA core throughput or another functional unit.</p>
+<p>The memory ceiling is bandwidth multiplied by arithmetic intensity. If a kernel does little arithmetic for each byte moved, memory bandwidth limits performance. If it does many operations per byte, memory is less likely to be the limiting factor.</p>
+<p>The basic roofline bound is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>attainable FLOP/s &lt;= min(peak FLOP/s, memory bandwidth * arithmetic intensity)
+</pre></div>
+</div>
+<p>Arithmetic intensity is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>arithmetic intensity = useful FLOPs / bytes moved
+</pre></div>
+</div>
+<p>The memory level must be specified. For an HBM roofline, the bytes are HBM bytes. For an L2 roofline, they are L2 bytes. For an SMEM roofline, they are shared memory bytes. In this chapter, the default roofline is the HBM roofline.</p>
+<p>On a roofline plot, the x axis is arithmetic intensity, measured in FLOP per byte. The y axis is attainable performance. The memory roof is a sloped line:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>performance = bandwidth * arithmetic intensity
+</pre></div>
+</div>
+<p>The compute roof is a flat line:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>performance = peak FLOP/s
+</pre></div>
+</div>
+<p>The two meet at the ridge point:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ridge point = peak FLOP/s / bandwidth
+</pre></div>
+</div>
+<p>For the B200 round numbers used here:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ridge point ≈ 2000 TFLOP/s / 8 TB/s
+            ≈ 250 FLOP/byte
+</pre></div>
+</div>
+<p>A kernel below that arithmetic intensity is memory-bound under the HBM roofline. It cannot reach peak Tensor Core throughput because it cannot deliver enough bytes per second to feed that much arithmetic.</p>
+<p>A kernel above that arithmetic intensity can be compute-bound. At that point, memory traffic is no longer the first-order limit. The remaining job is to drive the compute units well enough to approach the flat roof.</p>
+<p>The useful part of the roofline model is not the plot itself. The useful part is that it tells the programmer which resource is binding. A memory-bound kernel does not become fast because its math instructions are slightly better. A compute-bound kernel does not become fast because it saves a few irrelevant bytes. The first step is to know which side of the ridge the kernel is on.</p>
+<p><img alt="A B200 roofline with example workloads, showing the memory roof, the compute roof, and the ridge point" src="../_images/roofline.png" /></p>
+</section>
+<section id="arithmetic-intensity-of-common-workloads">
+<h2>Arithmetic Intensity of Common Workloads<a class="headerlink" href="#arithmetic-intensity-of-common-workloads" title="Link to this heading">#</a></h2>
+<p>Arithmetic intensity is often an algorithm property before it is an implementation detail. A rough estimate can usually be made before writing the kernel.</p>
+<section id="elementwise-and-reductions">
+<h3>Elementwise and Reductions<a class="headerlink" href="#elementwise-and-reductions" title="Link to this heading">#</a></h3>
+<p>Elementwise kernels, such as GELU, and reduction-style kernels, such as RMSNorm, read and write large tensors while doing only a small number of FLOPs per element.</p>
+<p>Their arithmetic intensity is low. They sit far to the left of the ridge point. The best version of such a kernel usually tries to approach the memory bandwidth roof, not the Tensor Core compute roof.</p>
+<p>For these kernels, the important questions are mechanical:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Are the loads and stores coalesced?
+Are bytes moved only once?
+Can the operation be fused with a producer or consumer?
+Can the dtype be smaller?
+Can TMA or vectorized accesses help?
+</pre></div>
+</div>
+<p>If there is no reuse and no fusion opportunity, the memory roof is the real ceiling.</p>
+</section>
+<section id="gemm">
+<h3>GEMM<a class="headerlink" href="#gemm" title="Link to this heading">#</a></h3>
+<p>GEMM is the opposite case. Its arithmetic intensity grows with problem size because each loaded tile can be reused for many multiply-accumulate operations.</p>
+<p>For a square fp16 matmul with <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">N</span> <span class="pre">=</span> <span class="pre">K</span></code>, the ideal arithmetic intensity is approximately:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>AI ≈ 2N^3 / (3 * 2N^2)
+   = N / 3 FLOP/byte
+</pre></div>
+</div>
+<p>This estimate assumes A and B are read once, C is written once, beta is zero, on-chip reuse is perfect, and there is no extra metadata, padding, or redundant traffic. Real kernels move more data than this ideal model. But the estimate is still useful.</p>
+<p>At <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">4096</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>AI ≈ 4096 / 3
+   ≈ 1365 FLOP/byte
+</pre></div>
+</div>
+<p>That is well to the right of the B200 ridge point of roughly 250 FLOP/byte. Large GEMM is therefore compute-bound under the HBM roofline. The goal is not merely to reduce HBM traffic. The goal is to use Tensor Cores, keep them fed, and overlap data movement with compute so the compute roof becomes reachable.</p>
+<p>This is why a naive GEMM can be slow even though GEMM has high arithmetic intensity. The algorithm permits high performance, but the implementation may leave the Tensor Cores idle.</p>
+</section>
+<section id="attention">
+<h3>Attention<a class="headerlink" href="#attention" title="Link to this heading">#</a></h3>
+<p>Attention sits between these extremes. Its arithmetic intensity depends on sequence length, head dimension, tiling, masking, and whether intermediate tensors are materialized.</p>
+<p>The key problem in standard attention is the score matrix. If the kernel writes the score matrix to HBM and later reads it back, it moves a large intermediate through memory. Flash Attention (<a class="reference internal" href="../chapter_flash_attention/index.html#chap-flash-attention"><span class="std std-ref">Flash Attention 4</span></a>) raises arithmetic intensity by keeping the relevant tiles on chip and avoiding that HBM round trip.</p>
+<p>So attention optimization is partly a roofline problem and partly a scheduling problem. The algorithm is changed so that fewer bytes go to HBM. Then the kernel is scheduled so that the remaining movement and compute overlap.</p>
+</section>
+</section>
+<section id="when-arithmetic-intensity-is-low">
+<h2>When Arithmetic Intensity Is Low<a class="headerlink" href="#when-arithmetic-intensity-is-low" title="Link to this heading">#</a></h2>
+<p>If a kernel is left of the ridge, it is memory-bound. The Tensor Cores or CUDA cores may be idle because the bottleneck is bytes, not arithmetic instructions.</p>
+<p>There are two responses.</p>
+<p>The first response is to raise arithmetic intensity. This is the higher-leverage path because it can move the kernel toward the compute-bound region.</p>
+<p>The most important technique is fusion. A common source of low arithmetic intensity is writing an intermediate tensor to HBM and reading it back immediately in the next operation. Fusing the producer and consumer keeps that intermediate in registers, SMEM, or TMEM. The HBM round trip disappears.</p>
+<p>Examples include:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GEMM plus elementwise epilogue
+normalization folded into a neighboring op
+attention computed without materializing the full score matrix
+</pre></div>
+</div>
+<p>The second technique is blocking for reuse. If a tile is loaded once and used many times before eviction, each byte supports more arithmetic work. GEMM gets its high arithmetic intensity from exactly this reuse. Other workloads can use the same idea whenever they have repeated use of a tile.</p>
+<p>The third technique is reducing the number of bytes per value. Moving from fp32 to fp16, fp8, or fp4 reduces traffic and increases FLOPs per byte. The real gain is smaller than the raw dtype ratio when the format needs metadata, scale factors, or extra conversion work. Block-scaled fp8 and fp4 are examples of this. Even so, smaller dtypes are often one of the most direct ways to move a kernel rightward on the roofline.</p>
+<p>The second response is to accept the memory roof and try to reach it. Some kernels do not have enough work to fuse or enough reuse to exploit. A pure copy, a simple elementwise operation, or a single-pass reduction over a large tensor may be fundamentally memory-bound.</p>
+<p>In that case, the goal is not to beat the roof. The goal is to saturate it.</p>
+<p>That means:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>move each byte once
+avoid redundant reads
+use coalesced or vectorized accesses
+use TMA for regular bulk tiles
+keep enough memory requests in flight
+use smaller storage dtypes when the algorithm allows it
+</pre></div>
+</div>
+<p>Once a memory-bound kernel reaches the memory roof, further compute optimization does not help. The only way to go faster is to change the algorithm so it moves fewer bytes.</p>
+</section>
+<section id="the-optimization-ladder">
+<h2>The Optimization Ladder<a class="headerlink" href="#the-optimization-ladder" title="Link to this heading">#</a></h2>
+<p>The roofline says what is possible. It does not say how easy it is to reach that limit.</p>
+<p>A large fp16 GEMM may be compute-bound in theory. That only means the HBM roof is not the main limit. It does not mean any implementation will reach the Tensor Core roof. Closing the gap requires the right instructions, layouts, staging, synchronization, and scheduling.</p>
+<p>The GEMM kernels in Part III show this as a sequence of steps on B200 (<a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">Scaling GEMM with Warp Specialization and Clusters</span></a>). Each step keeps the same basic algorithm but changes how the tile is computed or scheduled.</p>
+<p>The first large measured jump in the GEMM ladder is the move from the thread-copy tiled path to the TMA-backed path. TMA takes regular GMEM -&gt; SMEM tile movement off the CTA threads and lets the kernel feed Tensor Cores through hardware-managed bulk copies.</p>
+<p>After that first jump, the main improvements come from overlap and scheduling. TMA brings future tiles into shared memory. <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> runs asynchronously. The epilogue drains previous results. Software pipelining and warp specialization arrange those pieces so that the hardware engines are active at the same time.</p>
+<p>There is also no rule that every intermediate step must be faster by itself. A step such as warp specialization may temporarily spend resources on a structure that does not immediately improve the number. It can still be the right step if it enables later overlap that the simpler structure could not express.</p>
+<p><img alt="The GEMM optimization journey on B200: measured points from a synchronous tiled baseline through TMA, warp specialization, CTA clusters, and multi-consumer execution" src="../_images/gemm_perf.png" /></p>
+</section>
+<section id="overlap-is-the-main-lever">
+<h2>Overlap Is the Main Lever<a class="headerlink" href="#overlap-is-the-main-lever" title="Link to this heading">#</a></h2>
+<p>Once a GEMM is compute-bound and already uses Tensor Cores, the remaining gap usually comes from idle time.</p>
+<p>A simple kernel might do this:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>load tile k
+compute tile k
+store tile k
+load tile k + 1
+compute tile k + 1
+store tile k + 1
+</pre></div>
+</div>
+<p>That schedule leaves hardware idle. While the load runs, the Tensor Core waits. While the Tensor Core runs, the copy engine may be idle. While the store drains, both may be waiting.</p>
+<p>A pipelined kernel instead tries to run independent stages together:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>load tile k + 1
+compute tile k
+store tile k - 1
+</pre></div>
+</div>
+<p>This is the central idea behind the Blackwell kernel structure used later in the book. TMA handles asynchronous data movement. <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> handles asynchronous Tensor Core work. The epilogue and stores handle the output side. <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> objects connect the stages so that each consumer waits only when the data it needs is actually required.</p>
+<p>The point is not to remove dependencies. The point is to schedule around them. The MMA for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> cannot start until tile <code class="docutils literal notranslate"><span class="pre">k</span></code> is loaded. The epilogue for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> cannot read the accumulator until the MMA for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> is complete. But the load for tile <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">+</span> <span class="pre">1</span></code> can often run while the MMA for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> is in flight, and the store for tile <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">-</span> <span class="pre">1</span></code> can often drain at the same time.</p>
+<p>This is why so many later chapters focus on asynchronous mechanisms:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TMA for global memory to shared memory movement
+mbarriers for load completion and resource handoff
+tcgen05 for asynchronous Tensor Core compute
+TMEM for long-lived accumulators
+warp specialization to separate producer and consumer roles
+clusters for larger cooperative tiles and multicast
+</pre></div>
+</div>
+<p>They are different mechanisms, but they serve the same scheduling goal: keep useful work running on more than one hardware path at once.</p>
+</section>
+<section id="occupancy-and-resource-pressure">
+<h2>Occupancy and Resource Pressure<a class="headerlink" href="#occupancy-and-resource-pressure" title="Link to this heading">#</a></h2>
+<p>Overlap is not the only latency-hiding mechanism. The older and more general mechanism is occupancy.</p>
+<p>Occupancy is the amount of work resident on an SM. If one warp stalls, the scheduler can run another warp that is ready. This hides latency by keeping a pool of independent warps available.</p>
+<p>Occupancy is limited by per-SM resources. The main limits are registers, shared memory, warp slots, and CTA slots. A kernel that uses many registers per thread or a large amount of shared memory per CTA may have low occupancy because only a small number of CTAs or warps can fit on the SM.</p>
+<p>Many modern Tensor Core kernels intentionally spend resources in ways that reduce occupancy. Multi-stage shared memory pipelines consume SMEM. Large register fragments consume registers. TMEM allocations consume Tensor Memory capacity. Warp specialization may reserve whole warps for producer or consumer roles.</p>
+<p>The trade is deliberate. Instead of hiding latency by having many unrelated warps resident, these kernels hide latency through explicit overlap inside a smaller number of resident CTAs. A low-occupancy kernel can still be fast if its pipeline keeps TMA, Tensor Cores, and stores busy.</p>
+<p>Neither approach is universally better. Some kernels need high occupancy because they have irregular memory access or limited explicit overlap. Others need deep staging and specialization because that is the only way to feed the Tensor Core efficiently. The right question is not whether occupancy is high. The right question is whether the active hardware units are kept busy.</p>
+</section>
+<section id="what-this-buys-later">
+<h2>What This Buys Later<a class="headerlink" href="#what-this-buys-later" title="Link to this heading">#</a></h2>
+<p>The rest of the book keeps returning to the same diagnosis:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Which roof is this kernel under?
+What resource is binding?
+What change moves the kernel closer to that roof?
+</pre></div>
+</div>
+<p>For memory-bound kernels, the answer is usually fewer bytes and better bandwidth use. That means fusion, coalescing, vectorized accesses, TMA where applicable, and smaller dtypes.</p>
+<p>For compute-bound GEMM, the answer is Tensor Cores first, then overlap. The kernel has to stage operands, issue asynchronous MMA work, keep the pipeline full, and drain the result without stalling the compute path.</p>
+<p>For Flash Attention, the first move is to raise arithmetic intensity by keeping the score and probability tiles on chip. After that, it uses the same overlap tools as GEMM: tiled data movement, shared memory staging, asynchronous compute, and careful resource handoff.</p>
+<p>This gives a practical workflow for optimization. Estimate arithmetic intensity. Locate the roof. Decide whether the kernel is memory-bound or compute-bound. Then optimize the resource that actually sets the ceiling.</p>
+<p>Without that step, kernel optimization becomes guesswork. With it, each change has a reason: either it raises arithmetic intensity, moves the memory path closer to bandwidth peak, or reduces idle time under the compute roof.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../chapter_background/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">GPU Execution Model</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../chapter_data_layout/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Data Layout and Its Notation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-roofline-model">The Roofline Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arithmetic-intensity-of-common-workloads">Arithmetic Intensity of Common Workloads</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#elementwise-and-reductions">Elementwise and Reductions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gemm">GEMM</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attention">Attention</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-arithmetic-intensity-is-low">When Arithmetic Intensity Is Low</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-optimization-ladder">The Optimization Ladder</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlap-is-the-main-lever">Overlap Is the Main Lever</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#occupancy-and-resource-pressure">Occupancy and Resource Pressure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-buys-later">What This Buys Later</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MLC Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, MLC Community.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
