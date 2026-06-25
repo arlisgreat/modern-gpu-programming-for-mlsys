@@ -33,7 +33,7 @@
 <iframe src="../demo/hopper_sm_architecture.html" title="Hopper SM architecture" loading="lazy"
         style="width:100%; height:680px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
 <figcaption style="font-size:0.92em; color:var(--pst-color-text-muted, #6c757d); margin-top:6px;">
-交互式：Hopper SM Architecture，展示 TMA load 到 SMEM、<code>wgmma</code> 通过 SMEM descriptor 读取 operands，以及 Register File accumulators。
+交互式：Hopper SM Architecture，展示 TMA load 到 SMEM、<code>wgmma</code> 通过 register descriptors 读取 SMEM operands，以及 Register File accumulators。
 </figcaption>
 </figure>
 </div>
