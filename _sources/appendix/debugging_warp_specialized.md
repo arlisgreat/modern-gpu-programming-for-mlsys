@@ -1,67 +1,67 @@
 (chap_warp_spec_debug)=
-# Debugging Warp-Specialized Kernels
+# 调试 Warp 专用内核
 
-GEMM Steps 7-9 in {ref}`chap_gemm_advanced` overlap TMA load, `tcgen05` MMA, and TMEM/SMEM writeback. The same debugging method applies to Flash Attention handoffs: identify the roles, identify the storage each role owns, then verify the generated CUDA against that model.
+GEMM {ref}`chap_gemm_advanced` 中的步骤 7-9 与 TMA load、`tcgen05` MMA 和 TMEM/SMEM 写回重叠。相同的调试方法适用于 FlashAttention 切换：识别角色，识别每个角色拥有的存储，然后根据该模型验证生成的 CUDA。
 
-Do not start by rewriting the kernel. First make sure the run is valid, then inspect the generated CUDA. After environment and compile-time issues are ruled out, runtime failures in these kernels usually reduce to a broken handoff: an uninitialized barrier, the wrong arrival count, a collective hidden inside a role guard, a stale barrier phase, or storage reused before the producer has made its writes visible.
+不要从重写 kernel 开始。首先确保运行有效，然后检查生成的 CUDA。排除环境和编译时问题后，这些 kernels 中的运行时故障通常会减少为中断的切换：未初始化的 barrier、错误的到达计数、隐藏在角色防护内的集合、过时的 barrier 阶段或在生产者使其写入可见之前重用的存储。
 
-## Before Debugging the Kernel
+## 调试内核之前
 
-Rule out the runtime context first:
+首先排除运行时上下文：
 
 ```bash
 python -c "import tvm, tvm.tirx; print(tvm.__file__, tvm.__version__)"
 python -c "import torch; print(torch.cuda.get_device_name(), torch.cuda.get_device_capability())"
 ```
 
-These kernels target Blackwell (`sm_100a`). If Python imports a stale TVM checkout, or the GPU is not Blackwell-class, fix that before changing the kernel. Then run the kernel's smallest correctness check, such as `run_correctness()`, before looking at performance.
+这些 kernels 目标为 Blackwell (`sm_100a`)。如果 Python 导入过时的 TVM 签出，或者 GPU 不是 Blackwell 类，请在更改 kernel 之前修复该问题。然后运行 ​​kernel 的最小正确性检查，例如 `run_correctness()`，然后再查看性能。
 
-## Debugging Workflow
+## 调试工作流程
 
-1. Reproduce the failure at the smallest shape that still fails. If the failure is an illegal memory access, restart Python before the next run.
-2. If compilation fails, check the installed API, target, `dispatch=`, and buffer scopes before reading the runtime synchronization code.
-3. Save `inspect_source("cuda")` output. Search it for role guards, `mbarrier_init`, `tcgen05`, `cp.async.bulk.tensor`, and `cta_sync()` before reading the Python again.
-4. Write the roles / storage / handoff / lifetime table for the kernel path that failed.
-5. Check the generated CUDA against that table: barrier inits before role branches, expected TMA producer, MMA issuer(s), writeback group(s), and no CTA-wide collective inside a warpgroup-only branch.
-6. Classify the run as a deadlock, crash, wrong result, or correct-but-slow run, then use the matching section below.
-7. Change one handoff at a time: init count, arrive/wait phase, role guard, fence, TMA store drain, TMEM alloc/dealloc, or tile-scheduler advance.
-8. Re-run correctness before measuring performance.
+1. 以仍然失败的最小形状重现失败。如果失败是非法内存访问，请在下次运行之前重新启动 Python。
+2. 如果编译失败，请在读取运行时同步代码之前检查已安装的 API、目标、`dispatch=`和缓冲区 scopes。
+3. 保存 `inspect_source("cuda")` 输出。在再次阅读 Python 之前，搜索角色防护、`mbarrier_init`、`tcgen05`、`cp.async.bulk.tensor` 和 `cta_sync()`。
+4. 为失败的 kernel 路径写入角色/存储/切换/生命周期表。
+5. 根据该表检查生成的 CUDA：角色分支之前的 barrier inits、预期的 TMA 生产者、MMA issuer(s)、写回 group(s)，并且仅 warpgroup 分支内没有 CTA 范围的集合。
+6. 将运行分类为死锁、崩溃、错误结果或正确但缓慢的运行，然后使用下面的匹配部分。
+7. 一次更改一个切换：初始化计数、到达/等待阶段、角色防护、围栏、TMA store 耗尽、TMEM 分配/释放或切片 scheduler 提前。
+8. 在测量性能之前重新运行正确性。
 
-## What Transfers
+## 什么转移
 
-For any asynchronous kernel, make a small worksheet before changing code:
+对于任何异步 kernel，在更改代码之前制作一个小工作表：
 
-| Item | What to write down |
+| 项目 | 写下什么 |
 |---|---|
-| Roles | The exact threads, warps, warpgroups, or CTAs that issue each async operation. |
-| Storage | The live location of each tile at each step: GMEM, SMEM, TMEM, or registers. |
-| Handoff | The producer, the consumer, the signal object, the arrival count, the phase, and the fence or drain that makes the data visible. |
-| Lifetime | The earliest point where each storage slot can be reused, read back, or freed. |
+| 角色 | 发出每个异步操作的确切 threads、warps、warpgroups 或 CTAs。 |
+| 存储 | 每个步骤中每个 tile 的实时位置：GMEM、SMEM、TMEM 或寄存器。 |
+| 切换 | 生产者、消费者、信号对象、到达计数、阶段以及使数据可见的栅栏或漏极。 |
+| 终身 | 每个存储槽可以被重用、读回或释放的最早点。 |
 
-Then verify the generated CUDA against the worksheet:
+然后对照工作表验证生成的 CUDA：
 
-- Role guards match the roles table.
-- Barrier inits appear before guarded role branches.
-- Collective operations are not accidentally narrowed by lane, warp, or warpgroup guards.
-- Arrive/wait phases match the handoff table.
-- TMA store drains, TMEM dealloc, and SMEM reuse happen only after the lifetime table says they are legal.
+- 角色守卫与角色表相匹配。
+- barrier 初始化出现在受保护的角色分支之前。
+- 集体行动不会被 lane、warp 或 warpgroup 守卫意外缩小。
+- 到达/等待阶段与切换表匹配。
+- TMA store 耗尽、TMEM 释放和 SMEM 重用仅在生命周期表表明它们合法之后才会发生。
 
-Use the same worksheet for TMA->MMA->writeback GEMM pipelines and for the score/softmax/value/correction handoffs in Flash Attention.
+对 TMA->MMA->写回 GEMM pipeline 以及 FlashAttention 中的分数/softmax/值/校正切换使用相同的工作表。
 
-## If Compilation Fails
+## 如果编译失败
 
-Fix compile-time failures before debugging runtime synchronization:
+在调试运行时同步之前修复编译时失败：
 
-| Symptom | Likely area | First check |
+| 症状 | 可能的区域 | 首先检查 |
 |---|---|---|
-| Unknown TIRx API or attribute error | Installed wheel does not match the tutorial code | Print `tvm.__file__` and `tvm.__version__`; compare the API name with {ref}`chap_language_reference`. |
-| Unsupported `dispatch=` | The selected target or primitive does not support that path | Check the `dispatch` argument and target capability; `tcgen05` paths in this tutorial require Blackwell. |
-| Buffer scope mismatch | A buffer is being used through the wrong hardware path | Check the storage row of the worksheet: TMEM must be accessed through `tcgen05`, and TMA operands must use compatible GMEM/SMEM layouts. |
-| Compile succeeds but generated CUDA lacks the expected path | Dispatch did not lower the way you expected | Inspect the generated CUDA for `tcgen05` and `cp.async.bulk.tensor` before changing the algorithm. |
+| 未知 TIRx API 或属性错误 | 安装的轮子与教程代码不匹配 | 打印`tvm.__file__`和`tvm.__version__`；将 API 名称与 {ref}`chap_language_reference` 进行比较。 |
+| 不支持 `dispatch=` | 选定的目标或基元不支持该路径 | 检查`dispatch`参数和目标能力；本教程中的 `tcgen05` 路径需要 Blackwell。 |
+| 缓冲区 scope 不匹配 | 通过错误的硬件路径使用缓冲区 | 检查工作表的存储行：TMEM 必须通过`tcgen05`访问，TMA 操作数必须使用兼容的 GMEM/SMEM layouts。 |
+| 编译成功但生成的 CUDA 缺少预期路径 | 派遣并没有按照您预期的方式降低 | 在更改算法之前，检查生成的 CUDA 中的 `tcgen05` 和 `cp.async.bulk.tensor`。 |
 
-## Inspecting Generated Code
+## 检查生成的代码
 
-For any compiled kernel, save the CUDA so you can search and diff it:
+对于任何已编译的 kernel，请保存 CUDA，以便您可以搜索和比较它：
 
 ```python
 from pathlib import Path
@@ -72,31 +72,31 @@ Path("artifacts/my_kernel.cu").write_text(cuda_source, encoding="utf-8")
 print(cuda_source)
 ```
 
-The generated code maps TIRx constructs to CUDA like this:
+生成的代码将 TIRx 构造映射到 CUDA，如下所示：
 
-| TIRx | Generated CUDA |
+| TIRx | 生成 CUDA |
 |------|---------------|
 | `wg_id == 0` | `(warp_id_in_cta >> 2) == 0` |
 | `wg_id == 1` | `(warp_id_in_cta >> 2) == 1` |
 | `warp_id == 0` | `(warp_id_in_cta & 3) == 0` |
 | `warp_id == 3` | `(warp_id_in_cta & 3) == 3` |
 | `lane_id == 0` | `(((int)threadIdx.x) % 32) == 0` |
-| `.init()` internal guard | `((int)threadIdx.x) < 1` (CTA thread 0 only) |
+| `.init()` 内部防护罩 | `((int)threadIdx.x) < 1`（仅 CTA thread 0） |
 | `elect_sync()` | `tvm_builtin_elect_one_sync_op()` |
 
-Scan for these strings before reading the full kernel:
+在阅读完整的 kernel 之前扫描这些字符串：
 
-| Generated CUDA | Check |
+| 生成 CUDA | 检查 |
 |---|---|
-| `if (threadIdx.x < 1)` | Single CTA-thread guard, often barrier initialization |
-| `mbarrier_init` | Barrier initialization exists and appears before role branches |
-| `tcgen05` | The Tensor Core path was generated |
-| `cp.async.bulk.tensor` | The copy lowered to TMA |
-| `cta_sync();` | CTA-wide barrier; it must not sit inside a `wg_id` branch |
+| `if (threadIdx.x < 1)` | 单个 CTA-thread 防护，常 barrier 初始化 |
+| `mbarrier_init` | barrier 初始化存在并出现在角色分支之前 |
+| `tcgen05` | 生成了 Tensor Core 路径 |
+| `cp.async.bulk.tensor` | 副本降为 TMA |
+| `cta_sync();` | CTA 全护栏；它不能位于 `wg_id` 分支内 |
 
-## Step 7 Reference Skeleton
+## 步骤 7 参考骨架
 
-A correctly compiled Step 7 kernel has this top-level shape. The guards below are written with role names for readability; in generated CUDA, search for the corresponding expressions from the table above.
+正确编译的 Step 7 kernel 具有此顶级形状。为了便于阅读，下面的守卫都写上了角色名称；在生成的 CUDA 中，从上表中搜索对应的表达式。
 
 ```c
 // (1) Barrier inits: top level, CTA thread 0 only
@@ -122,88 +122,88 @@ cta_sync();
 if (warp_id == 0) { tcgen05_relinquish_alloc_permit(); tcgen05_dealloc(..., 512); }
 ```
 
-Check these before changing the algorithm:
+在更改算法之前检查这些：
 
-- Barrier inits sit at top level, not inside a `wg_id` guard.
-- `tcgen05_alloc` and `tcgen05_dealloc` have a warp guard but no lane guard; all lanes of the issuing warp participate.
-- TMA and MMA loops both iterate `K_TILES` times.
-- Phase init is producer=`1`, consumer=`0`.
+- barrier 初始化位于顶层，而不是在 `wg_id` 防护内。
+- `tcgen05_alloc` 和 `tcgen05_dealloc` 有一个 warp 守卫，但没有 lane 守卫；发行 warp 的所有泳道参与。
+- TMA 和 MMA 循环均迭代 `K_TILES` 次。
+- 阶段初始化为生产者=`1`，消费者=`0`。
 
-## Symptom Map
+## 症状图
 
-Start from the symptom, but treat it as a clue rather than a final diagnosis:
+从症状开始，但将其视为线索而不是最终诊断：
 
-| Clue | Likely area | First check |
+| 线索 | 可能的区域 | 首先检查 |
 |---|---|---|
-| Kernel hangs, then the runtime reports an unspecified launch failure | Deadlock | Barrier init placement, arrival count, `cta_sync()` placement, and `next_tile()` participation |
-| Illegal memory access, XID, or later unrelated CUDA calls also fail | Crash / poisoned context | Restart Python, then check pointer ranges, storage lifetime, and collective participation |
-| Wrong rows appear in 128-row or tile-sized stripes | Sync race or tile-index mismatch | Producer/consumer phases, scheduler advance, and which warpgroup owns each row stripe |
-| `NaN` or obviously invalid values | Descriptor, operand setup, or uninitialized accumulation | SMEM/TMEM descriptor setup, swizzle/layout, and accumulator initialization |
-| Finite but patterned wrong values | Stale or partially visible data | Missing fence, missing TMA store drain, or storage reused before the lifetime table allows it |
-| Correct output but no expected speedup | Dispatch or resource issue | Generated CUDA path, pipeline depth, occupancy, and register spill |
+| 内核挂起，然后运行时报告未指定的启动失败 | 死锁 | barrier 初始化放置、到达计数、`cta_sync()` 放置和 `next_tile()` 参与 |
+| 非法内存访问、XID 或以后不相关的 CUDA 调用也会失败 | 崩溃/中毒上下文 | 重新启动 Python，然后检查指针范围、存储寿命和集体参与 |
+| 128 行或平铺大小的条纹中出现错误的行 | 同步竞赛或 tile 索引不匹配 | 生产者/消费者阶段、scheduler 提前以及 warpgroup 拥有每个行条带 |
+| `NaN` 或明显无效的值 | 描述符、操作数设置或未初始化的累加 | SMEM/TMEM 描述符设置、swizzle/layout 和累加器初始化 |
+| 有限但模式化的错误价值观 | 陈旧或部分可见的数据 | 缺少栅栏、缺少 TMA store 排水管或在生命周期表允许之前重复使用存储 |
+| 输出正确，但没有预期的加速 | 调度或资源问题 | 生成 CUDA 路径、pipeline 深度、占用率和寄存器溢出 |
 
-## When to Restart Python
+## 何时重新启动 Python
 
-A CUDA error does not always clean up after itself. After an illegal memory access, XID, or "CUDA context poisoned" error, later unrelated calls such as `torch.randn` may keep failing. Restart the Python process before testing the next fix, otherwise you may be debugging the previous crash instead of the current code.
+CUDA 错误并不总是会自行清除。在发生非法内存访问、XID 或“CUDA 上下文中毒”错误后，后续不相关的调用（例如 `torch.randn`）可能会继续失败。在测试下一个修复之前重新启动 Python 进程，否则您可能正在调试之前的崩溃而不是当前的代码。
 
-## Deadlocks
+## 僵局
 
-Check these in order:
+按顺序检查这些：
 
-- **Arrival count does not match init count.** Common case: `MBarrier.init(128)` but `arrive` is guarded by `if warp_id == 0: if lane_id == 0:`, so only 1 thread arrives and the wait never returns.
+- **到达计数与初始计数不匹配。**常见情况：`MBarrier.init(128)`，但 `arrive` 由 `if warp_id == 0: if lane_id == 0:` 保护，因此只有 1 个 thread 到达，并且等待永远不会返回。
 
-  | Barrier | init(count) | Who arrives | Arrivals |
+  | barrier | init(count) | 谁来了 | 到达航班 |
   |---|---|---|---|
-  | `TMABar` (tma->mma) | 1 | TMA engine via `arrive(stage, bytes)` | 1 |
-  | `TCGen05Bar` (mma->tma, mma->ld) | 1 | MMA warp via `tcgen05.commit` | 1 |
-  | `MBarrier` (ld->mma) | 128 | All WG0 threads via `arrive` | 128 |
+  | `TMABar` (tma->mma) | 1 | TMA engine 通过 `arrive(stage, bytes)` | 1 |
+  | `TCGen05Bar`（mma->tma，mma->ld） | 1 | MMA warp 通过 `tcgen05.commit` | 1 |
+  | `MBarrier` (ld->mma) | 128 | 所有 WG0 threads 通过 `arrive` | 128 |
 
-- **Barrier init nested inside a `wg_id` guard.** `.init()` lowers to `if threadIdx.x < 1:`, meaning CTA thread 0. CTA thread 0 lives in WG0, so `if wg_id == 1:` prevents every thread from running the init. Inits must be at top level; `grep mbarrier_init` in `inspect_source()` to verify.
+- **barrier 初始化嵌套在 `wg_id` 保护内部。** `.init()` 降低到 `if threadIdx.x < 1:`，这意味着 CTA thread 0。 CTA thread 0 位于 WG0 中，因此`if wg_id == 1:` 阻止每个 thread 运行 init。 Inits 必须位于顶层； `grep mbarrier_init` 在`inspect_source()`中进行验证。
 
-- **`cta_sync()` inside a warpgroup branch.** `cta_sync` is `__syncthreads()`, which requires all CTA threads. Inside `if wg_id == 0:`, WG1 never reaches it. Use `T.cuda.warpgroup_sync(10)` for a single-warpgroup barrier.
+- **`cta_sync()` 在 warpgroup 分支内。** `cta_sync` 是 `__syncthreads()`，它需要所有 CTA threads。在`if wg_id == 0:`内部，WG1 永远不会到达它。将 `T.cuda.warpgroup_sync(10)` 用于单个 warpgroup barrier。
 
-- **`tile_scheduler.next_tile()` skipped by some consumer-warpgroup threads.** The scheduler tracks per-thread state; threads that skip it can loop forever.
+- **`tile_scheduler.next_tile()` 被某些消费者跳过 - warpgroup threads。** scheduler 跟踪每个 thread 状态； threads 跳过它可以永远循环。
 
-- **TMA and MMA disagree on K-tile count.** If MMA does `K_TILES - 1` instead of `K_TILES`, barrier phases drift and the second outer tile deadlocks.
+- **TMA 和 MMA 在 K 区块计数上存在分歧。** 如果 MMA 执行 `K_TILES - 1` 而不是 `K_TILES`，则势垒 phase 漂移并且第二个外部区块死锁。
 
-- **`PipelineState` initial phase wrong.** Producer starts at `phase=1` so the first wait passes; consumer starts at `phase=0` so the first wait blocks. If both start from the same phase, the first handoff can deadlock immediately.
+- **`PipelineState` 初始阶段错误。** 生产者从 `phase=1` 开始，因此第一个等待通过；消费者从 `phase=0` 开始，因此第一个等待会阻塞。如果两者从同一阶段开始，则第一次切换可能会立即陷入僵局。
 
-## Crashes and Context Poisoning
+## 崩溃和上下文中毒
 
-Common causes:
+常见原因：
 
-- **`pool.alloc` after `pool.commit()`.** Barrier wrappers call `alloc` internally. Correct order: `tmem_addr -> barrier wrappers -> move_base_to(1024) -> Asmem / Bsmem / Dsmem -> commit()`.
-- **`tcgen05.alloc` or `tcgen05.dealloc` with a lane guard.** The issuing warp must participate with all lanes. `if lane_id == 0:` runs one thread, which is undefined behavior.
-- **Missing `cta_sync()` before `tcgen05.dealloc`.** TMEM is freed while writeback is still reading.
-- **Out-of-range GMEM or SMEM access.** Shrink to one tile, check the scheduler's `m_idx` / `n_idx`, and check that the current shape is a multiple of the kernel's tile or cluster tile.
+- **`pool.commit()` 之后的 `pool.alloc`。** barrier 包装器在内部调用 `alloc`。正确顺序：`tmem_addr -> barrier wrappers -> move_base_to(1024) -> Asmem / Bsmem / Dsmem -> commit()`。
+- **带有 lane 防护装置的 `tcgen05.alloc` 或 `tcgen05.dealloc`。** 签发的 warp 必须参与所有 lane。 `if lane_id == 0:` 运行一个 thread，这是未定义的行为。
+- **`tcgen05.dealloc` 之前缺少 `cta_sync()`。** TMEM 在写回仍在读取时被释放。
+- **超出范围的 GMEM 或 SMEM 访问。** 缩小到一个 tile，检查 scheduler 的 `m_idx` / `n_idx`，并检查当前形状是否是 kernel 的 tile 或 cluster tile 的倍数。
 
-## Wrong Results
+## 错误的结果
 
-Classify wrong output by pattern before guessing. Whole row stripes often point to a producer/consumer phase, tile-index, or role-ownership mismatch. `NaN` output often points to descriptor setup, operand setup, or uninitialized accumulation. Finite but patterned wrong values often mean the consumer read an old tile, a partially written tile, or data whose store had not drained yet.
+在猜测之前按模式对错误输出进行分类。整行条纹通常指向生产者/消费者阶段、切片索引或角色所有权不匹配。 `NaN` 输出通常指向描述符设置、操作数设置或未初始化的累加。有限但模式化的错误值通常意味着消费者读取了旧的 tile、部分写入的 tile 或存储尚未耗尽的数据。
 
-- **`tcgen05.commit` outside `elect_sync`.** All 32 threads create commit groups; the 31 empty groups signal the mbarrier immediately. TMA can overwrite SMEM before MMA reads it.
-- **Missing `fence.proxy_async("shared::cta")` before TMA store.** The TMA engine may not see SMEM writes from threads.
-- **Missing `cp_async.bulk.commit_group()` plus `wait_group(0)` after TMA store.** The next tile can reuse Dsmem before the store drains.
-- **Persistent kernel fails intermittently at small sizes such as 1024x1024.** Larger sizes can mask the race with longer K-loops. Re-check phase reset between tiles and the TMA-store commit/wait.
-- **`fence.after_thread_sync()` is usually not the fix.** The MMA-completion mbarrier already carries release-acquire semantics. Steps 8 and 9 add it conservatively on the writeback edge, after `mma2ld.wait` and before the first `tcgen05.ld`; do not add it routinely on the TMA-to-MMA edge.
+- **`tcgen05.commit` 在 `elect_sync` 之外。** 所有 32 个 threads 创建提交组； 31 个空组立即向 mbarrier 发出信号。 TMA 可以在 MMA 读取之前覆盖 SMEM。
+- **在 TMA store 之前缺少 `fence.proxy_async("shared::cta")`。** TMA 引擎可能看不到来自 threads 的 SMEM 写入。
+- **在 TMA store 之后缺少 `cp_async.bulk.commit_group()` 加上 `wait_group(0)`。** 下一个 tile 可以在 store 排水之前重复使用 Dsmem。
+- **持久 kernel 在小尺寸（例如 1024x1024）下会间歇性失败。**较大尺寸可能会掩盖较长 K 循环的竞争。重新检查 tile 之间的阶段重置和 TMA 存储提交/等待。
+- **`fence.after_thread_sync()` 通常不是修复方法。** MMA 完成 mbarrier 已经带有释放获取语义。第 8 步和第 9 步保守地将其添加到回写边缘，即 `mma2ld.wait` 之后和第一个 `tcgen05.ld` 之前；不要将其常规添加到 TMA-to-MMA 边缘。
 
-## Correct but Slow
+## 正确但缓慢
 
-If the output is correct but performance is far below expectation, use the same inspection loop:
+如果输出正确但性能远低于预期，请使用相同的检查循环：
 
-| Clue | Likely area | First check |
+| 线索 | 可能的区域 | 首先检查 |
 |---|---|---|
-| Generated CUDA has no `cp.async.bulk.tensor` | Copy did not lower to TMA | Check `dispatch="tma"`, target capability, and operand layout |
-| Generated CUDA has no `tcgen05` path | MMA did not lower to Blackwell Tensor Core instructions | Check `dispatch="tcgen05"`, target capability, and operand layouts |
-| TMA and MMA do not overlap | Pipeline too shallow or phases serialize producer/consumer | Inspect the order of wait/arrive/advance in the generated CUDA |
-| Good small-shape correctness but poor large-shape speed | Register spill, occupancy, or staging-buffer pressure | Check the compiler resource report; reduce tile size, chunk writeback, or lower pipeline depth |
+| 生成的 CUDA 没有`cp.async.bulk.tensor` | 副本没有降低到 TMA | 检查 `dispatch="tma"`、目标能力和操作数 layout |
+| 生成的 CUDA 没有`tcgen05`路径 | MMA 未降低至 Blackwell Tensor Core 指令 | 检查 `dispatch="tcgen05"`、目标能力和操作数 layouts |
+| TMA 和 MMA 不重叠 | pipeline 太浅或阶段序列化生产者/消费者 | 检查生成的 CUDA 中等待/到达/提前的顺序 |
+| 小形状正确性好，但大形状速度差 | 记录溢出、占用或分段缓冲区压力 | 查看编译器资源报告；减少切片大小、块写回或降低 pipeline 深度 |
 
-## Filing a Good Issue
+## 提交一个好问题
 
-If the failure survives the checks above, reduce it before filing an issue on the [Apache TVM GitHub repository](https://github.com/apache/tvm/issues). Include:
+如果经过上述检查后故障仍然存在，请在 [Apache TVM GitHub 存储库](https://github.com/apache/tvm/issues) 上提交问题之前减少故障。包括：
 
-- the `tvm.__file__` / `tvm.__version__` output and GPU capability;
-- the smallest shape that reproduces the failure;
-- whether the failure is compile-time, deadlock, crash, wrong result, or correct-but-slow;
-- the minimal kernel or notebook cell plus its correctness check;
-- the saved `inspect_source("cuda")` output, or the smallest excerpt that shows the suspicious guard, barrier, or dispatch path.
+- `tvm.__file__` / `tvm.__version__` 输出和 GPU 功能；
+- 重现故障的最小形状；
+- 失败是否是编译时、死锁、崩溃、错误结果或正确但缓慢；
+- 最小的 kernel 或笔记本单元及其正确性检查；
+- 保存的 `inspect_source("cuda")` 输出，或显示可疑守卫、barrier 或 dispatch 路径的最小摘录。

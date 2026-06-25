@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>What Makes a Kernel Fast &#8212; Modern GPU Programming For MLSys</title>
+    <title>是什么让内核变得更快 &#8212; Modern GPU Programming For MLSys</title>
   
   
   
@@ -53,8 +53,8 @@
     <link rel="icon" href="../_static/mlc-favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Data Layout and Its Notation" href="../chapter_data_layout/index.html" />
-    <link rel="prev" title="GPU Execution Model" href="../chapter_background/index.html" />
+    <link rel="next" title="数据 layout 及其表示法" href="../chapter_data_layout/index.html" />
+    <link rel="prev" title="GPU 执行模型" href="../chapter_background/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -150,37 +150,37 @@
 </button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, Understanding the GPU</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU Execution Model</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">What Makes a Kernel Fast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">Data Layout and Its Notation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core Operand Layouts Across GPU Generations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">Async Data Movement: TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tensor_cores/index.html">Tensor Cores: <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">Special Memory: TMEM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">Async Coordination: mbarriers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_clc/index.html">Advanced: Cluster Launch Control</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">特殊存储器：TMEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">异步协调：mbarriers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_clc/index.html">高级：Cluster Launch Control</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx Overview</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx 概览</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">Introduction to TIRx</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tirx_layout_api/index.html">TIRx Layout API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">TIRx 简介</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tirx_layout_api/index.html">TIRxlayoutAPI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part III, GEMM: Tiled to SOTA</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">Building a Tiled GEMM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">Pipelining GEMM with TMA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">Scaling GEMM with Warp Specialization and Clusters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">构建平铺 GEMM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">将 GEMM 与 TMA 进行 pipeline 处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">通过 Warp 专业化和 cluster 扩展 GEMM</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, Flash Attention 4</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, FlashAttention 4</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">Flash Attention 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">FlashAttention 4</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">Debugging Warp-Specialized Kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">参考</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">调试 Warp 专用内核</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../tirx_guide/arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
 </ul>
@@ -264,7 +264,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>What Makes a Kernel Fast</h1>
+    <h1>是什么让内核变得更快</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -274,18 +274,18 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-roofline-model">The Roofline Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arithmetic-intensity-of-common-workloads">Arithmetic Intensity of Common Workloads</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#elementwise-and-reductions">Elementwise and Reductions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">屋顶线模型</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">常见工作负载的算术强度</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">逐元素和归约</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gemm">GEMM</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attention">Attention</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-arithmetic-intensity-is-low">When Arithmetic Intensity Is Low</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-optimization-ladder">The Optimization Ladder</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlap-is-the-main-lever">Overlap Is the Main Lever</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#occupancy-and-resource-pressure">Occupancy and Resource Pressure</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-buys-later">What This Buys Later</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">当算术强度较低时</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">优化阶梯</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">重叠是主要杠杆</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">占用和资源压力</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">这以后能买什么</a></li>
 </ul>
             </nav>
         </div>
@@ -297,65 +297,65 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="what-makes-a-kernel-fast">
-<span id="chap-performance"></span><h1>What Makes a Kernel Fast<a class="headerlink" href="#what-makes-a-kernel-fast" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="chap-performance">
+<span id="id1"></span><h1>是什么让内核变得更快<a class="headerlink" href="#chap-performance" title="Link to this heading">#</a></h1>
 <div class="overview admonition">
-<p class="admonition-title">Overview</p>
+<p class="admonition-title">概述</p>
 <ul class="simple">
-<li><p>The roofline model gives a kernel a performance ceiling. The ceiling is set by either memory bandwidth or compute throughput.</p></li>
-<li><p>Arithmetic intensity decides which ceiling applies. It is the amount of useful arithmetic work done per byte moved.</p></li>
-<li><p>Low arithmetic intensity means the kernel is memory-bound. The main ways out are to move fewer bytes, reuse data more, fuse operations, or use smaller dtypes.</p></li>
-<li><p>High arithmetic intensity means the kernel can be compute-bound. The main task is then to keep the Tensor Cores busy.</p></li>
-<li><p>In modern GPU kernels, the main lever is overlap. TMA, Tensor Cores, epilogues, and stores should run at the same time whenever the dependency graph allows it.</p></li>
+<li><p>roofline 型号为 kernel 提供了性能上限。上限由内存带宽或计算吞吐量设置。</p></li>
+<li><p>算术强度决定了应用哪个上限。它是每个移动字节完成的有用算术工作量。</p></li>
+<li><p>低算术强度意味着 kernel 受内存限制。主要的解决方法是移动更少的字节、更多地重用数据、熔断操作或使用更小的数据类型。</p></li>
+<li><p>高算术强度意味着 kernel 可能受计算限制。主要任务是让 Tensor Cores 保持忙碌。</p></li>
+<li><p>在现代 GPU kernels 中，主杠杆是重叠的。只要依赖图允许，TMA、Tensor Cores、epilogue 和存储就应该同时运行。</p></li>
 </ul>
 </div>
-<p>A kernel is only fast relative to a ceiling. A number like 330 TFLOP/s may look large by itself, but it means something very different on a GPU that can sustain on the order of 2 PFLOP/s on dense fp16 or bf16 Tensor Core work. Without a ceiling, it is hard to tell whether a kernel is close to the hardware limit or still leaving most of the chip idle.</p>
-<p>The roofline model gives that ceiling. It separates the kernel into two basic activities: moving bytes and doing arithmetic. If the kernel cannot move data fast enough, memory bandwidth sets the limit. If the kernel has enough data reuse and enough arithmetic work, compute throughput sets the limit.</p>
-<p>The numbers in this chapter use the NVIDIA B200 as the running example. Following the convention from <a class="reference internal" href="../chapter_background/index.html#chap-background"><span class="std std-ref">GPU Execution Model</span></a>, we use round ceilings for reasoning: roughly 2 PFLOP/s of dense fp16 or bf16 Tensor Core throughput, and roughly 8 TB/s of HBM3e bandwidth. The exact values depend on the specific device, clock, power limit, and measurement setup, so they should be read as order-of-magnitude limits rather than datasheet constants.</p>
-<section id="the-roofline-model">
-<h2>The Roofline Model<a class="headerlink" href="#the-roofline-model" title="Link to this heading">#</a></h2>
-<p>Every kernel moves data and does arithmetic. The roofline model bounds the kernel by the slower of those two paths.</p>
-<p>The compute ceiling is the maximum arithmetic throughput of the hardware. For a Tensor Core GEMM on B200, the relevant ceiling is the Tensor Core throughput. For a scalar or elementwise kernel, the relevant ceiling may instead be CUDA core throughput or another functional unit.</p>
-<p>The memory ceiling is bandwidth multiplied by arithmetic intensity. If a kernel does little arithmetic for each byte moved, memory bandwidth limits performance. If it does many operations per byte, memory is less likely to be the limiting factor.</p>
-<p>The basic roofline bound is:</p>
+<p>kernel 仅相对于上限而言较快。像 330 TFLOP/s 这样的数字本身可能看起来很大，但这在 GPU 上意味着非常不同的东西，它可以在密集的 fp16 或 bf16 Tensor Core 工作上维持 2 PFLOP/s 的量级。如果没有上限，就很难判断 kernel 是否已接近硬件限制或仍然使大部分芯片闲置。</p>
+<p>roofline 型号给出了这个上限。它将 kernel 分为两个基本活动：移动字节和进行算术运算。如果 kernel 无法足够快地移动数据，则内存带宽会受到限制。如果 kernel 有足够的数据重用和足够的算术工作，计算吞吐量就会设定限制。</p>
+<p>本章中的编号以 NVIDIA B200 作为运行示例。遵循 <code class="docutils literal notranslate"><span class="pre">chap_background</span></code> 的约定，我们使用圆形上限进行推理：大约 2 PFLOP/s 的密集 fp16 或 bf16 Tensor Core 吞吐量，以及大约 8 TB/s 的 HBM3e 带宽。确切的值取决于特定的器件、时钟、功率限制和测量设置，因此应将它们视为数量级限制而不是数据表常数。</p>
+<section id="id2">
+<h2>屋顶线模型<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<p>每个 kernel 都会移动数据并进行算术运算。 roofline 模型通过这两条路径中较慢的一条来限制 kernel。</p>
+<p>计算上限是硬件的最大算术吞吐量。对于 B200 上的 Tensor Core GEMM，相关上限是 Tensor Core 吞吐量。对于标量或元素 kernel，相关上限可能是 CUDA 核心吞吐量或其他功能单位。</p>
+<p>内存上限是带宽乘以算术强度。如果 kernel 对每个移动的字节执行很少的算术，则内存带宽会限制性能。如果每个字节执行许多操作，则内​​存不太可能成为限制因素。</p>
+<p>基本的 roofline 界限是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>attainable FLOP/s &lt;= min(peak FLOP/s, memory bandwidth * arithmetic intensity)
 </pre></div>
 </div>
-<p>Arithmetic intensity is:</p>
+<p>算术强度为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>arithmetic intensity = useful FLOPs / bytes moved
 </pre></div>
 </div>
-<p>The memory level must be specified. For an HBM roofline, the bytes are HBM bytes. For an L2 roofline, they are L2 bytes. For an SMEM roofline, they are shared memory bytes. In this chapter, the default roofline is the HBM roofline.</p>
-<p>On a roofline plot, the x axis is arithmetic intensity, measured in FLOP per byte. The y axis is attainable performance. The memory roof is a sloped line:</p>
+<p>必须指定内存级别。对于 HBM roofline，字节为 HBM 字节。对于 L2 roofline，它们是 L2 字节。对于 SMEM roofline，它们是共享内存字节。本章默认的 roofline 为 HBM roofline。</p>
+<p>在 roofline 图中，x 轴是算术强度，以每字节 FLOP 为单位进行测量。 y 轴是可达到的性能。记忆屋顶是一条斜线：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>performance = bandwidth * arithmetic intensity
 </pre></div>
 </div>
-<p>The compute roof is a flat line:</p>
+<p>计算屋顶是一条扁线：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>performance = peak FLOP/s
 </pre></div>
 </div>
-<p>The two meet at the ridge point:</p>
+<p>两者在山脊点相遇：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ridge point = peak FLOP/s / bandwidth
 </pre></div>
 </div>
-<p>For the B200 round numbers used here:</p>
+<p>对于此处使用的 B200 整数：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ridge point ≈ 2000 TFLOP/s / 8 TB/s
             ≈ 250 FLOP/byte
 </pre></div>
 </div>
-<p>A kernel below that arithmetic intensity is memory-bound under the HBM roofline. It cannot reach peak Tensor Core throughput because it cannot deliver enough bytes per second to feed that much arithmetic.</p>
-<p>A kernel above that arithmetic intensity can be compute-bound. At that point, memory traffic is no longer the first-order limit. The remaining job is to drive the compute units well enough to approach the flat roof.</p>
-<p>The useful part of the roofline model is not the plot itself. The useful part is that it tells the programmer which resource is binding. A memory-bound kernel does not become fast because its math instructions are slightly better. A compute-bound kernel does not become fast because it saves a few irrelevant bytes. The first step is to know which side of the ridge the kernel is on.</p>
-<p><img alt="A B200 roofline with example workloads, showing the memory roof, the compute roof, and the ridge point" src="../_images/roofline.png" /></p>
+<p>低于该算术强度的 kernel 在 HBM roofline 下受内存限制。它无法达到峰值 Tensor Core 吞吐量，因为它无法每秒提供足够的字节来提供那么多算术。</p>
+<p>高于该算术强度的 kernel 可能会受到计算限制。到那时，内存流量不再是一阶限制。剩下的工作是足够好地驱动计算单元以接近平屋顶。</p>
+<p>roofline 模型的有用部分不是绘图本身。有用的部分是它告诉程序员哪个资源正在绑定。受内存限制的 kernel 不会变得更快，因为它的数学指令稍微好一些。受计算限制的 kernel 不会变得很快，因为它节省了一些不相关的字节。第一步是了解 kernel 位于山脊的哪一侧。</p>
+<p><img alt="带有示例工作负载的 B200 roofline，显示内存屋顶、计算屋顶和山脊点" src="../_images/roofline.png" /></p>
 </section>
-<section id="arithmetic-intensity-of-common-workloads">
-<h2>Arithmetic Intensity of Common Workloads<a class="headerlink" href="#arithmetic-intensity-of-common-workloads" title="Link to this heading">#</a></h2>
-<p>Arithmetic intensity is often an algorithm property before it is an implementation detail. A rough estimate can usually be made before writing the kernel.</p>
-<section id="elementwise-and-reductions">
-<h3>Elementwise and Reductions<a class="headerlink" href="#elementwise-and-reductions" title="Link to this heading">#</a></h3>
-<p>Elementwise kernels, such as GELU, and reduction-style kernels, such as RMSNorm, read and write large tensors while doing only a small number of FLOPs per element.</p>
-<p>Their arithmetic intensity is low. They sit far to the left of the ridge point. The best version of such a kernel usually tries to approach the memory bandwidth roof, not the Tensor Core compute roof.</p>
-<p>For these kernels, the important questions are mechanical:</p>
+<section id="id3">
+<h2>常见工作负载的算术强度<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
+<p>算术强度通常是算法属性，然后才是实现细节。在写入 kernel 之前通常可以进行粗略的估计。</p>
+<section id="id4">
+<h3>逐元素和归约<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<p>元素 kernels（例如 GELU）和缩减式 kernels（例如 RMSNorm）可以读取和写入大型张量，同时每个元素仅执行少量的 FLOP。</p>
+<p>他们的算术强度较低。它们位于山脊点左侧很远的地方。此类 kernel 的最佳版本通常会尝试接近内存带宽屋顶，而不是 Tensor Core 计算屋顶。</p>
+<p>对于这些 kernels，重要的问题是机械性的：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Are the loads and stores coalesced?
 Are bytes moved only once?
 Can the operation be fused with a producer or consumer?
@@ -363,49 +363,49 @@ Can the dtype be smaller?
 Can TMA or vectorized accesses help?
 </pre></div>
 </div>
-<p>If there is no reuse and no fusion opportunity, the memory roof is the real ceiling.</p>
+<p>如果没有重用，没有融合机会，内存屋顶才是真正的天花板。</p>
 </section>
 <section id="gemm">
 <h3>GEMM<a class="headerlink" href="#gemm" title="Link to this heading">#</a></h3>
-<p>GEMM is the opposite case. Its arithmetic intensity grows with problem size because each loaded tile can be reused for many multiply-accumulate operations.</p>
-<p>For a square fp16 matmul with <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">N</span> <span class="pre">=</span> <span class="pre">K</span></code>, the ideal arithmetic intensity is approximately:</p>
+<p>GEMM 的情况相反。它的算术强度随着问题的大小而增加，因为每个加载的 tile 都可以重复用于许多乘法累加运算。</p>
+<p>对于平方 fp16 与 <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">N</span> <span class="pre">=</span> <span class="pre">K</span></code> 的 matmul，理想的算术强度约为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>AI ≈ 2N^3 / (3 * 2N^2)
    = N / 3 FLOP/byte
 </pre></div>
 </div>
-<p>This estimate assumes A and B are read once, C is written once, beta is zero, on-chip reuse is perfect, and there is no extra metadata, padding, or redundant traffic. Real kernels move more data than this ideal model. But the estimate is still useful.</p>
-<p>At <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">4096</span></code>:</p>
+<p>该估计假设 A 和 B 被读取一次，C 被写入一次，beta 为零，片上重用是完美的，并且没有额外的元数据、填充或冗余流量。真实的 kernels 比这个理想模型移动更多的数据。但这个估计还是有用的。</p>
+<p>在 <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">4096</span></code>：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>AI ≈ 4096 / 3
    ≈ 1365 FLOP/byte
 </pre></div>
 </div>
-<p>That is well to the right of the B200 ridge point of roughly 250 FLOP/byte. Large GEMM is therefore compute-bound under the HBM roofline. The goal is not merely to reduce HBM traffic. The goal is to use Tensor Cores, keep them fed, and overlap data movement with compute so the compute roof becomes reachable.</p>
-<p>This is why a naive GEMM can be slow even though GEMM has high arithmetic intensity. The algorithm permits high performance, but the implementation may leave the Tensor Cores idle.</p>
+<p>它位于大约 250 FLOP/字节的 B200 脊线点的右侧。因此，大型 GEMM 在 HBM roofline 下受计算限制。目标不仅仅是减少 HBM 流量。目标是使用 Tensor Cores，让它们保持充足状态，并将数据移动与计算重叠，以便可以到达计算屋顶。</p>
+<p>这就是为什么即使 GEMM 具有高算术强度，简单的 GEMM 也会很慢。该算法允许高性能，但实施可能会使 Tensor Cores 空闲。</p>
 </section>
 <section id="attention">
 <h3>Attention<a class="headerlink" href="#attention" title="Link to this heading">#</a></h3>
-<p>Attention sits between these extremes. Its arithmetic intensity depends on sequence length, head dimension, tiling, masking, and whether intermediate tensors are materialized.</p>
-<p>The key problem in standard attention is the score matrix. If the kernel writes the score matrix to HBM and later reads it back, it moves a large intermediate through memory. Flash Attention (<a class="reference internal" href="../chapter_flash_attention/index.html#chap-flash-attention"><span class="std std-ref">Flash Attention 4</span></a>) raises arithmetic intensity by keeping the relevant tiles on chip and avoiding that HBM round trip.</p>
-<p>So attention optimization is partly a roofline problem and partly a scheduling problem. The algorithm is changed so that fewer bytes go to HBM. Then the kernel is scheduled so that the remaining movement and compute overlap.</p>
+<p>Attention 位于这两个极端之间。其算术强度取决于序列长度、头部尺寸、平铺、掩蔽以及中间张量是否物化。</p>
+<p>标准 Attention 的关键问题是分数矩阵。如果 kernel 将分数矩阵写入 HBM，然后将其读回，则会在内存中移动一个大的中间值。 FlashAttention (<a class="reference internal" href="../chapter_flash_attention/index.html#chap-flash-attention"><span class="std std-ref">FlashAttention 4</span></a>) 通过将相关 tile 保留在芯片上并避免 HBM 往返来提高算术强度。</p>
+<p>所以 Attention 优化部分是一个 roofline 问题，部分是一个调度问题。算法已更改，以便更少的字节进入 HBM。然后调度 kernel 以便剩余的移动和计算重叠。</p>
 </section>
 </section>
-<section id="when-arithmetic-intensity-is-low">
-<h2>When Arithmetic Intensity Is Low<a class="headerlink" href="#when-arithmetic-intensity-is-low" title="Link to this heading">#</a></h2>
-<p>If a kernel is left of the ridge, it is memory-bound. The Tensor Cores or CUDA cores may be idle because the bottleneck is bytes, not arithmetic instructions.</p>
-<p>There are two responses.</p>
-<p>The first response is to raise arithmetic intensity. This is the higher-leverage path because it can move the kernel toward the compute-bound region.</p>
-<p>The most important technique is fusion. A common source of low arithmetic intensity is writing an intermediate tensor to HBM and reading it back immediately in the next operation. Fusing the producer and consumer keeps that intermediate in registers, SMEM, or TMEM. The HBM round trip disappears.</p>
-<p>Examples include:</p>
+<section id="id5">
+<h2>当算术强度较低时<a class="headerlink" href="#id5" title="Link to this heading">#</a></h2>
+<p>如果 kernel 位于山脊左侧，则它是受内存限制的。 Tensor Cores 或 CUDA cores 可能空闲，因为瓶颈是字节，而不是算术指令。</p>
+<p>有两种回应。</p>
+<p>第一个反应是提高算术强度。这是更高杠杆的路径，因为它可以将 kernel 移向计算密集区域。</p>
+<p>最重要的技术是融合。低算术强度的常见来源是将中间张量写入 HBM 并在下一个操作中立即将其读回。融合生产者和消费者将该中间产物保留在寄存器 SMEM 或 TMEM 中。 HBM 往返消失。</p>
+<p>示例包括：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GEMM plus elementwise epilogue
 normalization folded into a neighboring op
 attention computed without materializing the full score matrix
 </pre></div>
 </div>
-<p>The second technique is blocking for reuse. If a tile is loaded once and used many times before eviction, each byte supports more arithmetic work. GEMM gets its high arithmetic intensity from exactly this reuse. Other workloads can use the same idea whenever they have repeated use of a tile.</p>
-<p>The third technique is reducing the number of bytes per value. Moving from fp32 to fp16, fp8, or fp4 reduces traffic and increases FLOPs per byte. The real gain is smaller than the raw dtype ratio when the format needs metadata, scale factors, or extra conversion work. Block-scaled fp8 and fp4 are examples of this. Even so, smaller dtypes are often one of the most direct ways to move a kernel rightward on the roofline.</p>
-<p>The second response is to accept the memory roof and try to reach it. Some kernels do not have enough work to fuse or enough reuse to exploit. A pure copy, a simple elementwise operation, or a single-pass reduction over a large tensor may be fundamentally memory-bound.</p>
-<p>In that case, the goal is not to beat the roof. The goal is to saturate it.</p>
-<p>That means:</p>
+<p>第二种技术是阻塞重用。如果一个 tile 在驱逐之前被加载一次并使用多次，则每个字节支持更多的算术工作。 GEMM 的高算力强度正是源于这种重用。其他工作负载只要重复使用某个 tile 就可以使用相同的想法。</p>
+<p>第三种技术是减少每个值的字节数。从 fp32 迁移到 fp16、fp8 或 fp4 可减少流量并增加每字节的 FLOP。当格式需要元数据、比例因子或额外的转换工作时，实际增益小于原始数据类型比率。块级 fp8 和 fp4 就是这样的示例。即便如此，较小的 dtype 通常是将 kernel 在 roofline 上向右移动的最直接方法之一。</p>
+<p>第二个反应是接受记忆屋顶并尝试到达它。某些 kernels 没有足够的工作来融合或没有足够的重用来利用。纯复制、简单的元素运算或大张量的单遍缩减基本上可能是内存限制的。</p>
+<p>在这种情况下，我们的目标不是冲破屋顶。目标是使其饱和。</p>
+<p>这意味着：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>move each byte once
 avoid redundant reads
 use coalesced or vectorized accesses
@@ -414,22 +414,22 @@ keep enough memory requests in flight
 use smaller storage dtypes when the algorithm allows it
 </pre></div>
 </div>
-<p>Once a memory-bound kernel reaches the memory roof, further compute optimization does not help. The only way to go faster is to change the algorithm so it moves fewer bytes.</p>
+<p>一旦受内存限制的 kernel 达到内存上限，进一步的计算优化将无济于事。加快速度的唯一方法是更改​​算法，使其移动更少的字节。</p>
 </section>
-<section id="the-optimization-ladder">
-<h2>The Optimization Ladder<a class="headerlink" href="#the-optimization-ladder" title="Link to this heading">#</a></h2>
-<p>The roofline says what is possible. It does not say how easy it is to reach that limit.</p>
-<p>A large fp16 GEMM may be compute-bound in theory. That only means the HBM roof is not the main limit. It does not mean any implementation will reach the Tensor Core roof. Closing the gap requires the right instructions, layouts, staging, synchronization, and scheduling.</p>
-<p>The GEMM kernels in Part III show this as a sequence of steps on B200 (<a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">Scaling GEMM with Warp Specialization and Clusters</span></a>). Each step keeps the same basic algorithm but changes how the tile is computed or scheduled.</p>
-<p>The first large measured jump in the GEMM ladder is the move from the thread-copy tiled path to the TMA-backed path. TMA takes regular GMEM -&gt; SMEM tile movement off the CTA threads and lets the kernel feed Tensor Cores through hardware-managed bulk copies.</p>
-<p>After that first jump, the main improvements come from overlap and scheduling. TMA brings future tiles into shared memory. <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> runs asynchronously. The epilogue drains previous results. Software pipelining and warp specialization arrange those pieces so that the hardware engines are active at the same time.</p>
-<p>There is also no rule that every intermediate step must be faster by itself. A step such as warp specialization may temporarily spend resources on a structure that does not immediately improve the number. It can still be the right step if it enables later overlap that the simpler structure could not express.</p>
-<p><img alt="The GEMM optimization journey on B200: measured points from a synchronous tiled baseline through TMA, warp specialization, CTA clusters, and multi-consumer execution" src="../_images/gemm_perf.png" /></p>
+<section id="id6">
+<h2>优化阶梯<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<p>roofline 说明一切皆有可能。它没有说明达到该限制有多么容易。</p>
+<p>理论上，大型 fp16 GEMM 可能会受到计算限制。这仅意味着 HBM 屋顶不是主要限制。这并不意味着任何实施都会达到 Tensor Core 的顶峰。缩小差距需要正确的指令、layouts、分段、同步和调度。</p>
+<p>第三部分中的 GEMM kernels 将其显示为 B200 (<a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">通过 Warp 专业化和 cluster 扩展 GEMM</span></a>) 上的一系列步骤。每个步骤都保持相同的基本算法，但改变了 tile 的计算或调度方式。</p>
+<p>GEMM 阶梯中的第一个较大的测量跳跃是从 thread 复制平铺路径到 TMA 支持的路径的移动。 TMA 采用 CTA threads 的常规 GMEM -&gt; SMEM 平铺移动，并让 kernel 通过硬件管理的批量复制来馈送 Tensor Cores。</p>
+<p>第一次跳跃之后，主要的改进来自重叠和调度。 TMA 将未来的 tile 带入共享内存。 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 异步运行。 epilogue 耗尽了之前的结果。软件 pipeline 和 warp specialization 排列这些部分，以便硬件引擎同时处于活动状态。</p>
+<p>也没有规定每个中间步骤本身都必须更快。诸如 warp specialization 之类的步骤可能会暂时将资源花费在不会立即提高数量的结构上。如果它能够实现更简单的结构无法表达的后续重叠，那么它仍然可能是正确的步骤。</p>
+<p><img alt="B200 上的 GEMM 优化之旅：从同步平铺基线到 TMA、warp specialization、CTA clusters 和多消费者的测量点执行" src="../_images/gemm_perf.png" /></p>
 </section>
-<section id="overlap-is-the-main-lever">
-<h2>Overlap Is the Main Lever<a class="headerlink" href="#overlap-is-the-main-lever" title="Link to this heading">#</a></h2>
-<p>Once a GEMM is compute-bound and already uses Tensor Cores, the remaining gap usually comes from idle time.</p>
-<p>A simple kernel might do this:</p>
+<section id="id7">
+<h2>重叠是主要杠杆<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
+<p>一旦 GEMM 受到计算限制并且已经使用 Tensor Cores，剩余的间隙通常来自空闲时间。</p>
+<p>一个简单的 kernel 可能会这样做：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>load tile k
 compute tile k
 store tile k
@@ -438,16 +438,16 @@ compute tile k + 1
 store tile k + 1
 </pre></div>
 </div>
-<p>That schedule leaves hardware idle. While the load runs, the Tensor Core waits. While the Tensor Core runs, the copy engine may be idle. While the store drains, both may be waiting.</p>
-<p>A pipelined kernel instead tries to run independent stages together:</p>
+<p>该计划使硬件闲置。当负载运行时，Tensor Core 等待。当 Tensor Core 运行时，复制引擎可能处于空闲状态。当 store 耗尽时，两人可能都在等待。</p>
+<p>相反，pipeline kernel 尝试一起运行独立的阶段：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>load tile k + 1
 compute tile k
 store tile k - 1
 </pre></div>
 </div>
-<p>This is the central idea behind the Blackwell kernel structure used later in the book. TMA handles asynchronous data movement. <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> handles asynchronous Tensor Core work. The epilogue and stores handle the output side. <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> objects connect the stages so that each consumer waits only when the data it needs is actually required.</p>
-<p>The point is not to remove dependencies. The point is to schedule around them. The MMA for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> cannot start until tile <code class="docutils literal notranslate"><span class="pre">k</span></code> is loaded. The epilogue for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> cannot read the accumulator until the MMA for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> is complete. But the load for tile <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">+</span> <span class="pre">1</span></code> can often run while the MMA for tile <code class="docutils literal notranslate"><span class="pre">k</span></code> is in flight, and the store for tile <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">-</span> <span class="pre">1</span></code> can often drain at the same time.</p>
-<p>This is why so many later chapters focus on asynchronous mechanisms:</p>
+<p>这是本书后面使用的 Blackwell kernel 结构背后的中心思想。 TMA 处理异步数据移动。 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 处理异步 Tensor Core 工作。 epilogue 和存储处理输出端。 <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> 对象连接各个阶段，以便每个消费者仅在实际需要其所需数据时等待。</p>
+<p>重点不是删除依赖关系。重点是围绕它们进行安排。在加载 tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 之前，tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 的 MMA 无法启动。在 tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 的 MMA 完成之前，tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 的 epilogue 无法读取累加器。但 tile <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">+</span> <span class="pre">1</span></code> 的负载通常可以在 tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 的 MMA 飞行时运行，并且 tile <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">-</span> <span class="pre">1</span></code> 的存储通常可以同时排水。</p>
+<p>这就是为什么后面很多章节都关注异步机制：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TMA for global memory to shared memory movement
 mbarriers for load completion and resource handoff
 tcgen05 for asynchronous Tensor Core compute
@@ -456,30 +456,30 @@ warp specialization to separate producer and consumer roles
 clusters for larger cooperative tiles and multicast
 </pre></div>
 </div>
-<p>They are different mechanisms, but they serve the same scheduling goal: keep useful work running on more than one hardware path at once.</p>
+<p>它们是不同的机制，但它们服务于相同的调度目标：让有用的工作同时在多个硬件路径上运行。</p>
 </section>
-<section id="occupancy-and-resource-pressure">
-<h2>Occupancy and Resource Pressure<a class="headerlink" href="#occupancy-and-resource-pressure" title="Link to this heading">#</a></h2>
-<p>Overlap is not the only latency-hiding mechanism. The older and more general mechanism is occupancy.</p>
-<p>Occupancy is the amount of work resident on an SM. If one warp stalls, the scheduler can run another warp that is ready. This hides latency by keeping a pool of independent warps available.</p>
-<p>Occupancy is limited by per-SM resources. The main limits are registers, shared memory, warp slots, and CTA slots. A kernel that uses many registers per thread or a large amount of shared memory per CTA may have low occupancy because only a small number of CTAs or warps can fit on the SM.</p>
-<p>Many modern Tensor Core kernels intentionally spend resources in ways that reduce occupancy. Multi-stage shared memory pipelines consume SMEM. Large register fragments consume registers. TMEM allocations consume Tensor Memory capacity. Warp specialization may reserve whole warps for producer or consumer roles.</p>
-<p>The trade is deliberate. Instead of hiding latency by having many unrelated warps resident, these kernels hide latency through explicit overlap inside a smaller number of resident CTAs. A low-occupancy kernel can still be fast if its pipeline keeps TMA, Tensor Cores, and stores busy.</p>
-<p>Neither approach is universally better. Some kernels need high occupancy because they have irregular memory access or limited explicit overlap. Others need deep staging and specialization because that is the only way to feed the Tensor Core efficiently. The right question is not whether occupancy is high. The right question is whether the active hardware units are kept busy.</p>
+<section id="id8">
+<h2>占用和资源压力<a class="headerlink" href="#id8" title="Link to this heading">#</a></h2>
+<p>重叠并不是唯一的延迟隐藏机制。更古老、更通用的机制是占用率。</p>
+<p>占用率是驻留在 SM 上的工作量。如果一个 warp 停止，scheduler 可以运行另一个准备好的 warp。这通过保持独立 warps 池可用来隐藏延迟。</p>
+<p>占用率受每个 SM 资源的限制。主要限制是寄存器、共享内存、warp 插槽和 CTA 插槽。每个 thread 使用多个寄存器或每个 CTA 使用大量共享内存的 kernel 的占用率可能较低，因为 SM 上只能容纳少量的 CTAs 或 warps。</p>
+<p>许多现代的 Tensor Core kernels 故意以减少占用的方式花费资源。多级共享内存 pipeline 消耗 SMEM。大的寄存器片段会消耗寄存器。 TMEM 分配消耗 Tensor Memory 容量。 Warp 专业化可以为生产者或消费者角色保留整个 warps。</p>
+<p>交易是经过深思熟虑的。这些 kernels 不是通过拥有许多不相关的 warps 驻留来隐藏延迟，而是通过在较少数量的驻留 CTAs 内显式重叠来隐藏延迟。如果其 pipeline 保持 TMA、Tensor Cores 和 store 繁忙，则低占用率 kernel 仍然可以很快。</p>
+<p>这两种方法都不是普遍更好的。某些 kernels 需要高占用率，因为它们具有不规则的内存访问或有限的显式重叠。其他人则需要深度分期和专业化，因为这是有效满足 Tensor Core 的唯一方法。正确的问题不是入住率是否高。正确的问题是活动的硬件单元是否保持忙碌。</p>
 </section>
-<section id="what-this-buys-later">
-<h2>What This Buys Later<a class="headerlink" href="#what-this-buys-later" title="Link to this heading">#</a></h2>
-<p>The rest of the book keeps returning to the same diagnosis:</p>
+<section id="id9">
+<h2>这以后能买什么<a class="headerlink" href="#id9" title="Link to this heading">#</a></h2>
+<p>本书的其余部分不断回到相同的诊断：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Which roof is this kernel under?
 What resource is binding?
 What change moves the kernel closer to that roof?
 </pre></div>
 </div>
-<p>For memory-bound kernels, the answer is usually fewer bytes and better bandwidth use. That means fusion, coalescing, vectorized accesses, TMA where applicable, and smaller dtypes.</p>
-<p>For compute-bound GEMM, the answer is Tensor Cores first, then overlap. The kernel has to stage operands, issue asynchronous MMA work, keep the pipeline full, and drain the result without stalling the compute path.</p>
-<p>For Flash Attention, the first move is to raise arithmetic intensity by keeping the score and probability tiles on chip. After that, it uses the same overlap tools as GEMM: tiled data movement, shared memory staging, asynchronous compute, and careful resource handoff.</p>
-<p>This gives a practical workflow for optimization. Estimate arithmetic intensity. Locate the roof. Decide whether the kernel is memory-bound or compute-bound. Then optimize the resource that actually sets the ceiling.</p>
-<p>Without that step, kernel optimization becomes guesswork. With it, each change has a reason: either it raises arithmetic intensity, moves the memory path closer to bandwidth peak, or reduces idle time under the compute roof.</p>
+<p>对于受内存限制的 kernels，答案通常是更少的字节和更好的带宽使用。这意味着融合、合并、矢量化访问、TMA（如果适用）以及更小的数据类型。</p>
+<p>对于计算密集型 GEMM，答案首先是 Tensor Cores，然后重叠。 kernel 必须暂存操作数，发出异步 MMA 工作，保持 pipeline 满载，并在不停止计算路径的情况下排出结果。</p>
+<p>对于 FlashAttention，第一步是通过将分数和概率 tile 保留在芯片上来提高算术强度。之后，它使用与 GEMM 相同的重叠工具：平铺数据移动、共享内存暂存、异步计算和仔细的资源切换。</p>
+<p>这提供了实用的优化工作流程。估计算术强度。找到屋顶。决定 kernel 是受内存限制还是受计算限制。然后优化实际设定上限的资源。</p>
+<p>如果没有这一步，kernel 优化就变成了猜测。有了它，每个变化都有一个原因：要么提高算术强度，使内存路径更接近带宽峰值，要么减少计算范围内的空闲时间。</p>
 </section>
 </section>
 
@@ -500,7 +500,7 @@ What change moves the kernel closer to that roof?
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">GPU Execution Model</p>
+        <p class="prev-next-title">GPU 执行模型</p>
       </div>
     </a>
     <a class="right-next"
@@ -508,7 +508,7 @@ What change moves the kernel closer to that roof?
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Data Layout and Its Notation</p>
+        <p class="prev-next-title">数据 layout 及其表示法</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -530,18 +530,18 @@ What change moves the kernel closer to that roof?
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-roofline-model">The Roofline Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arithmetic-intensity-of-common-workloads">Arithmetic Intensity of Common Workloads</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#elementwise-and-reductions">Elementwise and Reductions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">屋顶线模型</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">常见工作负载的算术强度</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">逐元素和归约</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gemm">GEMM</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attention">Attention</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#when-arithmetic-intensity-is-low">When Arithmetic Intensity Is Low</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-optimization-ladder">The Optimization Ladder</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlap-is-the-main-lever">Overlap Is the Main Lever</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#occupancy-and-resource-pressure">Occupancy and Resource Pressure</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-buys-later">What This Buys Later</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">当算术强度较低时</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">优化阶梯</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">重叠是主要杠杆</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">占用和资源压力</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">这以后能买什么</a></li>
 </ul>
   </nav></div>
 

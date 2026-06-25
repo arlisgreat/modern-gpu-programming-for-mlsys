@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>TIRx Layout API &#8212; Modern GPU Programming For MLSys</title>
+    <title>TIRxlayoutAPI &#8212; Modern GPU Programming For MLSys</title>
   
   
   
@@ -53,8 +53,8 @@
     <link rel="icon" href="../_static/mlc-favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Building a Tiled GEMM" href="../chapter_gemm_basics/index.html" />
-    <link rel="prev" title="Introduction to TIRx" href="../chapter_intro_tirx/index.html" />
+    <link rel="next" title="构建平铺 GEMM" href="../chapter_gemm_basics/index.html" />
+    <link rel="prev" title="TIRx 简介" href="../chapter_intro_tirx/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -150,37 +150,37 @@
 </button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, Understanding the GPU</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU Execution Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">What Makes a Kernel Fast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">Data Layout and Its Notation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core Operand Layouts Across GPU Generations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">Async Data Movement: TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tensor_cores/index.html">Tensor Cores: <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">Special Memory: TMEM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">Async Coordination: mbarriers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_clc/index.html">Advanced: Cluster Launch Control</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">特殊存储器：TMEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">异步协调：mbarriers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_clc/index.html">高级：Cluster Launch Control</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx Overview</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx 概览</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">Introduction to TIRx</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">TIRx Layout API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">TIRx 简介</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">TIRxlayoutAPI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part III, GEMM: Tiled to SOTA</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">Building a Tiled GEMM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">Pipelining GEMM with TMA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">Scaling GEMM with Warp Specialization and Clusters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">构建平铺 GEMM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">将 GEMM 与 TMA 进行 pipeline 处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">通过 Warp 专业化和 cluster 扩展 GEMM</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, Flash Attention 4</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, FlashAttention 4</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">Flash Attention 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">FlashAttention 4</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">Debugging Warp-Specialized Kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">参考</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">调试 Warp 专用内核</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../tirx_guide/arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
 </ul>
@@ -264,7 +264,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>TIRx Layout API</h1>
+    <h1>TIRxlayoutAPI</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -274,28 +274,28 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layouts-by-example">Layouts by Example</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-demo">Interactive Demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layout">layout 示例</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">互动演示</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tilelayout">TileLayout</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shard">Shard</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#replica">Replica</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#offset">Offset</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#putting-the-pieces-together">Putting the Pieces Together</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">碎片</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">复制品</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">偏移量</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">将各个部分组合在一起</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#named-axes">Named Axes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-mapping">Forward Mapping</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-tensor-core-register-tile">Case Study: Tensor Core Register Tile</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-blackwell-tensor-memory">Case Study: Blackwell Tensor Memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scale-factor-layouts">Scale Factor Layouts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ready-made-layouts">Ready-Made Layouts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzlelayout-and-composelayout">SwizzleLayout and ComposeLayout</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-swizzle">Why Swizzle</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-swizzle-transform">The Swizzle Transform</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-swizzle-parameters">Choosing Swizzle Parameters</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bank-and-line-of-an-element">Bank and Line of an Element</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example-128b-swizzle-on-an-8-64-float16-tile">Worked Example: 128B Swizzle on an <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 Tile</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-rationale">Design Rationale</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">命名轴</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">正向映射</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-core">案例研究：Tensor Core 寄存器块</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blackwell-tensor-memory">案例研究：Blackwell Tensor Memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">比例因子 layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">现成的 layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzlelayout-composelayout">SwizzleLayout 和 ComposeLayout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">为什么要调配</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzle">Swizzle 变换</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">选择 Swizzle 参数</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">元素的岸和线</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#float16-tile-128b-swizzle">工作示例：<code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 tile 上的 128B Swizzle</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">设计原理</a></li>
 </ul>
             </nav>
         </div>
@@ -307,32 +307,32 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="tirx-layout-api">
-<span id="chap-tirx-layout-api"></span><h1>TIRx Layout API<a class="headerlink" href="#tirx-layout-api" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="tirxlayoutapi">
+<span id="chap-tirx-layout-api"></span><h1>TIRxlayoutAPI<a class="headerlink" href="#tirxlayoutapi" title="Link to this heading">#</a></h1>
 <div class="overview admonition">
-<p class="admonition-title">Overview</p>
+<p class="admonition-title">概述</p>
 <ul class="simple">
-<li><p>The TIRx layout API turns the layout notation from <a class="reference internal" href="../chapter_data_layout/index.html#chap-data-layout"><span class="std std-ref">Data Layout and Its Notation</span></a> into compiler objects. The main objects are <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>, <code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code>, and <code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> describes affine placement over named hardware axes. It is built from shard specs <code class="docutils literal notranslate"><span class="pre">S[...]</span></code>, replica specs <code class="docutils literal notranslate"><span class="pre">R[...]</span></code>, and optional offsets.</p></li>
-<li><p>A layout maps one logical coordinate to one or more physical coordinates. <code class="docutils literal notranslate"><span class="pre">layout.apply()</span></code> evaluates that mapping.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code> describes the XOR-based shared-memory swizzles used to avoid bank conflicts. <code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code> stacks a swizzle on top of a tile layout.</p></li>
-<li><p>Ready-made constructors such as <code class="docutils literal notranslate"><span class="pre">tmem_datapath_layout</span></code>, <code class="docutils literal notranslate"><span class="pre">tcgen05_atom_layout</span></code>, and <code class="docutils literal notranslate"><span class="pre">wg_local_layout</span></code> cover the hardware layouts that appear repeatedly in kernels.</p></li>
+<li><p>TIRx layout API 将 layout 表示法从 <code class="docutils literal notranslate"><span class="pre">chap_data_layout</span></code> 转换为编译器对象。主要对象为<code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>、<code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code>、<code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code>。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> 描述了指定硬件轴上的仿射放置。它是根据分片规格 <code class="docutils literal notranslate"><span class="pre">S[...]</span></code>、副本规格 <code class="docutils literal notranslate"><span class="pre">R[...]</span></code> 和可选偏移量构建的。</p></li>
+<li><p>layout 将一个逻辑坐标映射到一个或多个物理坐标。 <code class="docutils literal notranslate"><span class="pre">layout.apply()</span></code> 评估该映射。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code> 描述了用于避免 bank 冲突的基于 XOR 的共享内存 swizzles。 <code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code> 将 swizzle 堆叠在 tile layout 的顶部。</p></li>
+<li><p>现成的构造函数如 <code class="docutils literal notranslate"><span class="pre">tmem_datapath_layout</span></code>、<code class="docutils literal notranslate"><span class="pre">tcgen05_atom_layout</span></code> 和 <code class="docutils literal notranslate"><span class="pre">wg_local_layout</span></code> 覆盖了 kernels 中重复出现的硬件 layouts。</p></li>
 </ul>
 </div>
-<p><a class="reference internal" href="../chapter_data_layout/index.html#chap-data-layout"><span class="std std-ref">Data Layout and Its Notation</span></a> introduced the notation used throughout this book: a tile shape, a set of strides over named axes, and an optional replication term for values that are copied rather than partitioned. This chapter turns that notation into the API used by the compiler.</p>
-<p>The goal is that the notation on the page and the code in the kernel look almost the same. When you write a layout such as:</p>
+<p><a class="reference internal" href="../chapter_data_layout/index.html#chap-data-layout"><span class="std std-ref">数据 layout 及其表示法</span></a> 介绍了本书中使用的符号：平铺形状、命名轴上的一组步幅以及用于复制而不是分区的值的可选复制术语。本章将这种表示法转化为编译器使用的 API。</p>
+<p>目标是页面上的符号和 kernel 中的代码看起来几乎相同。当您编写 layout 时，例如：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">S</span><span class="p">[(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="nd">@TLane</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@TCol</span><span class="p">)]</span>
 </pre></div>
 </div>
-<p>you are not just writing an explanation. You are constructing a <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> object that can be attached to a buffer. After that, every tile operation that touches the buffer can read its placement from the layout. The placement is written once, checked once, and reused by the compiler.</p>
-<p>A layout is attached either when allocating from a pool or when declaring a buffer:</p>
+<p>你不只是写一个解释。您正在构造一个可以附加到缓冲区的 <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> 对象。之后，每个接触缓冲区的 tile 操作都可以从 layout 读取其位置。该 layout 写入一次，检查一次，并由编译器重用。</p>
+<p>当从池中分配或声明缓冲区时，会附加 layout：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pool</span><span class="o">.</span><span class="n">alloc</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
 
 <span class="n">T</span><span class="o">.</span><span class="n">decl_buffer</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>From that point on, the buffer carries its physical placement. The tile operations do not need to repeat where each element lives.</p>
-<p>The layout objects live in one module:</p>
+<p>从那时起，缓冲区就开始了它的物理放置。平铺操作不需要重复每个元素所在的位置。</p>
+<p>layout 对象位于一个模块中：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">TileLayout</span><span class="p">,</span>
     <span class="n">SwizzleLayout</span><span class="p">,</span>
@@ -350,41 +350,41 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>There is one central idea behind the API. A layout does not have to map a logical index to a single physical address. It maps a logical index to a set of physical coordinates over named axes. In the usual case that set has one element. When replication is present, the same logical element has several physical placements.</p>
-<p>This is why the layout model has three pieces: shard, replica, and offset. The shard places the element. The replica copies it to additional coordinates. The offset shifts the whole placement.</p>
-<section id="layouts-by-example">
-<h2>Layouts by Example<a class="headerlink" href="#layouts-by-example" title="Link to this heading">#</a></h2>
-<p>The examples below show the basic shape of the API.</p>
-<p>An accumulator in TMEM can be written as a direct placement over the TMEM axes:</p>
+<p>API 背后有一个中心思想。 layout 不必将逻辑索引映射到单个物理地址。它将逻辑索引映射到命名轴上的一组物理坐标。在通常情况下，该集合只有一个元素。当存在复制时，同一逻辑元素具有多个物理位置。</p>
+<p>这就是为什么 layout 模型具有三部分：分片、副本和偏移量。分片放置元素。副本将其复制到其他坐标。偏移会改变整个位置。</p>
+<section id="layout">
+<h2>layout 示例<a class="headerlink" href="#layout" title="Link to this heading">#</a></h2>
+<p>下面的示例显示了 API 的基本形式。</p>
+<p>TMEM 中的累加器可以直接放置在 TMEM 轴上：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">acc</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="nd">@TLane</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@TCol</span><span class="p">)])</span>
 </pre></div>
 </div>
-<p>Here the logical row maps to <code class="docutils literal notranslate"><span class="pre">TLane</span></code>, and the logical column maps to <code class="docutils literal notranslate"><span class="pre">TCol</span></code>. In <a class="reference internal" href="../chapter_tmem/index.html#chap-tmem"><span class="std std-ref">Special Memory: TMEM</span></a>, the hardware coordinates are called Lane and Col. In the TIRx layout notation, those hardware axes are written as <code class="docutils literal notranslate"><span class="pre">TLane</span></code> and <code class="docutils literal notranslate"><span class="pre">TCol</span></code>.</p>
-<p>A block-scaled MMA scale-factor layout uses replication:</p>
+<p>这里逻辑行映射到<code class="docutils literal notranslate"><span class="pre">TLane</span></code>，逻辑列映射到<code class="docutils literal notranslate"><span class="pre">TCol</span></code>。在<code class="docutils literal notranslate"><span class="pre">chap_tmem</span></code>中，硬件坐标称为 Lane 和 Col。在 TIRx layout 表示法中，这些硬件轴被写为<code class="docutils literal notranslate"><span class="pre">TLane</span></code>和<code class="docutils literal notranslate"><span class="pre">TCol</span></code>。</p>
+<p>block-scaled MMA 比例因子 layout 使用复制：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scale_factor_layout</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span>
     <span class="n">S</span><span class="p">[(</span><span class="mi">32</span><span class="p">,</span> <span class="n">sf_per_mma</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="nd">@TLane</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@TCol</span><span class="p">)]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">4</span> <span class="p">:</span> <span class="mi">32</span><span class="nd">@TLane</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The shard places a 32-row group in TMEM. The replica repeats that group four times at a stride of 32 lanes, so the 32-row group is visible across the full 128-lane TMEM space.</p>
-<p>A tensor-core register fragment can be distributed across lanes and warps:</p>
+<p>该分片在 TMEM 中放置了一个 32 行组。副本以 32 lane 的跨度重复该组四次，因此 32 行组在整个 128 lane TMEM 空间中可见。</p>
+<p>Tensor Core register fragment 可以分布在 lanes 和 warps 上：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frag</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span>
     <span class="n">S</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@warpid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The same physical axis can appear more than once. In this example, two different iters both contribute to <code class="docutils literal notranslate"><span class="pre">laneid</span></code>. A stride without an explicit axis uses the default memory axis <code class="docutils literal notranslate"><span class="pre">m</span></code>.</p>
-<p>In real kernels, common hardware layouts usually come from constructors:</p>
+<p>同一物理轴可以出现多次。在此示例中，两个不同的 iter 都对 <code class="docutils literal notranslate"><span class="pre">laneid</span></code> 做出贡献。没有显式轴的步幅使用默认内存轴 <code class="docutils literal notranslate"><span class="pre">m</span></code>。</p>
+<p>在真实的 kernels 中，常见的硬件 layouts 通常来自构造函数：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">acc</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
 
 <span class="n">ld</span> <span class="o">=</span> <span class="n">tcgen05_atom_layout</span><span class="p">(</span><span class="s2">&quot;32x32b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>These constructors return ordinary <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> objects. They are conveniences, not a separate mechanism. You can inspect the returned layout, compose it with other layouts, or write the underlying <code class="docutils literal notranslate"><span class="pre">S[...]</span></code> and <code class="docutils literal notranslate"><span class="pre">R[...]</span></code> form by hand when a shape is unusual.</p>
+<p>这些构造函数返回普通的 <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> 对象。它们是一种便利，而不是一个单独的机制。您可以检查返回的 layout，将其与其他 layouts 组合，或者当形状不寻常时手写底层<code class="docutils literal notranslate"><span class="pre">S[...]</span></code>和<code class="docutils literal notranslate"><span class="pre">R[...]</span></code>形式。</p>
 </section>
-<section id="interactive-demo">
-<h2>Interactive Demo<a class="headerlink" href="#interactive-demo" title="Link to this heading">#</a></h2>
-<p>Before the mechanics, it helps to have something concrete to poke at. The demo below lets you choose a preset layout, edit the logical shape and the <code class="docutils literal notranslate"><span class="pre">S</span></code> or <code class="docutils literal notranslate"><span class="pre">R</span></code> terms, choose a dtype and swizzle mode, and click an element to see which physical coordinate or coordinates own it.</p>
+<section id="id1">
+<h2>互动演示<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>在研究机制之前，先了解一些具体的东西是有帮助的。下面的演示允许您选择预设 layout，编辑逻辑形状和 <code class="docutils literal notranslate"><span class="pre">S</span></code> 或 <code class="docutils literal notranslate"><span class="pre">R</span></code> 术语，选择数据类型和 swizzle 模式，然后单击一个元素以查看哪个或哪些物理坐标拥有它。</p>
 <p>
   <a class="reference external" href="../_static/tirx-layout-demo/index.html"
      target="_blank" rel="noopener"
@@ -408,69 +408,69 @@
     if (f && e.source === f.contentWindow) f.style.height = d.height + 'px';
   });
 })();
-</script><p>The demo is useful because most of the API is just a precise version of what the demo shows. A logical element enters the layout. The layout flattens it, splits it across its iters, accumulates coordinates on named axes, and then applies replication if needed.</p>
+</script><p>该演示非常有用，因为大多数 API 只是演示所显示内容的精确版本。逻辑元素进入 layout。 layout 将其展平，将其拆分为其迭代，在命名轴上累积坐标，然后在需要时应用复制。</p>
 </section>
 <section id="tilelayout">
 <h2>TileLayout<a class="headerlink" href="#tilelayout" title="Link to this heading">#</a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> is the main affine layout object. It is usually written with the same notation used in the text:</p>
+<p><code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> 是主要仿射 layout 对象。通常使用与文本中使用的相同的符号来编写：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="n">shape</span> <span class="p">:</span> <span class="n">strides</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">S</span></code> term is the shard spec. You can read it as: take a logical tile of this shape and place it using these strides over named axes.</p>
-<p>When a value needs to appear in multiple places, the shard spec is extended with a replica spec:</p>
+<p><code class="docutils literal notranslate"><span class="pre">S</span></code> 术语是分片规范。您可以将其解读为：采用此形状的逻辑 tile，并使用这些步幅将其放置在命名轴上。</p>
+<p>当一个值需要出现在多个位置时，分片规范将使用副本规范进行扩展：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="n">shape</span> <span class="p">:</span> <span class="n">strides</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="n">replica_shape</span> <span class="p">:</span> <span class="n">replica_stride</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>An optional offset can also be added:</p>
+<p>还可以添加可选的偏移量：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="n">shape</span> <span class="p">:</span> <span class="n">strides</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="n">replica_shape</span> <span class="p">:</span> <span class="n">replica_stride</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Under the surface, these pieces are represented by iters. An iter is a triple:</p>
+<p>在表面之下，这些片段由 iters 表示。 iter 是一个三元组：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(extent, stride, axis)
 </pre></div>
 </div>
-<p>It describes a strided walk over one named axis. The extent tells how many positions the iter has. The stride tells how far each step moves. The axis tells which hardware coordinate is being changed.</p>
-<p>A layout has three parts.</p>
-<section id="shard">
-<h3>Shard<a class="headerlink" href="#shard" title="Link to this heading">#</a></h3>
-<p>The shard, or <code class="docutils literal notranslate"><span class="pre">D</span></code>, is the part built by <code class="docutils literal notranslate"><span class="pre">S[...]</span></code>. It partitions the logical index across one or more iters and produces the base physical coordinate.</p>
-<p>For example:</p>
+<p>它描述了在一个指定轴上的跨步行走。范围表示 iter 有多少个位置。步幅表示每一步移动的距离。该轴指示正在更改哪个硬件坐标。</p>
+<p>layout 具有三个部分。</p>
+<section id="id2">
+<h3>碎片<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>分片或 <code class="docutils literal notranslate"><span class="pre">D</span></code> 是由 <code class="docutils literal notranslate"><span class="pre">S[...]</span></code> 构建的部分。它将逻辑索引划分为一个或多个迭代并生成基本物理坐标。</p>
+<p>例如：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">S</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@warpid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
 </pre></div>
 </div>
-<p>has four shard iters. Their extents are <code class="docutils literal notranslate"><span class="pre">8</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">4</span></code>, and <code class="docutils literal notranslate"><span class="pre">2</span></code>. Their strides place data on <code class="docutils literal notranslate"><span class="pre">laneid</span></code>, <code class="docutils literal notranslate"><span class="pre">warpid</span></code>, <code class="docutils literal notranslate"><span class="pre">laneid</span></code> again, and the default memory axis <code class="docutils literal notranslate"><span class="pre">m</span></code>.</p>
-<p>This generalizes the ordinary shape-and-stride rule. The difference is that the strides are attached to named hardware axes instead of to a single flat address.</p>
+<p>有四个分片 iter。它们的范围是 <code class="docutils literal notranslate"><span class="pre">8</span></code>、<code class="docutils literal notranslate"><span class="pre">2</span></code>、<code class="docutils literal notranslate"><span class="pre">4</span></code> 和 <code class="docutils literal notranslate"><span class="pre">2</span></code>。他们的步幅再次将数据放置在 <code class="docutils literal notranslate"><span class="pre">laneid</span></code>、<code class="docutils literal notranslate"><span class="pre">warpid</span></code>、<code class="docutils literal notranslate"><span class="pre">laneid</span></code> 以及默认内存轴 <code class="docutils literal notranslate"><span class="pre">m</span></code> 上。</p>
+<p>这概括了普通的形状和步幅规则。不同之处在于步幅附加到命名的硬件轴而不是单个平面地址。</p>
 </section>
-<section id="replica">
-<h3>Replica<a class="headerlink" href="#replica" title="Link to this heading">#</a></h3>
-<p>The replica, or <code class="docutils literal notranslate"><span class="pre">R</span></code>, describes additional physical copies of the same logical element. The replica iters are independent of the logical index. They enumerate extra offsets in hardware space.</p>
-<p>For example:</p>
+<section id="id3">
+<h3>复制品<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<p>副本或 <code class="docutils literal notranslate"><span class="pre">R</span></code> 描述同一逻辑元素的附加物理副本。副本迭代独立于逻辑索引。它们枚举硬件空间中的额外偏移量。</p>
+<p>例如：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">R</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="mi">4</span><span class="nd">@warpid</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>creates two copies separated by four warps on the <code class="docutils literal notranslate"><span class="pre">warpid</span></code> axis.</p>
-<p>Replication is not a trick for convenience. It describes real hardware behavior. Some data is broadcast across warps, lanes, or memory regions. A logical-to-physical mapping naturally supports that because one logical element can map to a set of physical coordinates.</p>
+<p>在 <code class="docutils literal notranslate"><span class="pre">warpid</span></code> 轴上创建由四个 warps 分隔的两个副本。</p>
+<p>复制并不是为了方便而采取的伎俩。它描述了真实的硬件行为。一些数据跨 warps、lane 或内存区域广播。逻辑到物理的映射自然支持这一点，因为一个逻辑元素可以映射到一组物理坐标。</p>
 </section>
-<section id="offset">
-<h3>Offset<a class="headerlink" href="#offset" title="Link to this heading">#</a></h3>
-<p>The offset, or <code class="docutils literal notranslate"><span class="pre">O</span></code>, is a fixed coordinate added to every result.</p>
-<p>For example:</p>
+<section id="id4">
+<h3>偏移量<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<p>偏移量或 <code class="docutils literal notranslate"><span class="pre">O</span></code> 是添加到每个结果的固定坐标。</p>
+<p>例如：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span><span class="nd">@warpid</span>
 </pre></div>
 </div>
-<p>shifts the whole placement by five on the <code class="docutils literal notranslate"><span class="pre">warpid</span></code> axis.</p>
-<p>Offsets are used to place a tile at a chosen base coordinate, reserve a region for exclusive use, or describe a tile that starts after another tile in the same resource.</p>
+<p>将 <code class="docutils literal notranslate"><span class="pre">warpid</span></code> 轴上的整个 layout 移动五倍。</p>
+<p>偏移量用于将 tile 放置在选定的基坐标处、保留专用区域或描述在同一资源中的另一个 tile 之后开始的 tile。</p>
 </section>
-<section id="putting-the-pieces-together">
-<h3>Putting the Pieces Together<a class="headerlink" href="#putting-the-pieces-together" title="Link to this heading">#</a></h3>
-<p>A layout applies these three parts in order.</p>
-<p>First, the shard computes the base coordinate. Then the replica fans that coordinate out into zero or more additional copies. Finally, the offset shifts every coordinate.</p>
-<p>For a logical coordinate <code class="docutils literal notranslate"><span class="pre">x</span></code>, the result is:</p>
+<section id="id5">
+<h3>将各个部分组合在一起<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<p>layout 按顺序应用这三个部分。</p>
+<p>首先，分片计算基础坐标。然后副本扇形协调成零个或多个附加副本。最后，偏移量会移动每个坐标。</p>
+<p>对于逻辑坐标 <code class="docutils literal notranslate"><span class="pre">x</span></code>，结果为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>L(x) = { D(x) + r + O | r in R }
 </pre></div>
 </div>
-<p>If there is no replica, <code class="docutils literal notranslate"><span class="pre">R</span></code> contains only the zero offset, so the result is a singleton set. If there is a replica, the result contains one coordinate for each replica position.</p>
-<p>In TIRx syntax, a full layout can look like this:</p>
+<p>如果没有副本，<code class="docutils literal notranslate"><span class="pre">R</span></code> 仅包含零偏移量，因此结果是单例集。如果存在副本，则结果包含每个副本位置的一个坐标。</p>
+<p>在 TIRx 语法中，完整的 layout 可能如下所示：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layout</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span>
     <span class="n">S</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@warpid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
     <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="mi">4</span><span class="nd">@warpid</span><span class="p">]</span>
@@ -478,18 +478,18 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Read left to right, the shard places the logical tile, the replica creates a second copy four warp IDs away, and the offset shifts the whole placement to start at <code class="docutils literal notranslate"><span class="pre">warpid</span> <span class="pre">=</span> <span class="pre">5</span></code>.</p>
-<p>If the iters have already been built as objects, the same layout can be constructed directly:</p>
+<p>从左到右读取，分片放置逻辑块，副本在四个 warp ID 之外创建第二个副本，并且偏移量将整个放置移动到从 <code class="docutils literal notranslate"><span class="pre">warpid</span> <span class="pre">=</span> <span class="pre">5</span></code> 开始。</p>
+<p>如果迭代器已经构建为对象，则可以直接构建相同的 layout：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TileLayout</span><span class="o">.</span><span class="n">from_iters</span><span class="p">(</span><span class="n">shard</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Most user code uses the <code class="docutils literal notranslate"><span class="pre">S[...]</span></code> and <code class="docutils literal notranslate"><span class="pre">R[...]</span></code> notation because it is closer to the mathematical form.</p>
+<p>大多数用户代码使用 <code class="docutils literal notranslate"><span class="pre">S[...]</span></code> 和 <code class="docutils literal notranslate"><span class="pre">R[...]</span></code> 表示法，因为它更接近数学形式。</p>
 </section>
 </section>
-<section id="named-axes">
-<h2>Named Axes<a class="headerlink" href="#named-axes" title="Link to this heading">#</a></h2>
-<p>The axes in a layout are not anonymous dimensions. Each axis names a real hardware coordinate or a compiler-level placement coordinate.</p>
-<p>Examples include:</p>
+<section id="id6">
+<h2>命名轴<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<p>layout 中的轴不是匿名尺寸。每个轴命名一个真实的硬件坐标或编译器级放置坐标。</p>
+<p>示例包括：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bx, by, bz
 cbx, cby, cbz
 tx
@@ -504,29 +504,29 @@ Bank
 TLane, TCol
 </pre></div>
 </div>
-<p>Grid axes such as <code class="docutils literal notranslate"><span class="pre">bx</span></code>, <code class="docutils literal notranslate"><span class="pre">by</span></code>, and <code class="docutils literal notranslate"><span class="pre">bz</span></code> place work across CTAs. Cluster axes such as <code class="docutils literal notranslate"><span class="pre">cbx</span></code>, <code class="docutils literal notranslate"><span class="pre">cby</span></code>, and <code class="docutils literal notranslate"><span class="pre">cbz</span></code> place work within a CTA cluster. Thread axes such as <code class="docutils literal notranslate"><span class="pre">tx</span></code>, <code class="docutils literal notranslate"><span class="pre">warpid</span></code>, <code class="docutils literal notranslate"><span class="pre">laneid</span></code>, <code class="docutils literal notranslate"><span class="pre">tid_in_wg</span></code>, and <code class="docutils literal notranslate"><span class="pre">wid_in_wg</span></code> describe ownership inside a CTA or warpgroup. The axis <code class="docutils literal notranslate"><span class="pre">m</span></code> is the default linear memory axis. <code class="docutils literal notranslate"><span class="pre">P</span></code> and <code class="docutils literal notranslate"><span class="pre">F</span></code> are used for two-dimensional scratchpad-style placement. <code class="docutils literal notranslate"><span class="pre">Bank</span></code> names shared memory banks. <code class="docutils literal notranslate"><span class="pre">TLane</span></code> and <code class="docutils literal notranslate"><span class="pre">TCol</span></code> are the TIRx layout names for the TMEM Lane and Col coordinates.</p>
-<p>The axis name is part of the layout. This matters because two coordinates with the same integer value can mean different hardware things. <code class="docutils literal notranslate"><span class="pre">1&#64;tx</span></code> is not the same as <code class="docutils literal notranslate"><span class="pre">1&#64;tid_in_wg</span></code>. <code class="docutils literal notranslate"><span class="pre">1&#64;laneid</span></code> is not the same as <code class="docutils literal notranslate"><span class="pre">1&#64;TLane</span></code>. The layout keeps those meanings explicit.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bx</span></code>、<code class="docutils literal notranslate"><span class="pre">by</span></code> 和 <code class="docutils literal notranslate"><span class="pre">bz</span></code> 等网格轴在 CTAs 上工作。 <code class="docutils literal notranslate"><span class="pre">cbx</span></code>、<code class="docutils literal notranslate"><span class="pre">cby</span></code> 和 <code class="docutils literal notranslate"><span class="pre">cbz</span></code> 等 cluster 轴将工作置于 CTA cluster 内。 <code class="docutils literal notranslate"><span class="pre">tx</span></code>、<code class="docutils literal notranslate"><span class="pre">warpid</span></code>、<code class="docutils literal notranslate"><span class="pre">laneid</span></code>、<code class="docutils literal notranslate"><span class="pre">tid_in_wg</span></code> 和 <code class="docutils literal notranslate"><span class="pre">wid_in_wg</span></code> 等螺纹轴描述了 CTA 或 warpgroup 内部的所有权。轴 <code class="docutils literal notranslate"><span class="pre">m</span></code> 是默认的线性记忆轴。 <code class="docutils literal notranslate"><span class="pre">P</span></code> 和 <code class="docutils literal notranslate"><span class="pre">F</span></code> 用于二维暂存器式放置。 <code class="docutils literal notranslate"><span class="pre">Bank</span></code> 命名共享内存组。 <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 和 <code class="docutils literal notranslate"><span class="pre">TCol</span></code> 是 TMEM Lane 和 Col 坐标的 TIRx layout 名称。</p>
+<p>轴名称是 layout 的一部分。这很重要，因为具有相同整数值的两个坐标可能意味着不同的硬件事物。 <code class="docutils literal notranslate"><span class="pre">1&#64;tx</span></code> 与 <code class="docutils literal notranslate"><span class="pre">1&#64;tid_in_wg</span></code> 不同。 <code class="docutils literal notranslate"><span class="pre">1&#64;laneid</span></code> 与 <code class="docutils literal notranslate"><span class="pre">1&#64;TLane</span></code> 不同。 layout 使这些含义保持明确。</p>
 </section>
-<section id="forward-mapping">
-<h2>Forward Mapping<a class="headerlink" href="#forward-mapping" title="Link to this heading">#</a></h2>
-<p>Evaluating a layout means taking a logical coordinate and computing where it lands physically. The API method is:</p>
+<section id="id7">
+<h2>正向映射<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
+<p>评估 layout 意味着获取逻辑坐标并计算其物理着陆位置。 API 方法是：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layout</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="o">*</span><span class="n">coord</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For a layout without replication, the result is one coordinate dictionary. With replication, the result is a set of coordinate dictionaries. A coordinate dictionary maps axis names to integer positions, such as:</p>
+<p>对于没有复制的 layout，结果是一个坐标字典。通过复制，结果是一组坐标字典。坐标字典将轴名称映射到整数位置，例如：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;laneid&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;warpid&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;m&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>The evaluation rule has four steps.</p>
-<p>First, flatten the logical coordinate in row-major order. For a logical coordinate:</p>
+<p>评估规则有四个步骤。</p>
+<p>首先，按行优先顺序展平逻辑坐标。对于逻辑坐标：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x = (x0, x1, ..., xr-1)
 </pre></div>
 </div>
-<p>inside a logical shape:</p>
+<p>在逻辑形状内：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(S0, S1, ..., Sr-1)
 </pre></div>
 </div>
-<p>the flat index is:</p>
+<p>平坦指数为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>flat = x0 * S1 * S2 * ... * Sr-1
      + x1 * S2 * ... * Sr-1
      + ...
@@ -534,26 +534,26 @@ TLane, TCol
      + xr-1
 </pre></div>
 </div>
-<p>Second, split that flat index across the shard extents. If the shard extents are:</p>
+<p>其次，将该扁平索引拆分到分片范围内。如果分片范围是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(e0, e1, ..., en-1)
 </pre></div>
 </div>
-<p>then the split produces components:</p>
+<p>然后分割产生组件：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>c0, c1, ..., cn-1
 </pre></div>
 </div>
-<p>using the same row-major order over the shard extents.</p>
-<p>Third, accumulate each component onto its axis using its stride. If shard iter <code class="docutils literal notranslate"><span class="pre">k</span></code> has extent <code class="docutils literal notranslate"><span class="pre">ek</span></code>, stride <code class="docutils literal notranslate"><span class="pre">sk</span></code>, and axis <code class="docutils literal notranslate"><span class="pre">ak</span></code>, then component <code class="docutils literal notranslate"><span class="pre">ck</span></code> contributes:</p>
+<p>在分片范围上使用相同的行主顺序。</p>
+<p>第三，使用其步幅将每个组件累积到其轴上。如果分片 iter <code class="docutils literal notranslate"><span class="pre">k</span></code> 具有范围 <code class="docutils literal notranslate"><span class="pre">ek</span></code>、步长 <code class="docutils literal notranslate"><span class="pre">sk</span></code> 和轴 <code class="docutils literal notranslate"><span class="pre">ak</span></code>，则组件 <code class="docutils literal notranslate"><span class="pre">ck</span></code> 贡献：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ck * sk @ ak
 </pre></div>
 </div>
-<p>All contributions to the same axis are added together. The offset is then added.</p>
-<p>Fourth, apply the replica iters. Each replica iter contributes an additional offset independent of the logical coordinate. If there are several replica iters, the layout enumerates all combinations.</p>
-<p>One useful consequence of this rule is that the layout does not need to hard-code the input shape. What it needs is that the logical tile has the same total number of elements as the product of the shard extents. Once that holds, flattening and splitting define the mapping.</p>
+<p>对同一轴的所有贡献都加在一起。然后添加偏移量。</p>
+<p>第四，应用副本迭代器。每个副本迭代器都会贡献一个独立于逻辑坐标的附加偏移量。如果有多个副本迭代器，则 layout 枚举所有组合。</p>
+<p>此规则的一个有用结果是 layout 不需要对输入形状进行硬编码。它需要的是逻辑 tile 的元素总数与分片范围的乘积相同。一旦成立，展平和分割就定义了映射。</p>
 </section>
-<section id="case-study-tensor-core-register-tile">
-<h2>Case Study: Tensor Core Register Tile<a class="headerlink" href="#case-study-tensor-core-register-tile" title="Link to this heading">#</a></h2>
-<p>Consider a logical <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">16)</span></code> tile distributed across two warps of 32 lanes each. Each lane owns a small register fragment. The register slot is represented by the default memory axis <code class="docutils literal notranslate"><span class="pre">m</span></code>.</p>
+<section id="tensor-core">
+<h2>案例研究：Tensor Core 寄存器块<a class="headerlink" href="#tensor-core" title="Link to this heading">#</a></h2>
+<p>考虑一个逻辑 <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">16)</span></code> 区块分布在两个 warps（各 32 个 lane）上。每个 lane 拥有一个小的寄存器片段。寄存器槽由默认内存轴 <code class="docutils literal notranslate"><span class="pre">m</span></code> 表示。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layout</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span>
     <span class="n">S</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@warpid</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
     <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="mi">4</span><span class="nd">@warpid</span><span class="p">]</span>
@@ -561,149 +561,149 @@ TLane, TCol
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Take a logical element <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">j)</span></code> from the <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">16)</span></code> tile.</p>
-<p>The row-major flat index is:</p>
+<p>从 <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">16)</span></code> tile 中获取逻辑元素 <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">j)</span></code>。</p>
+<p>行主平坦索引为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>flat = 16 * i + j
 </pre></div>
 </div>
-<p>Splitting by the shard extents <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">2)</span></code> gives:</p>
+<p>按分片范围 <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">2)</span></code> 进行拆分得出：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>c0 = i
 c1 = floor(j / 8)
 c2 = floor(j / 2) mod 4
 c3 = j mod 2
 </pre></div>
 </div>
-<p>The shard contributions are:</p>
+<p>分片贡献为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>laneid = 4 * c0 + c2
 warpid = c1
 m      = c3
 </pre></div>
 </div>
-<p>After adding the offset <code class="docutils literal notranslate"><span class="pre">5&#64;warpid</span></code>, this becomes:</p>
+<p>添加偏移量 <code class="docutils literal notranslate"><span class="pre">5&#64;warpid</span></code> 后，变为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>laneid = 4 * i + floor(j / 2) mod 4
 warpid = floor(j / 8) + 5
 m      = j mod 2
 </pre></div>
 </div>
-<p>The replica term:</p>
+<p>复制品术语：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">R</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="mi">4</span><span class="nd">@warpid</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>adds either <code class="docutils literal notranslate"><span class="pre">0</span></code> or <code class="docutils literal notranslate"><span class="pre">4</span></code> to <code class="docutils literal notranslate"><span class="pre">warpid</span></code>. So the full mapping is:</p>
+<p>将 <code class="docutils literal notranslate"><span class="pre">0</span></code> 或 <code class="docutils literal notranslate"><span class="pre">4</span></code> 添加到 <code class="docutils literal notranslate"><span class="pre">warpid</span></code>。所以完整的映射是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>laneid = 4 * i + floor(j / 2) mod 4
 warpid = floor(j / 8) + 5 + 4 * r, where r in {0, 1}
 m      = j mod 2
 </pre></div>
 </div>
-<p>The shard places the tile on warps 5 and 6. The replica then copies it to warps 9 and 10. The same logical element therefore appears in two warp positions.</p>
-<p>This example shows why the model uses a set of physical coordinates. Replication is not naturally represented by a function from physical coordinate to logical coordinate. It is naturally represented by a function from one logical coordinate to several physical coordinates.</p>
+<p>分片将 tile 放置在 warps 5 和 6 上。副本然后将其复制到 warps 9 和 10。因此，相同的逻辑元素出现在两个 warp 位置中。</p>
+<p>此示例说明了模型使用一组物理坐标的原因。复制并不自然地用从物理坐标到逻辑坐标的函数来表示。它很自然地用从一个逻辑坐标到几个物理坐标的函数来表示。</p>
 </section>
-<section id="case-study-blackwell-tensor-memory">
-<h2>Case Study: Blackwell Tensor Memory<a class="headerlink" href="#case-study-blackwell-tensor-memory" title="Link to this heading">#</a></h2>
-<p>The same layout model works for memory placement. The axes do not have to be thread axes. They can be memory axes.</p>
-<p>TMEM is addressed by hardware Lane and Col coordinates. In the TIRx layout notation, those axes are written as <code class="docutils literal notranslate"><span class="pre">TLane</span></code> and <code class="docutils literal notranslate"><span class="pre">TCol</span></code>.</p>
-<p>Consider this layout:</p>
+<section id="blackwell-tensor-memory">
+<h2>案例研究：Blackwell Tensor Memory<a class="headerlink" href="#blackwell-tensor-memory" title="Link to this heading">#</a></h2>
+<p>相同的 layout 模型适用于内存 layout。这些轴不必是 thread 轴。它们可以是记忆轴。</p>
+<p>TMEM 通过硬件 Lane 和 Col 坐标进行寻址。在 TIRx layout 表示法中，这些轴被写为 <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 和 <code class="docutils literal notranslate"><span class="pre">TCol</span></code>。</p>
+<p>考虑这个 layout：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layout</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span>
     <span class="n">S</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">112</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">112</span><span class="nd">@TCol</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@TLane</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@TCol</span><span class="p">)]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>If the logical tile shape is <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">128,</span> <span class="pre">112)</span></code>, the split components are just the logical coordinates themselves. For element <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">l,</span> <span class="pre">c)</span></code>, the mapping is:</p>
+<p>如果逻辑 tile shape 是 <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">128,</span> <span class="pre">112)</span></code>，则分割组件只是逻辑坐标本身。对于元素 <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">l,</span> <span class="pre">c)</span></code>，映射为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TLane = l
 TCol  = 112 * a + c
 </pre></div>
 </div>
-<p>The extent-128 iter with stride <code class="docutils literal notranslate"><span class="pre">1&#64;TLane</span></code> fills the 128 TMEM Lane rows. The extent-2 iter with stride <code class="docutils literal notranslate"><span class="pre">112&#64;TCol</span></code> and the extent-112 iter with stride <code class="docutils literal notranslate"><span class="pre">1&#64;TCol</span></code> together cover 224 columns:</p>
+<p>步幅为 <code class="docutils literal notranslate"><span class="pre">1&#64;TLane</span></code> 的范围为 128 的 iter 填充了 128 TMEM Lane 行。跨度为 <code class="docutils literal notranslate"><span class="pre">112&#64;TCol</span></code> 的范围为 2 的迭代器和跨度为 <code class="docutils literal notranslate"><span class="pre">1&#64;TCol</span></code> 的范围为 112 的迭代器总共覆盖 224 列：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TCol in [0, 224)
 </pre></div>
 </div>
-<p>The 224-column span is intentional. TMEM layouts do not have to be powers of two. A block-scaled FP8 GEMM may choose a 224-column accumulator because a full 256-column tile would not leave enough TMEM capacity for two accumulator stages plus scale factors. The layout API can express that shape directly.</p>
+<p>224 列跨度是有意为之的。 TMEM layouts 不必是 2 的幂。 block-scaled FP8 GEMM 可以选择 224 列累加器，因为完整的 256 列 tile 不会为两个累加器级加上比例因子留下足够的 TMEM 容量。 layout API 可以直接表达该形状。</p>
 </section>
-<section id="scale-factor-layouts">
-<h2>Scale Factor Layouts<a class="headerlink" href="#scale-factor-layouts" title="Link to this heading">#</a></h2>
-<p>The accumulator layout above is a pure placement. Each logical accumulator element maps to one TMEM coordinate. Scale factors for block-scaled MMA are different because the same physical group may need to be visible across several warp windows. This is where replication becomes useful.</p>
-<p>A compact scale-factor layout can be written as:</p>
+<section id="id8">
+<h2>比例因子 layout<a class="headerlink" href="#id8" title="Link to this heading">#</a></h2>
+<p>上面的累加器 layout 是纯粹的放置。每个逻辑累加器元素映射到一个 TMEM 坐标。 block-scaled MMA 的比例因子不同，因为同一物理组可能需要在多个 warp 窗口中可见。这就是复制发挥作用的地方。</p>
+<p>紧凑比例因子 layout 可写为：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scale</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span>
     <span class="n">S</span><span class="p">[(</span><span class="mi">32</span><span class="p">,</span> <span class="n">sf_per_mma</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="nd">@TLane</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@TCol</span><span class="p">)]</span>
     <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">4</span> <span class="p">:</span> <span class="mi">32</span><span class="nd">@TLane</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The shard places a 32-row scale-factor group in TMEM:</p>
+<p>分片在 TMEM 中放置一个 32 行比例因子组：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TLane = r
 TCol  = s
 </pre></div>
 </div>
-<p>for a logical scale coordinate <code class="docutils literal notranslate"><span class="pre">(r,</span> <span class="pre">s)</span></code>.</p>
-<p>The replica term creates four copies separated by 32 lanes:</p>
+<p>逻辑比例坐标 <code class="docutils literal notranslate"><span class="pre">(r,</span> <span class="pre">s)</span></code>。</p>
+<p>副本术语创建由 32 个 lane 分隔的四个副本：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TLane = r + 32 * q, where q in {0, 1, 2, 3}
 TCol  = s
 </pre></div>
 </div>
-<p>So the 32-row group is visible at TMEM lanes 0 through 31, 32 through 63, 64 through 95, and 96 through 127. This is the <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> broadcast pattern (<a class="reference internal" href="../chapter_layout_generations/index.html#chap-layout-generations"><span class="std std-ref">Tensor Core Operand Layouts Across GPU Generations</span></a>). Each of the four warp-sized TMEM lane windows sees the same scale-factor group.</p>
-<p>In the full block-scaled MMA layout, this atom is combined with outer iters over M rows and K scale-factor groups. Several scale factors may also be packed into one 32-bit <code class="docutils literal notranslate"><span class="pre">TCol</span></code> cell, depending on the scale-factor dtype. For example, fp8 scale factors can pack four values into one 32-bit column cell. Optional stride-zero reuse and pipeline-depth iters can then describe scale reuse across multiple MMAs and double buffering.</p>
-<p>The important part is that the same <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> model describes both cases. The accumulator is a single placement in TMEM. The scale factors are a replicated placement in the same TMEM address space.</p>
+<p>因此，32 行组在 TMEM lane 0 到 31、32 到 63、64 到 95 以及 96 到 127 处可见。这是 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播模式 (<a class="reference internal" href="../chapter_layout_generations/index.html#chap-layout-generations"><span class="std std-ref">Tensor Core 各代 GPU 操作数 layout</span></a>)。四个 warp 大小的 TMEM lane 窗口中的每一个都看到相同的比例因子组。</p>
+<p>在完整的 block-scaled MMA layout 中，该原子与 M 行和 K 比例因子组上的外部迭代组合。多个比例因子也可以打包到一个 32 位 <code class="docutils literal notranslate"><span class="pre">TCol</span></code> 单元中，具体取决于比例因子 dtype。例如，fp8 比例因子可以将四个值打包到一个 32 位列单元中。然后，可选的零步重用和 pipeline 深度迭代器可以描述跨多个 MMA 和双缓冲的规模重用。</p>
+<p>重要的是，相同的 <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> 模型描述了这两种情况。累加器单独放置在 TMEM 中。比例因子是同一 TMEM 地址空间中的复制放置。</p>
 </section>
-<section id="ready-made-layouts">
-<h2>Ready-Made Layouts<a class="headerlink" href="#ready-made-layouts" title="Link to this heading">#</a></h2>
-<p>Most kernels do not hand-write every hardware layout. TIRx provides constructors for the layouts that appear often.</p>
+<section id="id9">
+<h2>现成的 layout<a class="headerlink" href="#id9" title="Link to this heading">#</a></h2>
+<p>大多数 kernels 不会手写每个硬件 layout。 TIRx 为经常出现的 layouts 提供了构造函数。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>returns the TMEM accumulator layout written by <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code>. The <code class="docutils literal notranslate"><span class="pre">datapath</span></code> argument selects the row placement pattern. For example, <code class="docutils literal notranslate"><span class="pre">&quot;D&quot;</span></code> corresponds to the <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">128</span></code> identity-style placement, while <code class="docutils literal notranslate"><span class="pre">&quot;F&quot;</span></code> corresponds to the <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">64</span></code> scattered placement.</p>
+<p>返回由 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 写入的 TMEM 累加器 layout。 <code class="docutils literal notranslate"><span class="pre">datapath</span></code> 参数选择行放置模式。例如，<code class="docutils literal notranslate"><span class="pre">&quot;D&quot;</span></code> 对应于 <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">128</span></code> 身份式 layout，而 <code class="docutils literal notranslate"><span class="pre">&quot;F&quot;</span></code> 对应于 <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">64</span></code> 分散 layout。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tcgen05_atom_layout</span><span class="p">(</span><span class="n">instr_shape</span><span class="p">,</span> <span class="n">tensor_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>returns the register tile layout moved by a <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> or <code class="docutils literal notranslate"><span class="pre">tcgen05.st</span></code> atom. Examples of instruction shapes include <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code>, <code class="docutils literal notranslate"><span class="pre">.16x64b</span></code>, <code class="docutils literal notranslate"><span class="pre">.16x128b</span></code>, and related forms. At the DSL level this is a warpgroup-distributed tile. During lowering it becomes four warp-collective <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> or <code class="docutils literal notranslate"><span class="pre">tcgen05.st</span></code> instructions, one per warp, with each warp handling its own 32 TMEM lanes.</p>
+<p>返回由 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 或 <code class="docutils literal notranslate"><span class="pre">tcgen05.st</span></code> 原子移动的寄存器块 layout。指令形状的示例包括<code class="docutils literal notranslate"><span class="pre">.32x32b</span></code>、<code class="docutils literal notranslate"><span class="pre">.16x64b</span></code>、<code class="docutils literal notranslate"><span class="pre">.16x128b</span></code>和相关形式。在 DSL 级别，这是 warpgroup 分布式 tile。在降低过程中，它变成四个 warp 集体 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 或 <code class="docutils literal notranslate"><span class="pre">tcgen05.st</span></code> 指令，每个 warp 一个，每个 warp 处理自己的 32 个 TMEM lane。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wg_local_layout</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>returns a warpgroup-local register tile, usually with one row per thread on <code class="docutils literal notranslate"><span class="pre">tid_in_wg</span></code>.</p>
-<p>These helpers are there to avoid rewriting common hardware mappings by hand. They do not hide the model. Each helper returns an ordinary <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> built from the same <code class="docutils literal notranslate"><span class="pre">S</span></code> and <code class="docutils literal notranslate"><span class="pre">R</span></code> pieces described above.</p>
+<p>返回 warpgroup 本地寄存器块，通常在 <code class="docutils literal notranslate"><span class="pre">tid_in_wg</span></code> 上每个 thread 一行。</p>
+<p>这些助手的作用是避免手动重写常见的硬件映射。他们不隐藏模型。每个助手返回一个由上述相同的 <code class="docutils literal notranslate"><span class="pre">S</span></code> 和 <code class="docutils literal notranslate"><span class="pre">R</span></code> 片段构建的普通 <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>。</p>
 </section>
-<section id="swizzlelayout-and-composelayout">
-<h2>SwizzleLayout and ComposeLayout<a class="headerlink" href="#swizzlelayout-and-composelayout" title="Link to this heading">#</a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> is affine. It can express strides, replication, and offsets over named axes. That is enough for many placements, including thread fragments, TMEM tiles, and compact scale-factor layouts.</p>
-<p>Shared memory swizzles need something else. The swizzle used to avoid bank conflicts is not an affine stride pattern. It is an XOR-based permutation of the linear shared-memory address.</p>
-<p>TIRx therefore keeps swizzling as a separate layout object:</p>
+<section id="swizzlelayout-composelayout">
+<h2>SwizzleLayout 和 ComposeLayout<a class="headerlink" href="#swizzlelayout-composelayout" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> 是仿射的。它可以表达指定轴上的步幅、复制和偏移。这对于许多放置来说已经足够了，包括 thread 片段、TMEM 切片和紧凑比例因子 layouts。</p>
+<p>共享内存 swizzles 需要其他东西。用于避免库冲突的 swizzle 不是仿射步幅模式。它是线性共享内存地址的基于异或的排列。</p>
+<p>因此，TIRx 作为单独的 layout 对象保持混合：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SwizzleLayout</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and composes it with the tile layout:</p>
+<p>并将其与 tile layout 组合：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ComposeLayout</span><span class="p">(</span><span class="n">swizzle</span><span class="p">,</span> <span class="n">tile</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The tile layout first produces a linear memory address. The swizzle then permutes that address. Keeping these two layers separate is cleaner than forcing the XOR permutation into the affine layout model.</p>
+<p>块 layout 首先产生一个线性内存地址。然后 swizzle 排列该地址。保持这两层分离比将 XOR 排列强制到仿射 layout 模型中更清晰。</p>
 </section>
-<section id="why-swizzle">
-<h2>Why Swizzle<a class="headerlink" href="#why-swizzle" title="Link to this heading">#</a></h2>
-<p>Shared memory is divided into 32 banks, with each bank word holding 4 bytes. When the lanes of one access touch different addresses in the same bank, the access is serialized by a bank conflict.</p>
-<p>A plain row-major tile can create this conflict structurally. Consider an <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 tile with row-major layout:</p>
+<section id="id10">
+<h2>为什么要调配<a class="headerlink" href="#id10" title="Link to this heading">#</a></h2>
+<p>共享内存分为 32 个 bank，每个 bank 字保存 4 个字节。当一次访问的 lane 接触同一 bank 中的不同地址时，该访问会因 bank 冲突而串行化。</p>
+<p>普通的行主 tile 可能会在结构上造成这种冲突。考虑具有行主 layout 的 <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 tile：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">64</span><span class="nd">@m</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@m</span><span class="p">)])</span>
 </pre></div>
 </div>
-<p>The logical element <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">j)</span></code> has linear element address:</p>
+<p>逻辑元素 <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">j)</span></code> 具有线性元素地址：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>m = 64 * i + j
 </pre></div>
 </div>
-<p>Each row is 64 float16 values, or 128 bytes. That is exactly one full shared memory bank line. If a warp reads down a column with fixed <code class="docutils literal notranslate"><span class="pre">j</span></code>, each row step advances by one full 128-byte line. The bank index repeats, so the column read collapses onto the same bank across rows.</p>
-<p>The swizzle changes this by making the low address bits depend on higher row bits. A column that would otherwise land repeatedly on the same bank is scattered across different banks.</p>
+<p>每行有 64 个 float16 值，即 128 个字节。这正是一个完整的共享 bank 行。如果 warp 向下读取具有固定 <code class="docutils literal notranslate"><span class="pre">j</span></code> 的列，则每一行步长都会前进一个完整的 128 字节行。 Bank 索引重复，因此列读取会跨行折叠到同一 Bank 上。</p>
+<p>swizzle 通过使低地址位依赖于高行位来改变这一点。本来会反复登陆同一岸的纵队却分散在不同的岸上。</p>
 </section>
-<section id="the-swizzle-transform">
-<h2>The Swizzle Transform<a class="headerlink" href="#the-swizzle-transform" title="Link to this heading">#</a></h2>
-<p>A <code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code> is controlled by three integer parameters:</p>
+<section id="swizzle">
+<h2>Swizzle 变换<a class="headerlink" href="#swizzle" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code> 由三个整数参数控制：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>per_element = M
 swizzle_len = B
 atom_len    = S
 </pre></div>
 </div>
-<p>The input is a linear element address <code class="docutils literal notranslate"><span class="pre">m</span></code>.</p>
-<p>The low <code class="docutils literal notranslate"><span class="pre">M</span></code> bits of <code class="docutils literal notranslate"><span class="pre">m</span></code> are left unchanged. This preserves a small contiguous group of elements. The higher bits are shifted down into a temporary value:</p>
+<p>输入是线性元素地址<code class="docutils literal notranslate"><span class="pre">m</span></code>。</p>
+<p><code class="docutils literal notranslate"><span class="pre">m</span></code> 的低 <code class="docutils literal notranslate"><span class="pre">M</span></code> 位保持不变。这保留了一小部分连续的元素。高位被下移为临时值：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x = m &gt;&gt; M
 </pre></div>
 </div>
-<p>Then the bit group at positions <code class="docutils literal notranslate"><span class="pre">[S,</span> <span class="pre">S</span> <span class="pre">+</span> <span class="pre">B)</span></code> of <code class="docutils literal notranslate"><span class="pre">x</span></code> is XORed into the bit group <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">B)</span></code> of <code class="docutils literal notranslate"><span class="pre">x</span></code>. The swizzled address is then formed by putting the unchanged low <code class="docutils literal notranslate"><span class="pre">M</span></code> bits back.</p>
-<p>Equivalently:</p>
+<p>然后将<code class="docutils literal notranslate"><span class="pre">x</span></code>的<code class="docutils literal notranslate"><span class="pre">[S,</span> <span class="pre">S</span> <span class="pre">+</span> <span class="pre">B)</span></code>位置处的位组异或为<code class="docutils literal notranslate"><span class="pre">x</span></code>的位组<code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">B)</span></code>。然后通过将未更改的低 <code class="docutils literal notranslate"><span class="pre">M</span></code> 位放回来形成混合地址。</p>
+<p>等效地：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>mask = (1 &lt;&lt; B) - 1
 
 low  = m &amp; ((1 &lt;&lt; M) - 1)
@@ -713,89 +713,89 @@ x2   = x ^ ((x &gt;&gt; S) &amp; mask)
 addr = (x2 &lt;&lt; M) | low
 </pre></div>
 </div>
-<p>For the layout to be well formed, <code class="docutils literal notranslate"><span class="pre">S</span></code> must be at least <code class="docutils literal notranslate"><span class="pre">B</span></code>.</p>
-<p>The point of the transform is not to change which logical elements are in the tile. It changes where those elements land in shared memory. The MMA still reads the same logical tile. The swizzle makes the physical bank pattern better.</p>
+<p>为了使 layout 格式良好，<code class="docutils literal notranslate"><span class="pre">S</span></code> 必须至少为 <code class="docutils literal notranslate"><span class="pre">B</span></code>。</p>
+<p>变换的重点不是改变 tile 中的逻辑元素。它改变了这些元素在共享内存中的位置。 MMA 仍然读取相同的逻辑块。 swizzle 让实体银行模式变得更好。</p>
 </section>
-<section id="choosing-swizzle-parameters">
-<h2>Choosing Swizzle Parameters<a class="headerlink" href="#choosing-swizzle-parameters" title="Link to this heading">#</a></h2>
-<p>In normal use, the swizzle parameters are chosen from the dtype and the shared-memory swizzle mode. The common modes are 32-byte, 64-byte, and 128-byte swizzles.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">per_element</span></code> parameter is chosen so that a small vector-sized group stays contiguous. For float16, a 16-byte vector contains 8 elements, so:</p>
+<section id="id11">
+<h2>选择 Swizzle 参数<a class="headerlink" href="#id11" title="Link to this heading">#</a></h2>
+<p>在正常使用中，swizzle 参数是从 dtype 和共享内存 swizzle 模式中选择的。常见的模式有 32 字节、64 字节、128 字节 swizzles。</p>
+<p>选择 <code class="docutils literal notranslate"><span class="pre">per_element</span></code> 参数，以便小向量大小的组保持连续。对于 float16，16 字节向量包含 8 个元素，因此：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>M = log2(8) = 3
 </pre></div>
 </div>
-<p>With a 128-byte swizzle, the layout uses:</p>
+<p>对于 128 字节 swizzle，layout 使用：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SwizzleLayout</span><span class="p">(</span><span class="n">per_element</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">swizzle_len</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">atom_len</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This keeps the 16-byte vector group intact while still permuting the larger shared-memory address pattern enough to break the column bank conflict.</p>
-<p>Most code should not derive these parameters by hand. The dtype and descriptor mode usually determine them. What matters for the programmer is that the swizzle in the TIRx layout, the TMA descriptor, and the MMA expectation all match.</p>
-<p>A swizzled shared memory allocation therefore looks like:</p>
+<p>这使 16 字节向量组保持完整，同时仍然对较大的共享内存地址模式进行排列，足以打破列组冲突。</p>
+<p>大多数代码不应该手动导出这些参数。 dtype 和描述符模式通常决定它们。对于程序员来说重要的是 TIRx layout 中的 swizzle、TMA 描述符和 MMA 期望都匹配。</p>
+<p>因此，混合共享内存分配如下所示：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">64</span><span class="nd">@m</span><span class="p">,</span> <span class="mi">1</span><span class="nd">@m</span><span class="p">)])</span>
 <span class="n">swizzle</span> <span class="o">=</span> <span class="n">SwizzleLayout</span><span class="p">(</span><span class="n">per_element</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">swizzle_len</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">atom_len</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
 <span class="n">layout</span> <span class="o">=</span> <span class="n">ComposeLayout</span><span class="p">(</span><span class="n">swizzle</span><span class="p">,</span> <span class="n">tile</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The composed layout is what gets attached to the shared memory buffer.</p>
+<p>组成的 layout 被附加到共享内存缓冲区。</p>
 </section>
-<section id="bank-and-line-of-an-element">
-<h2>Bank and Line of an Element<a class="headerlink" href="#bank-and-line-of-an-element" title="Link to this heading">#</a></h2>
-<p>To see whether a swizzle helps, translate the swizzled element address back into a shared memory bank.</p>
-<p>Let <code class="docutils literal notranslate"><span class="pre">addr</span></code> be the swizzled element address, and let <code class="docutils literal notranslate"><span class="pre">b</span></code> be the element size in bytes. The byte address is:</p>
+<section id="id12">
+<h2>元素的岸和线<a class="headerlink" href="#id12" title="Link to this heading">#</a></h2>
+<p>要查看 swizzle 是否有帮助，请将混合后的元素地址转换回共享内存组。</p>
+<p>令 <code class="docutils literal notranslate"><span class="pre">addr</span></code> 为混合元素地址，并令 <code class="docutils literal notranslate"><span class="pre">b</span></code> 为元素大小（以字节为单位）。字节地址为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>byte = addr * b
 </pre></div>
 </div>
-<p>The bank is:</p>
+<p>银行是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bank = floor(byte / 4) mod 32
 </pre></div>
 </div>
-<p>The 128-byte bank line is:</p>
+<p>128 字节存储行是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>line = floor(byte / 128)
 </pre></div>
 </div>
-<p>For float16, <code class="docutils literal notranslate"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">2</span></code>, so the bank formula becomes:</p>
+<p>对于 float16、<code class="docutils literal notranslate"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">2</span></code>，因此银行公式变为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bank = floor(addr / 2) mod 32
 </pre></div>
 </div>
-<p>This is the formula used in the worked example below.</p>
+<p>这是下面的工作示例中使用的公式。</p>
 </section>
-<section id="worked-example-128b-swizzle-on-an-8-64-float16-tile">
-<h2>Worked Example: 128B Swizzle on an <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 Tile<a class="headerlink" href="#worked-example-128b-swizzle-on-an-8-64-float16-tile" title="Link to this heading">#</a></h2>
-<p>Return to the row-major float16 tile:</p>
+<section id="float16-tile-128b-swizzle">
+<h2>工作示例：<code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 tile 上的 128B Swizzle<a class="headerlink" href="#float16-tile-128b-swizzle" title="Link to this heading">#</a></h2>
+<p>返回行主 float16 tile：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>m = 64 * i + j
 </pre></div>
 </div>
-<p>Use:</p>
+<p>用途：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SwizzleLayout</span><span class="p">(</span><span class="n">per_element</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">swizzle_len</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">atom_len</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The transform becomes:</p>
+<p>变换变为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>x    = m &gt;&gt; 3
 addr = ((x ^ ((x &gt;&gt; 3) &amp; 7)) &lt;&lt; 3) | (m &amp; 7)
 </pre></div>
 </div>
-<p>Since:</p>
+<p>自：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>m = 64 * i + j
 </pre></div>
 </div>
-<p>we can write:</p>
+<p>我们可以写：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>q = floor(j / 8)
 r = j mod 8
 </pre></div>
 </div>
-<p>and the swizzled address is:</p>
+<p>混合后的地址是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>addr = 64 * i + 8 * (q xor i) + r
 </pre></div>
 </div>
-<p>Now look at column <code class="docutils literal notranslate"><span class="pre">j</span> <span class="pre">=</span> <span class="pre">0</span></code>. Then <code class="docutils literal notranslate"><span class="pre">q</span> <span class="pre">=</span> <span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">=</span> <span class="pre">0</span></code>, so:</p>
+<p>现在查看 <code class="docutils literal notranslate"><span class="pre">j</span> <span class="pre">=</span> <span class="pre">0</span></code> 列。然后是 <code class="docutils literal notranslate"><span class="pre">q</span> <span class="pre">=</span> <span class="pre">0</span></code> 和 <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">=</span> <span class="pre">0</span></code>，所以：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>addr = 72 * i
 </pre></div>
 </div>
-<p>For float16, the bank is:</p>
+<p>对于 float16，银行是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bank = floor(addr / 2) mod 32
 </pre></div>
 </div>
-<p>So the eight rows map to:</p>
+<p>所以八行映射到：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>i = 0: bank 0
 i = 1: bank 4
 i = 2: bank 8
@@ -806,25 +806,25 @@ i = 6: bank 24
 i = 7: bank 28
 </pre></div>
 </div>
-<p>The column now touches eight distinct banks. The conflict is gone.</p>
-<p>Without swizzling, the same column has address:</p>
+<p>该专栏现在涉及八家不同的银行。冲突消失了。</p>
+<p>没有混合，同一列有地址：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>m = 64 * i
 </pre></div>
 </div>
-<p>and therefore:</p>
+<p>因此：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bank = floor(64 * i / 2) mod 32 = 0
 </pre></div>
 </div>
-<p>Every row lands on bank 0, so the access is serialized. The swizzle changes only the physical placement, but that is enough to turn the column access into a conflict-free one.</p>
-<p>This guarantee depends on using the swizzle in the way it was designed. The dtype, swizzle width, and access shape have to match the TMA and MMA descriptor modes. A 128-byte float16 swizzle is designed around the relevant 16-byte row chunks and Tensor Core access pattern. It is not a promise that arbitrary shared memory accesses become conflict free. The demo at the top of this chapter makes this visible: choose a dtype and swizzle mode, and watch a column collapse onto one bank with no swizzle, then scatter across the bank view once the matching swizzle is applied.</p>
+<p>每行都位于 bank 0 上，因此访问是串行的。 swizzle 仅更改物理 layout，但这足以将列访问转变为无冲突访问。</p>
+<p>此保证取决于 swizzle 的设计方式。 dtype、swizzle 宽度和访问形状必须与 TMA 和 MMA 描述符模式匹配。 128 字节 float16 swizzle 是围绕相关 16 字节行块和 Tensor Core 访问模式设计的。这并不能保证任意共享内存访问不会发生冲突。本章顶部的演示使这一点变得可见：选择一种 dtype 和 swizzle 模式，并观察列折叠到没有 swizzle 的一个 bank 上，然后在应用匹配的 swizzle 后分散在 bank 视图中。</p>
 </section>
-<section id="design-rationale">
-<h2>Design Rationale<a class="headerlink" href="#design-rationale" title="Link to this heading">#</a></h2>
-<p>The layout API follows three design choices.</p>
-<p>First, it supports general shapes. Hardware tiles are not always powers of two. Global tensors, shared memory stages, TMEM accumulators, and scale-factor buffers often have shapes that come from capacity limits or algorithm choices. The layout model treats those shapes as normal.</p>
-<p>Second, the mapping goes from logical coordinates to physical coordinates. This direction is important because replication is common. One logical element may live in several physical places. A logical-to-physical map represents that directly as a set of coordinates.</p>
-<p>Third, hardware axes are explicit. The layout does not use anonymous dimensions and rely on context to explain them later. The difference between <code class="docutils literal notranslate"><span class="pre">tx</span></code>, <code class="docutils literal notranslate"><span class="pre">tid_in_wg</span></code>, <code class="docutils literal notranslate"><span class="pre">laneid</span></code>, <code class="docutils literal notranslate"><span class="pre">warpid</span></code>, <code class="docutils literal notranslate"><span class="pre">TLane</span></code>, and <code class="docutils literal notranslate"><span class="pre">TCol</span></code> is written into the layout itself.</p>
-<p>Legality and feasibility checks are not the job of the layout object alone. A layout can say where data is placed. Higher-level tile primitives decide whether a given operation can legally and efficiently use that placement. This separation keeps the layout API small while still giving the compiler enough information to dispatch real hardware operations.</p>
+<section id="id13">
+<h2>设计原理<a class="headerlink" href="#id13" title="Link to this heading">#</a></h2>
+<p>layout API 遵循三种设计选择。</p>
+<p>首先，它支持一般形状。硬件块并不总是 2 的幂。全局张量、共享内存阶段、TMEM 累加器和比例因子缓冲区通常具有来自容量限制或算法选择的形状。 layout 模型将这些形状视为正常形状。</p>
+<p>其次，从逻辑坐标到物理坐标的映射。这个方向很重要，因为复制很常见。一个逻辑元素可能存在于多个物理位置。逻辑到物理映射将其直接表示为一组坐标。</p>
+<p>第三，硬件轴明确。 layout 不使用匿名维度，并稍后依靠上下文来解释它们。 <code class="docutils literal notranslate"><span class="pre">tx</span></code>、<code class="docutils literal notranslate"><span class="pre">tid_in_wg</span></code>、<code class="docutils literal notranslate"><span class="pre">laneid</span></code>、<code class="docutils literal notranslate"><span class="pre">warpid</span></code>、<code class="docutils literal notranslate"><span class="pre">TLane</span></code> 和 <code class="docutils literal notranslate"><span class="pre">TCol</span></code> 之间的差异写入 layout 本身。</p>
+<p>合法性和可行性检查并不是 layout 对象单独的工作。 layout 可以说出数据放置的位置。更高级别的 tile primitive 决定给定操作是否可以合法且有效地使用该放置。这种分离使 layout API 保持较小，同时仍为编译器提供足够的信息来进行 dispatch 实际硬件操作。</p>
 </section>
 </section>
 
@@ -845,7 +845,7 @@ i = 7: bank 28
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Introduction to TIRx</p>
+        <p class="prev-next-title">TIRx 简介</p>
       </div>
     </a>
     <a class="right-next"
@@ -853,7 +853,7 @@ i = 7: bank 28
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Building a Tiled GEMM</p>
+        <p class="prev-next-title">构建平铺 GEMM</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -875,28 +875,28 @@ i = 7: bank 28
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layouts-by-example">Layouts by Example</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-demo">Interactive Demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layout">layout 示例</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">互动演示</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tilelayout">TileLayout</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shard">Shard</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#replica">Replica</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#offset">Offset</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#putting-the-pieces-together">Putting the Pieces Together</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">碎片</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">复制品</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">偏移量</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">将各个部分组合在一起</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#named-axes">Named Axes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-mapping">Forward Mapping</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-tensor-core-register-tile">Case Study: Tensor Core Register Tile</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-blackwell-tensor-memory">Case Study: Blackwell Tensor Memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scale-factor-layouts">Scale Factor Layouts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ready-made-layouts">Ready-Made Layouts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzlelayout-and-composelayout">SwizzleLayout and ComposeLayout</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-swizzle">Why Swizzle</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-swizzle-transform">The Swizzle Transform</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-swizzle-parameters">Choosing Swizzle Parameters</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bank-and-line-of-an-element">Bank and Line of an Element</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example-128b-swizzle-on-an-8-64-float16-tile">Worked Example: 128B Swizzle on an <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 Tile</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-rationale">Design Rationale</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">命名轴</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">正向映射</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-core">案例研究：Tensor Core 寄存器块</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blackwell-tensor-memory">案例研究：Blackwell Tensor Memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">比例因子 layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">现成的 layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzlelayout-composelayout">SwizzleLayout 和 ComposeLayout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">为什么要调配</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzle">Swizzle 变换</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">选择 Swizzle 参数</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">元素的岸和线</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#float16-tile-128b-swizzle">工作示例：<code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 tile 上的 128B Swizzle</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">设计原理</a></li>
 </ul>
   </nav></div>
 

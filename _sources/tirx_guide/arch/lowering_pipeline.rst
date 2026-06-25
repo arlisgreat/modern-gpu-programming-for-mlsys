@@ -18,21 +18,19 @@
 TIRx lowering pipeline
 ======================
 
-``tvm.compile(mod, target, tir_pipeline="tirx")`` runs an authored TIRx module
-through the **tirx pipeline** — an ordered sequence of TIR passes that turns the
-high-level constructs you write (tile primitives, ``TileLayout``-typed buffers,
-execution-scope ids) into split **host** + **device** functions, which the CUDA
-backend then renders to source. The pipeline is defined in
-``python/tvm/tirx/compilation_pipeline.py`` (``tirx_pipeline``); this page walks the
-passes in order.
+``tvm.compile(mod, target, tir_pipeline="tirx")`` 会把你写好的 TIRx module 送入
+**tirx pipeline** 。这是一串有序的 TIR passes，会把你写的 high-level constructs
+（tile primitives、 ``TileLayout``-typed buffers、execution-scope ids）变成拆开的
+**host** + **device** functions，然后由 CUDA backend 渲染成 source。pipeline
+定义在 ``python/tvm/tirx/compilation_pipeline.py`` （ ``tirx_pipeline`` ）；本页按顺序
+走一遍这些 passes。
 
 Where it sits
 -------------
 
-``tvm.compile`` first binds the target, runs the **tirx pipeline** (the module-level
-passes below), then applies **finalization** passes separately to the host and
-device functions, and finally hands each device function to the CUDA code
-generator:
+``tvm.compile`` 首先 bind target，运行 **tirx pipeline**（下面这些 module-level
+passes），然后分别对 host 和 device functions 应用 **finalization** passes，最后把每个
+device function 交给 CUDA code generator：
 
 .. code-block:: text
 
@@ -43,8 +41,8 @@ generator:
 The passes
 ----------
 
-The ``tirx_pipeline`` module pass applies this exact sequence (a few are gated by
-``PassContext`` config):
+``tirx_pipeline`` module pass 会应用下面这个精确顺序（少数 pass 受
+``PassContext`` config 控制）：
 
 .. list-table::
    :header-rows: 1
@@ -52,98 +50,94 @@ The ``tirx_pipeline`` module pass applies this exact sequence (a few are gated b
 
    * - #
      - Pass
-     - What it does
+     - 作用
    * - 1
      - ``LowerTIRx``
-     - the core lowering — see `Inside LowerTIRx`_ below
+     - 核心 lowering，见下面的 `Inside LowerTIRx`_
    * - 2
      - ``UnifyThreadBinding``
-     - merges equivalent thread-axis bindings so each ``threadIdx`` / ``blockIdx``
-       axis is declared once
+     - 合并等价的 thread-axis bindings，使每个 ``threadIdx`` / ``blockIdx`` axis 只声明一次
    * - 3
      - ``StmtSimplify``
-     - statement-level arithmetic simplification (the arith analyzer)
+     - statement-level arithmetic simplification（arith analyzer）
    * - 4
      - ``LowerTIRxOpaque``
-     - lowers remaining opaque TIRx constructs to plain TIR
+     - 将剩余 opaque TIRx constructs 降低为 plain TIR
    * - 5
      - ``FlattenBuffer``
-     - flattens multi-dimensional ``BufferLoad`` / ``BufferStore`` to 1-D
+     - 将 multi-dimensional ``BufferLoad`` / ``BufferStore`` flatten 到 1-D
    * - 6
      - ``BF16ComputeLegalize``
-     - rewrites ``bfloat16`` compute to a legal (f32-up-cast) form
+     - 将 ``bfloat16`` compute 改写为 legal（f32-up-cast）形式
    * - 7
      - ``NarrowDataType(32)``
-     - narrows index/loop ``PrimExpr`` dtypes to 32-bit where provably safe
+     - 在可证明安全的位置，把 index/loop ``PrimExpr`` dtypes 收窄到 32-bit
    * - 8
      - ``VectorizeLoop``
-     - turns ``T.vectorized`` loops into vector ops (skipped if
-       ``tir.disable_vectorize``)
+     - 将 ``T.vectorized`` loops 变成 vector ops（如果设置 ``tir.disable_vectorize`` 则跳过）
    * - 9
      - ``UnrollLoop``
-     - unrolls loops marked ``T.unroll`` (and small constant loops)
+     - unroll 标记为 ``T.unroll`` 的 loops（以及小的 constant loops）
    * - 10
      - ``StmtSimplify``
-     - simplify again, now that vectorize/unroll exposed constants
+     - 在 vectorize/unroll 暴露 constants 后再次 simplify
    * - 11
      - ``CommonSubexprElim``
-     - hoists repeated subexpressions into temporaries (skipped if
-       ``tir.disable_cse_tir``)
+     - 将重复 subexpressions hoist 到 temporaries（如果设置 ``tir.disable_cse_tir`` 则跳过）
    * - 12
      - ``FP8ComputeLegalize``
-     - rewrites ``float8`` compute to a legal form
+     - 将 ``float8`` compute 改写为 legal form
    * - 13
      - ``VerifyMemory``
-     - checks no host-side code directly dereferences device memory (a safety gate)
+     - 检查 host-side code 没有直接 dereference device memory（safety gate）
    * - 14
      - ``AnnotateEntryFunc``
-     - marks the single PrimFunc as the module entry point
+     - 将单个 PrimFunc 标记为 module entry point
    * - 15
      - ``SplitHostDevice``
-     - splits each kernel into a **host** function and a **device** function at the
-       ``launch_thread`` boundary
+     - 在 ``launch_thread`` boundary 将每个 kernel 拆成 **host** function 和 **device** function
    * - 16
      - ``MakePackedAPI``
-     - rewrites the host function to the packed-func ABI (the launcher TVM calls)
+     - 将 host function 改写为 packed-func ABI（TVM 调用的 launcher）
    * - 17
      - ``FP8StorageLegalize``
-     - legalizes ``float8`` storage (packing into supported container types)
+     - legalize ``float8`` storage（打包进支持的 container types）
    * - 18
      - ``BF16StorageLegalize``
-     - legalizes ``bfloat16`` storage
+     - legalize ``bfloat16`` storage
 
-**Finalization** then runs per function kind:
+随后 **Finalization** 会按 function kind 运行：
 
-- **host**: ``LowerTVMBuiltin`` (lower ``tvm_*`` builtins), ``LowerIntrin``
-  (target-specific intrinsics)
-- **device**: ``LowerWarpMemory`` (warp-scoped buffers → shuffles), ``StmtSimplify``,
+- **host**： ``LowerTVMBuiltin`` （lower ``tvm_*`` builtins）、 ``LowerIntrin``
+  （target-specific intrinsics）
+- **device**： ``LowerWarpMemory`` （warp-scoped buffers → shuffles）、 ``StmtSimplify`` 、
   ``LowerIntrin``
 
 Inside LowerTIRx
 ----------------
 
-``LowerTIRx`` is itself a small sequence (``src/tirx/transform/lower_tirx.cc``):
+``LowerTIRx`` 本身也是一个小 sequence（ ``src/tirx/transform/lower_tirx.cc`` ）：
 
 .. code-block:: text
 
     LowerTIRx = Sequential([ TilePrimitiveDispatch, LowerTIRxCleanup ])
 
-- **``TilePrimitiveDispatch``** replaces every ``TilePrimitiveCall`` (``copy``,
-  ``gemm``, ``reduction``, …) with the body emitted by its selected backend
-  dispatch — its variant-selection and codegen.
-- **``LowerTIRxCleanup``** runs the ``LayoutApplier``: it resolves every
-  ``TileLayout``-typed buffer access into concrete physical address arithmetic
-  (``addr = data + elem_offset + layout.apply(coord)``), flattens the buffers, and
-  lowers the execution-scope ids (``T.cta_id`` / ``T.thread_id`` / … →
-  ``blockIdx`` / ``threadIdx`` via ``launch_thread``).
+- **``TilePrimitiveDispatch``** 将每个 ``TilePrimitiveCall`` （ ``copy`` 、 ``gemm`` 、
+  ``reduction`` 等）替换为所选 backend dispatch 发出的 body，也就是
+  variant-selection 和 codegen 的结果。
+- **``LowerTIRxCleanup``** 运行 ``LayoutApplier`` ：它把每个 ``TileLayout``-typed
+  buffer access 解析成具体 physical address arithmetic
+  （ ``addr = data + elem_offset + layout.apply(coord)`` ），flatten buffers，并把
+  execution-scope ids（ ``T.cta_id`` / ``T.thread_id`` / …）通过 ``launch_thread``
+  降低为 ``blockIdx`` / ``threadIdx`` 。
 
-So after ``LowerTIRx`` the module is plain TIR: no tile primitives, no
-``TileLayout`` indirection, scope ids resolved to thread axes.
+因此 ``LowerTIRx`` 之后，module 已经是 plain TIR：没有 tile primitives，没有
+``TileLayout`` indirection，scope ids 已解析为 thread axes。
 
 A worked example
 ----------------
 
-Take a one-line scale kernel:
+看一个单行 scale kernel：
 
 .. code-block:: python
 
@@ -154,8 +148,8 @@ Take a one-line scale kernel:
         T.device_entry(); bx = T.cta_id([1]); tx = T.thread_id([256])
         B[tx] = A[tx] * T.float32(2.0)
 
-**After ``LowerTIRx``** the scope ids are real thread axes and the layout is applied
-(``A_1`` / ``B_1`` are the flattened 1-D views):
+**经过 ``LowerTIRx`` 后**，scope ids 已经是真正的 thread axes，layout 也已经被
+applied（ ``A_1`` / ``B_1`` 是 flattened 1-D views）：
 
 .. code-block:: python
 
@@ -165,8 +159,8 @@ Take a one-line scale kernel:
         tx: T.let = threadIdx_x
         B_1[threadIdx_x] = A_1[threadIdx_x] * T.float32(2.0)
 
-**After ``SplitHostDevice`` + ``MakePackedAPI``** the one function has become two —
-a host launcher and a device kernel:
+**经过 ``SplitHostDevice`` + ``MakePackedAPI`` 后**，一个 function 变成两个：host
+launcher 和 device kernel：
 
 .. code-block:: python
 
@@ -176,14 +170,14 @@ a host launcher and a device kernel:
             ...
         def scale_kernel(...):  # device: the __global__ body, run on the GPU
 
-The CUDA backend then renders ``scale_kernel`` to the ``__global__`` function
-(``B_ptr[threadIdx.x] = A_ptr[threadIdx.x] * 2.0f``).
+随后 CUDA backend 会把 ``scale_kernel`` 渲染成 ``__global__`` function
+（ ``B_ptr[threadIdx.x] = A_ptr[threadIdx.x] * 2.0f`` ）。
 
 Reproduce it yourself
 ---------------------
 
-You can run any prefix of the pipeline by hand to inspect a stage — this is how the
-IR snippets across these docs were produced:
+你可以手动运行 pipeline 的任意 prefix 来检查某个 stage。这些文档中的 IR snippets
+就是这样生成的：
 
 .. code-block:: python
 
@@ -194,7 +188,7 @@ IR snippets across these docs were produced:
     mod = TT.LowerTIRx()(mod)         # tile primitives dispatched, layouts applied
     print(mod.script())               # inspect the lowered TIRx IR
 
-Or compile the whole module and read the generated CUDA:
+或者编译完整 module 并读取 generated CUDA：
 
 .. code-block:: python
 

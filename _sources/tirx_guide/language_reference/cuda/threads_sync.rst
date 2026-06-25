@@ -18,15 +18,15 @@
 CUDA C++/PTX intrinsics
 =======================
 
-When no tile primitive covers what you need, two escape hatches reach the hardware
-directly: **call a backend intrinsic** (the ``T.cuda.*`` / ``T.ptx.*`` namespaces
-from ``tvm.backend.cuda``), or **inline raw CUDA** source.
+当没有 tile primitive 覆盖你需要的操作时，有两个 escape hatch 可以直接触达硬件：
+**调用 backend intrinsic**（来自 ``tvm.backend.cuda`` 的 ``T.cuda.*`` /
+``T.ptx.*`` namespaces），或者 **inline raw CUDA** source。
 
 Calling backend intrinsics
 --------------------------
 
-``T.cuda.*`` and ``T.ptx.*`` expose the CUDA backend's device intrinsics directly —
-synchronization, mbarriers, reductions, and the PTX data-movement / MMA families:
+``T.cuda.*`` 和 ``T.ptx.*`` 直接暴露 CUDA backend 的 device intrinsics，包括
+synchronization、mbarriers、reductions，以及 PTX data-movement / MMA families：
 
 .. code-block:: python
 
@@ -39,7 +39,7 @@ synchronization, mbarriers, reductions, and the PTX data-movement / MMA families
     T.ptx.mbarrier.init(bar.data, 1)     # mbarrier for async completion
     T.ptx.mbarrier.try_wait(bar.data, phase)
 
-A complete, runnable example — a warp all-reduce via ``T.tvm_warp_shuffle_xor``:
+一个完整可运行的例子：通过 ``T.tvm_warp_shuffle_xor`` 做 warp all-reduce：
 
 .. code-block:: python
 
@@ -56,68 +56,68 @@ A complete, runnable example — a warp all-reduce via ``T.tvm_warp_shuffle_xor`
             i[0] = i[0] // 2
         A[lane_id] = v[0]
 
-The shuffle lowers straight to ``__shfl_xor_sync``:
+这个 shuffle 会直接降低为 ``__shfl_xor_sync`` ：
 
 .. code-block:: c++
 
     v_ptr[0] = v_ptr[0] + __shfl_xor_sync(0xFFFFFFFF, v_ptr[0], i_ptr[0], 32);
 
-Other families under ``T.ptx.*`` / ``T.cuda.*``: ``cp_async`` (LDGSTS),
-``cp_async.bulk.tensor`` (TMA), ``ldmatrix`` / ``stmatrix``, ``tcgen05.*``
-(Blackwell MMA), ``atomic_add``, ``fence`` … See the backend API reference for the
-full ``tvm.backend.cuda`` reference.
+``T.ptx.*`` / ``T.cuda.*`` 下还有其他 families： ``cp_async`` (LDGSTS)、
+``cp_async.bulk.tensor`` (TMA)、 ``ldmatrix`` / ``stmatrix`` 、 ``tcgen05.*``
+（Blackwell MMA）、 ``atomic_add`` 、 ``fence`` 等。完整 ``tvm.backend.cuda``
+reference 见 backend API reference。
 
 Synchronization semantics
 -------------------------
 
-Four synchronization mechanisms come up constantly in the GEMM and Flash Attention
-kernels. Because they control asynchronous engines and parallel thread groups,
-misusing any of them usually leads to silent corruption or deadlock.
+GEMM 和 FlashAttention kernels 中反复出现四种 synchronization mechanisms。因为
+它们控制 asynchronous engines 和 parallel thread groups，误用其中任何一种通常会
+导致 silent corruption 或 deadlock。
 
-**Mbarrier Phases.** Mbarriers track arrivals using a single internal phase bit.
-The ``T.ptx.mbarrier.try_wait(bar, phase)`` intrinsic blocks until the barrier's
-internal phase *differs* from the ``phase`` argument provided by the caller.
-Consequently, when reusing a barrier across loop iterations, the caller must flip
-its local phase tracker (``phase ^= 1``) after every wait. Failing to do so causes
-subsequent waits to return immediately, allowing the engine to read half-written
-memory. :ref:`chap_gemm_basics` walks through the full phase-tracking table.
+**Mbarrier Phases.** Mbarriers 用一个 internal phase bit 跟踪 arrivals。
+``T.ptx.mbarrier.try_wait(bar, phase)`` intrinsic 会阻塞，直到 barrier 的
+internal phase 与 caller 提供的 ``phase`` argument *不同*。因此，跨 loop
+iterations 重用 barrier 时，caller 必须在每次 wait 后翻转本地 phase tracker
+（ ``phase ^= 1`` ）。如果忘记这样做，后续 waits 会立刻返回，使 engine 可能读取
+half-written memory。:ref:`chap_gemm_basics` 逐步展示了完整 phase-tracking
+table。
 
-**Election.** ``T.ptx.elect_sync()`` elects a *single active lane within a warp*,
-not lane 0, and not one thread per CTA. To narrow an issuer down to exactly one
-thread, you must pair it with a warp-level guard. The pattern ``if warp_id == 0:``
-followed by ``if T.ptx.elect_sync():`` is used to issue ``Tx.gemm_async`` and
-``tcgen05.commit`` in :ref:`chap_gemm_basics`.
+Election. ``T.ptx.elect_sync()`` 会选出 *一个 warp 内的 single active
+lane*，不是 lane 0，也不是每个 CTA 一个 thread。要把 issuer 缩窄到恰好一个
+thread，必须配合 warp-level guard。:ref:`chap_gemm_basics` 中发出
+``Tx.gemm_async`` 和 ``tcgen05.commit`` 时使用的模式是先写
+``if warp_id == 0:`` ，再写 ``if T.ptx.elect_sync():`` 。
 
-**Named Warpgroup Barriers.** ``T.cuda.cta_sync()`` maps to ``__syncthreads()`` and
-requires *every* CTA thread to arrive. Once warpgroups specialize onto different
-code paths, placing a ``cta_sync()`` inside a warpgroup branch deadlocks the kernel
-because the other warpgroups never reach it. The hardware provides 16 named
-barriers (IDs 0 to 15); ``T.cuda.warpgroup_sync(10)`` synchronizes only the threads
-of one warpgroup. Distinct warpgroups take distinct IDs (e.g.,
-``warpgroup_sync(wg_id + 10)``) so they never collide on the same hardware barrier.
-See :ref:`chap_gemm_advanced`.
+Named Warpgroup Barriers. ``T.cuda.cta_sync()`` 映射到 ``__syncthreads()`` ，
+并要求 *每个* CTA thread 都到达。一旦 warpgroups specialize 到不同 code paths，
+把 ``cta_sync()`` 放进 warpgroup branch 就会让 kernel deadlock，因为其他
+warpgroups 永远到不了这里。硬件提供 16 个 named barriers（ID 0 到 15）；
+``T.cuda.warpgroup_sync(10)`` 只同步一个 warpgroup 的 threads。不同
+warpgroups 使用不同 IDs（例如 ``warpgroup_sync(wg_id + 10)`` ），这样不会撞到同
+一个 hardware barrier。见 :ref:`chap_gemm_advanced`。
 
-**Fences.** Fences order a producer's writes before a consumer (often an
-asynchronous engine) reads them:
+**Fences.** Fences 约束 producer writes 必须排在 consumer（通常是 asynchronous
+engine）读取之前：
 
 .. list-table::
    :header-rows: 1
    :widths: 50 50
 
    * - Fence
-     - Orders
+     - 排序内容
    * - ``T.ptx.fence.proxy_async("shared::cta")``
-     - thread-written shared memory before an async proxy (TMA store / MMA) reads it
+     - thread 写入的 shared memory，排在 async proxy（TMA store / MMA）读取之前
    * - ``T.ptx.fence.mbarrier_init()``
-     - mbarrier initialization before later arrivals or waits use the barrier
+     - mbarrier initialization，排在后续 arrivals 或 waits 使用该 barrier 之前
    * - ``T.ptx.tcgen05.fence.after_thread_sync()``
-     - a conservative ordering fence on the ``tcgen05`` writeback edge (Steps 8 and 9 add it; it is not needed on the TMA-to-MMA path)
+     - ``tcgen05`` writeback edge 上的保守 ordering fence（Steps 8 和 9 会加它；TMA-to-MMA path 不需要）
 
 Inlining raw CUDA
 -----------------
 
-For something with no intrinsic at all, inject a ``__device__`` function from a
-source string with ``T.cuda.func_call(name, *args, source_code=..., return_type=...)``:
+如果某个操作完全没有 intrinsic，可以通过
+``T.cuda.func_call(name, *args, source_code=..., return_type=...)`` 从 source
+string 注入一个 ``__device__`` function：
 
 .. code-block:: python
 
@@ -132,7 +132,7 @@ source string with ``T.cuda.func_call(name, *args, source_code=..., return_type=
         T.device_entry(); bx = T.cta_id([1]); tx = T.thread_id([256])
         B[tx] = T.cuda.func_call("my_relu", A[tx], source_code=SRC, return_type="float32")
 
-The source is emitted verbatim and the call is wired in:
+source 会原样 emitted，并把 call 接上：
 
 .. code-block:: c++
 

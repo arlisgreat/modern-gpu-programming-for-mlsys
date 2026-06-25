@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Advanced: Cluster Launch Control &#8212; Modern GPU Programming For MLSys</title>
+    <title>高级：Cluster Launch Control &#8212; Modern GPU Programming For MLSys</title>
   
   
   
@@ -53,8 +53,8 @@
     <link rel="icon" href="../_static/mlc-favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Introduction to TIRx" href="../chapter_intro_tirx/index.html" />
-    <link rel="prev" title="Async Coordination: mbarriers" href="../chapter_async_barriers/index.html" />
+    <link rel="next" title="TIRx 简介" href="../chapter_intro_tirx/index.html" />
+    <link rel="prev" title="异步协调：mbarriers" href="../chapter_async_barriers/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -150,37 +150,37 @@
 </button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, Understanding the GPU</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU Execution Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">What Makes a Kernel Fast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">Data Layout and Its Notation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core Operand Layouts Across GPU Generations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">Async Data Movement: TMA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tensor_cores/index.html">Tensor Cores: <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">Special Memory: TMEM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">Async Coordination: mbarriers</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Advanced: Cluster Launch Control</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tmem/index.html">特殊存储器：TMEM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_async_barriers/index.html">异步协调：mbarriers</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">高级：Cluster Launch Control</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx Overview</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part II, TIRx 概览</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">Introduction to TIRx</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_tirx_layout_api/index.html">TIRx Layout API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_intro_tirx/index.html">TIRx 简介</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_tirx_layout_api/index.html">TIRxlayoutAPI</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part III, GEMM: Tiled to SOTA</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">Building a Tiled GEMM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">Pipelining GEMM with TMA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">Scaling GEMM with Warp Specialization and Clusters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_basics/index.html">构建平铺 GEMM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_async/index.html">将 GEMM 与 TMA 进行 pipeline 处理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_gemm_advanced/index.html">通过 Warp 专业化和 cluster 扩展 GEMM</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, Flash Attention 4</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Part IV, FlashAttention 4</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">Flash Attention 4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_flash_attention/index.html">FlashAttention 4</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">Debugging Warp-Specialized Kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/index.html">参考</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendix/debugging_warp_specialized.html">调试 Warp 专用内核</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tirx_guide/arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../tirx_guide/arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
 </ul>
@@ -264,7 +264,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Advanced: Cluster Launch Control</h1>
+    <h1>高级：Cluster Launch Control</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -274,9 +274,9 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-two-instructions">The Two Instructions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-work-stealing-loop">The Work-Stealing Loop</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relation-to-persistent-gemm">Relation to Persistent GEMM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">两条指令</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">工作窃取循环</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gemm">与持久 GEMM 的关系</a></li>
 </ul>
             </nav>
         </div>
@@ -288,56 +288,56 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="advanced-cluster-launch-control">
-<span id="chap-clc"></span><h1>Advanced: Cluster Launch Control<a class="headerlink" href="#advanced-cluster-launch-control" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="cluster-launch-control">
+<span id="chap-clc"></span><h1>高级：Cluster Launch Control<a class="headerlink" href="#cluster-launch-control" title="Link to this heading">#</a></h1>
 <div class="overview admonition">
-<p class="admonition-title">Overview</p>
+<p class="admonition-title">概述</p>
 <ul class="simple">
-<li><p>A persistent kernel keeps a fixed set of CTAs or CTA clusters resident (often sized so there is roughly one active work owner per SM, though not relying on a guaranteed 1:1 mapping) and has them loop over many output tiles instead of launching one CTA per tile.</p></li>
-<li><p>Cluster Launch Control is the Blackwell hardware mechanism that lets a resident cluster ask for another tile at runtime. It is a hardware work-stealing path built around two PTX instructions: one instruction requests work, and the other reads back whether the request succeeded.</p></li>
-<li><p>The main benefit is better tail behavior. When tiles have uneven cost, or when the number of tiles does not divide evenly across the available SMs, CTAs that finish early can pull more work instead of sitting idle.</p></li>
+<li><p>persistent kernel 保留一组固定的 CTAs 或 CTA clusters 驻留（通常调整大小，以便每个 SM 大约有一个活动工作所有者，但不依赖于保证的 1:1 映射），并让它们循环遍历多个输出 tile，而不是启动一个每块 CTA。</p></li>
+<li><p>Cluster Launch Control 是 Blackwell 硬件机制，可让常驻 cluster 在运行时请求另一个 tile。这是一条围绕两条 PTX 指令构建的硬件工作窃取路径：一条指令请求工作，另一条指令读回请求是否成功。</p></li>
+<li><p>主要好处是更好的尾部行为。当 tile 成本不均时，或者当 tile 数量在可用的 SMs 上分布不均时，提前完成的 CTAs 可以拉动更多工作而不是闲置。</p></li>
 </ul>
 </div>
-<p>A persistent GEMM does not treat the CUDA grid as a fixed one-CTA-per-output-tile launch. Instead, it launches a smaller set of long-lived CTAs or CTA clusters. Each one computes a tile, advances to another tile, computes again, and keeps going until the output space is finished. This is the execution pattern built up in <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">Scaling GEMM with Warp Specialization and Clusters</span></a>.</p>
-<p>Once the kernel is persistent, the main scheduling question becomes simple: after a CTA or cluster finishes its current tile, where does the next tile come from?</p>
-<p>The simplest answer is a static formula. For example, the kernel can compute the tile coordinate from the CTA id, then advance by a grid stride. That is easy to implement, and it works well when all tiles have roughly the same cost and the tile count is evenly distributed across the GPU. But the schedule is decided before the work actually runs. If a few tiles take longer, or if the last few tiles are unevenly assigned, some SMs finish their share early while others are still working through the tail.</p>
-<p>Cluster Launch Control, or CLC, changes that scheduling model. Instead of deciding the whole assignment up front, a persistent cluster can ask the hardware grid scheduler for another not-yet-launched cluster’s work. If the request succeeds, the current cluster takes over that cluster coordinate and computes the corresponding tile. If the request fails, there is no more work to steal, and the loop exits.</p>
-<p>This is not the same thing as thread block clusters themselves. Thread block clusters (CTAs launched together, with cluster-level synchronization and access to distributed shared memory) were introduced with Hopper (<a class="reference internal" href="../chapter_background/index.html#chap-background"><span class="std std-ref">GPU Execution Model</span></a>). CLC is the Blackwell addition that makes scheduling over those cluster coordinates dynamic. The cluster is already the unit of launch; CLC lets an already-running cluster cancel a pending launch and inherit its coordinates.</p>
-<section id="the-two-instructions">
-<h2>The Two Instructions<a class="headerlink" href="#the-two-instructions" title="Link to this heading">#</a></h2>
-<p>Cluster Launch Control is exposed through two PTX instructions. The first instruction sends an asynchronous request to the grid scheduler. The second instruction reads the response.</p>
-<p>The request instruction is <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.try_cancel.async</span></code>.</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> asks the scheduler to cancel the launch of a pending cluster and return that cluster’s coordinates to the caller. The response is written to shared memory as a 16-byte record. Since the request is asynchronous, the instruction does not wait for the response to arrive. Instead, completion is reported through an <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code>, using the same barrier-and-phase model used by TMA.</p>
-<p>This is an important detail because it means CLC does not introduce a new waiting model. The kernel issues the request, associates it with a barrier, and later waits on the barrier before reading the response. The response arrival is signaled through the barrier with byte-count completion, in the same general style as other asynchronous hardware operations (see <a class="reference internal" href="../chapter_async_barriers/index.html#chap-async-barriers"><span class="std std-ref">Async Coordination: mbarriers</span></a>).</p>
-<p>Once the barrier has fired, the kernel uses the query instructions.</p>
-<p>The first query is <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.is_canceled</span></code>. It returns a predicate telling the kernel whether the cancellation succeeded. A true predicate means the scheduler found a pending cluster launch, canceled it, and returned its coordinate. A false predicate means there was no pending work left to take.</p>
-<p>Only when <code class="docutils literal notranslate"><span class="pre">is_canceled</span></code> is true should the kernel read the coordinate. It does that with <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.get_first_ctaid</span></code>, which extracts the first CTA id of the canceled cluster. That CTA id is a coordinate vector, usually read as <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code>, and the kernel decodes it into the output tile it should compute next.</p>
-<p>There is no numeric sentinel tile id in this protocol. The kernel branches on the predicate. If the predicate is true, the coordinate is valid. If the predicate is false, the work-stealing loop is done.</p>
-<p>Under the hood, this shape follows directly from what CLC is doing. The hardware is not allocating an abstract task from a software queue. It is canceling a cluster launch that has not happened yet. A successful response therefore contains a real cluster coordinate. A failed response simply means the launch queue has been exhausted.</p>
+<p>持久性 GEMM 不会将 CUDA grid 视为固定的每输出块一次 CTA 启动。相反，它推出了一组较小的长寿命 CTAs 或 CTA clusters。每个人计算一个 tile，前进到另一个 tile，再次计算，并继续计算，直到输出空间完成。这是在 <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">通过 Warp 专业化和 cluster 扩展 GEMM</span></a> 中构建的执行模式。</p>
+<p>一旦 kernel 持久化，主要的调度问题就变得简单：在 CTA 或 cluster 完成其当前 tile 之后，下一个 tile 来自哪里？</p>
+<p>最简单的答案是静态公式。例如，kernel 可以根据 CTA id 计算 tile 坐标，然后前进 grid 步幅。这很容易实现，并且当所有 tile 具有大致相同的成本并且 tile 数量均匀分布在 GPU 上时效果很好。但时间表是在工作实际进行之前决定的。如果一些 tile 需要更长的时间，或者如果最后几个 tile 分配不均匀，则一些 SMs 会提前完成其份额，而其他人仍在完成尾部工作。</p>
+<p>Cluster Launch Control 或 CLC 更改了该调度模型。持久性 cluster 可以向硬件 grid scheduler 请求另一个尚未启动的 cluster 的工作，而不是预先决定整个分配。如果请求成功，则当前的 cluster 接管该 cluster 坐标并计算相应的 tile。如果请求失败，则不再有工作可窃取，并且循环退出。</p>
+<p>这与 thread block clusters 本身不是一回事。 thread block clusters（CTAs 一起启动，具有 cluster 级同步和分布式共享内存访问）是在 Hopper（<a class="reference internal" href="../chapter_background/index.html#chap-background"><span class="std std-ref">GPU 执行模型</span></a>）中引入的。 CLC 是 Blackwell 的补充，它使 cluster 坐标上的调度变得动态。 cluster 已经是启动单元；CLC 允许已运行的 cluster 取消挂起的启动并继承其坐标。</p>
+<section id="id1">
+<h2>两条指令<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>Cluster Launch Control 通过两条 PTX 指令公开。第一条指令向 grid scheduler 发送异步请求。第二条指令读取响应。</p>
+<p>请求指令为<code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.try_cancel.async</span></code>。</p>
+<p><code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> 请求 scheduler 取消挂起的 cluster 的启动，并将 cluster 的坐标返回给调用者。响应作为 16 字节记录写入共享内存。由于请求是异步的，因此指令不会等待响应到达。相反，通过 <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> 报告完成情况，使用与 TMA 相同的势垒和相模型。</p>
+<p>这是一个重要的细节，因为这意味着 CLC 不会引入新的等待模型。 kernel 发出请求，将其与 barrier 相关联，然后在读取响应之前等待 barrier。响应到达是通过字节计数完成的 barrier 发出信号的，其通用风格与其他异步硬件操作相同（请参阅<a class="reference internal" href="../chapter_async_barriers/index.html#chap-async-barriers"><span class="std std-ref">异步协调：mbarriers</span></a>）。</p>
+<p>一旦 barrier 触发，kernel 将使用查询指令。</p>
+<p>第一个查询是 <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.is_canceled</span></code>。它返回一个谓词，告诉 kernel 取消是否成功。真正的谓词意味着 scheduler 发现了一个待处理的 cluster 启动，取消了它，并返回了它的坐标。错误的谓词意味着没有剩余的待完成工作。</p>
+<p>仅当 <code class="docutils literal notranslate"><span class="pre">is_canceled</span></code> 为 true 时，kernel 才应读取坐标。它使用 <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.get_first_ctaid</span></code> 执行此操作，提取已取消的 cluster 的第一个 CTA id。 That CTA id is a coordinate vector, usually read as <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code>, and the kernel decodes it into the output tile it should compute next.</p>
+<p>该协议中没有数字哨兵 tile ID。 kernel 在谓词上分支。如果谓词为真，则坐标有效。如果谓词为假，则工作窃取循环完成。</p>
+<p>在引擎盖下，这种形状直接遵循 CLC 正在做的事情。硬件没有从软件队列中分配抽象任务。它正在取消尚未发布的 cluster 发布。因此，成功的响应包含真实的 cluster 坐标。响应失败仅仅意味着启动队列已耗尽。</p>
 </section>
-<section id="the-work-stealing-loop">
-<h2>The Work-Stealing Loop<a class="headerlink" href="#the-work-stealing-loop" title="Link to this heading">#</a></h2>
-<p>With those two instructions, the persistent scheduler becomes a short loop.</p>
-<p>At any point in the loop, the cluster has one tile it is responsible for computing. Before it starts that tile, it sends a <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> request for the next one. The request runs asynchronously. While the scheduler is working on that request, the cluster computes its current tile.</p>
-<p>After the current tile is finished, the cluster waits on the <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> associated with the <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> response. Once the response is ready, it calls <code class="docutils literal notranslate"><span class="pre">query_cancel.is_canceled</span></code>. If the predicate is true, it calls <code class="docutils literal notranslate"><span class="pre">query_cancel.get_first_ctaid</span></code>, decodes the returned coordinate, and uses that as the next tile. If the predicate is false, there is no more work left, and the cluster exits.</p>
-<p>In code shape, the loop is:</p>
+<section id="id2">
+<h2>工作窃取循环<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<p>有了这两条指令，持久 scheduler 就变成了一个短循环。</p>
+<p>在循环中的任何一点，cluster 都有一个块负责计算。在启动该 tile 之前，它会发送一个 <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> 请求来获取下一个 tile。该请求异步运行。当 scheduler 处理该请求时，cluster 计算其当前 tile。</p>
+<p>当前 tile 完成后，cluster 等待与 <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> 响应关联的 <code class="docutils literal notranslate"><span class="pre">mbarrier</span></code>。一旦响应准备好，它就会调用 <code class="docutils literal notranslate"><span class="pre">query_cancel.is_canceled</span></code>。如果谓词为 true，它将调用 <code class="docutils literal notranslate"><span class="pre">query_cancel.get_first_ctaid</span></code>，解码返回的坐标，并将其用作下一个 tile。如果谓词为假，则不再有任何工作，并且 cluster 退出。</p>
+<p>在代码形式中，循环是：</p>
 <ol class="arabic simple">
-<li><p>issue <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> for a possible next tile;</p></li>
-<li><p>compute the current tile while the request is in flight;</p></li>
-<li><p>wait for the response barrier;</p></li>
-<li><p>query whether the cancellation succeeded;</p></li>
-<li><p>either continue with the returned coordinate or exit.</p></li>
+<li><p>发出 <code class="docutils literal notranslate"><span class="pre">try_cancel</span></code> 以获得可能的下一个 tile；</p></li>
+<li><p>在请求进行时计算当前 tile；</p></li>
+<li><p>等待响应 barrier；</p></li>
+<li><p>查询是否取消成功；</p></li>
+<li><p>继续使用返回的坐标或退出。</p></li>
 </ol>
-<p>The placement of the request is what makes the loop useful. The cluster does not wait until it has finished the current tile before asking for more work. It asks first, then computes. That overlaps the scheduler request with useful work. By the time the current tile is done, the answer for the next tile is often already available.</p>
-<p>This is the same basic reason persistent kernels use asynchronous copies and tensor-core barriers elsewhere. The kernel avoids putting a long-latency operation directly on the critical path. CLC applies the same idea to tile scheduling: ask for the next unit of work early, compute the current unit, then consume the scheduling result when it is needed.</p>
+<p>请求的放置使得循环变得有用。 cluster 不会等到完成当前 tile 才请求更多工作。它首先询问，然后计算。这将 scheduler 请求与有用的工作重叠。当当前 tile 完成时，下一个 tile 的答案通常已经可用。</p>
+<p>这与 persistent kernels 在其他地方使用异步 copy 和 Tensor Core barrier 的基本原因相同。 kernel 避免将长延迟操作直接放在关键路径上。 CLC 将相同的思想应用于 tile scheduling：尽早请求下一个工作单元，计算当前单元，然后在需要时消耗调度结果。</p>
 </section>
-<section id="relation-to-persistent-gemm">
-<h2>Relation to Persistent GEMM<a class="headerlink" href="#relation-to-persistent-gemm" title="Link to this heading">#</a></h2>
-<p>The persistent GEMM in <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">Scaling GEMM with Warp Specialization and Clusters</span></a> uses a static scheduler for the main walkthrough. A static scheduler is easier to explain because the next tile can be computed directly from loop state. For example, a scheduler such as <code class="docutils literal notranslate"><span class="pre">ClusterPersistentScheduler2D</span></code> can assign tiles using a grid-stride pattern over the output tile space.</p>
-<p>CLC is the dynamic replacement for that static assignment. The outer loop stays the same: each resident cluster repeatedly computes one output tile and then advances to another. What changes is where the next tile comes from. With the static scheduler, the next tile is computed by a formula. With CLC, the next tile is returned by hardware work stealing.</p>
-<p>That difference matters most near the tail of the launch. In a static schedule, the remaining work may not be evenly distributed. Some SMs may run out of assigned tiles while others still have several left. With CLC, the cluster that finishes early asks for another pending cluster coordinate. As long as there is work left in the launch queue, early finishers keep pulling more tiles.</p>
-<p>It also matters when tile cost is not uniform. Some GEMM tiles may take different paths because of boundaries, masking, sparsity, grouped scheduling, or fused work around the main matrix multiply. A static schedule assumes the tile assignment is good enough before any of those costs are observed. CLC does not need that assumption. It assigns more work only after a cluster becomes available.</p>
-<p>In TIRx, CLC can therefore be exposed as a dynamic tile scheduler. The programming model does not need to change the computation of a tile. The tile body is the same persistent GEMM body used by the static scheduler. The scheduler changes from “compute my next tile coordinate from a formula” to “ask hardware for the next available cluster coordinate.” The result is the same persistent loop, but with hardware-driven work distribution instead of a fixed launch-time schedule.</p>
+<section id="gemm">
+<h2>与持久 GEMM 的关系<a class="headerlink" href="#gemm" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">通过 Warp 专业化和 cluster 扩展 GEMM</span></a> 中的持久 GEMM 在主要演练中使用静态 scheduler。静态 scheduler 更容易解释，因为可以直接从循环状态计算下一个 tile。例如，诸如 <code class="docutils literal notranslate"><span class="pre">ClusterPersistentScheduler2D</span></code> 之类的 scheduler 可以在输出 tile 空间上使用 grid 步幅模式来分配 tile。</p>
+<p>CLC 是该静态分配的动态替代。外循环保持不变：每个驻留 cluster 重复计算一个输出 tile，然后前进到另一个输出 tile。改变的是下一个 tile 的来源。使用静态 scheduler，下一个 tile 是通过公式计算的。对于 CLC，下一个 tile 是通过硬件工作窃取返回的。</p>
+<p>这种差异在发布临近 epilogue 时最为重要。在静态计划中，剩余的工作可能不会均匀分配。一些 SMs 可能会用完分配的 tile，而其他一些则还剩下几个 tile。对于 CLC，提前完成的 cluster 请求另一个待处理的 cluster 坐标。只要启动队列中还有剩余工作，早期完成者就会不断拉出更多的 tile。</p>
+<p>当 tile 成本不统一时，这也很重要。由于边界、掩蔽、稀疏性、分组调度或围绕主矩阵乘法的融合工作，某些 GEMM 块可能会采用不同的路径。静态调度假设在观察到任何这些成本之前 tile 分配足够好。 CLC 不需要该假设。仅当 cluster 可用后，它才会分配更多工作。</p>
+<p>因此，在 TIRx 中，CLC 可以公开为动态 tile scheduler。编程模型不需要改变 tile 的计算。 tile 主体与静态 scheduler 使用的持久 GEMM 主体相同。 scheduler 从“根据公式计算下一个 tile 坐标”更改为“向硬件询问下一个可用的 cluster 坐标”。结果是相同的持久循环，但采用硬件驱动的工作分配，而不是固定的启动时间安排。</p>
 </section>
 </section>
 
@@ -358,7 +358,7 @@
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Async Coordination: mbarriers</p>
+        <p class="prev-next-title">异步协调：mbarriers</p>
       </div>
     </a>
     <a class="right-next"
@@ -366,7 +366,7 @@
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Introduction to TIRx</p>
+        <p class="prev-next-title">TIRx 简介</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -388,9 +388,9 @@
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-two-instructions">The Two Instructions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-work-stealing-loop">The Work-Stealing Loop</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relation-to-persistent-gemm">Relation to Persistent GEMM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">两条指令</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">工作窃取循环</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gemm">与持久 GEMM 的关系</a></li>
 </ul>
   </nav></div>
 

@@ -18,16 +18,17 @@
 Data types and expressions
 ==========================
 
-Every TIRx expression carries a low-level **dtype** and a high-level **type**.
+每个 TIRx expression 都同时携带低层的 **dtype** 和高层的 **type**。
 
 Expression dtypes
 -----------------
 
-A ``PrimExpr``'s ``.dtype`` is its scalar (or vector) element type — ``float32``,
-``float16``, ``bfloat16``, ``int32``, ``uint8``, ``bool``, the low-precision
-``float8_e4m3fn`` / ``float4_e2m1fn`` …, ``handle`` (a pointer), and vector forms
-such as ``float32x4``. Each prints to the matching CUDA type. Allocating local and
-shared buffers across several dtypes, plus a vectorized ``float32x4`` load/store:
+``PrimExpr`` 的 ``.dtype`` 是它的 scalar（或 vector）element type，例如
+``float32`` 、 ``float16`` 、 ``bfloat16`` 、 ``int32`` 、 ``uint8`` 、 ``bool`` 、
+低精度 ``float8_e4m3fn`` / ``float4_e2m1fn`` 、 ``handle`` （pointer），以及
+``float32x4`` 这样的 vector forms。每种 dtype 都会打印成对应的 CUDA type。
+下面的例子跨多个 dtypes 分配 local 和 shared buffers，并做一次 vectorized
+``float32x4`` load/store：
 
 .. code-block:: python
 
@@ -47,7 +48,7 @@ shared buffers across several dtypes, plus a vectorized ``float32x4`` load/store
         O.vstore([tx * 4], v[0])                     # vectorized store
         # ... (use f16/bf16/i32/u8/b1/sm) ...
 
-lowers to (generated CUDA, elided):
+降低后会得到类似下面的 generated CUDA（省略 boilerplate）：
 
 .. code-block:: c++
 
@@ -61,12 +62,13 @@ lowers to (generated CUDA, elided):
     v_ptr[0]                  = *(float4*)(A_ptr + tx * 4);   // vectorized load
     *(float4*)(O_ptr + tx * 4) = v_ptr[0];                   // vectorized store
 
-A buffer's dtype can itself be a **vector type**: ``T.alloc_local((1,), "float32x4")``
-declares a ``float4`` register directly (you index it as ``v[0]``), and a
-``float32x4`` ``vload`` / ``vstore`` then moves it as one 16-byte access. The vector
-dtype is not tied to ``vload`` — any buffer or scalar can carry it.
+buffer 的 dtype 本身也可以是 **vector type**：
+``T.alloc_local((1,), "float32x4")`` 会直接声明一个 ``float4`` register（用
+``v[0]`` 索引它），而 ``float32x4`` 的 ``vload`` / ``vstore`` 会把它作为一次
+16-byte access 移动。vector dtype 并不绑定到 ``vload`` ；任何 buffer 或 scalar
+都可以携带它。
 
-so the dtype → CUDA mapping is:
+因此 dtype → CUDA 的映射是：
 
 .. list-table::
    :header-rows: 1
@@ -88,24 +90,24 @@ so the dtype → CUDA mapping is:
 dtype vs type
 -------------
 
-The ``dtype`` is *low-level* — it says "what bits". Separately, a value has a
-high-level **type**: ``PrimType(dtype)`` for a scalar, or
-``PointerType(PrimType(dtype), scope)`` for a pointer. Most expressions are scalars
-(``PrimType``); the type system matters mainly for **pointers**.
+``dtype`` 是 *low-level* 信息，说明“这些 bits 是什么”。另外，一个 value 还有
+high-level **type**：scalar 使用 ``PrimType(dtype)`` ，pointer 使用
+``PointerType(PrimType(dtype), scope)`` 。大多数 expressions 都是 scalar
+（ ``PrimType`` ）；type system 主要在 **pointers** 上重要。
 
 Pointers (``handle``)
 ---------------------
 
-A buffer's ``data`` — its pointer — is a ``Var`` of pointer type, and it is
-**immutable** (a pointer is never reassigned). That shapes how you obtain one:
+buffer 的 ``data`` ，也就是它的 pointer，是 pointer type 的 ``Var`` ，并且
+immutable（pointer 不会被重新赋值）。这决定了你获取 pointer 的方式：
 
-- ``T.alloc_buffer(...)`` allocates storage **and** defines its ``data`` pointer.
-- ``T.decl_buffer(..., data=ptr)`` declares a buffer over an existing pointer
-  ``Var`` ``ptr``.
-- To back a buffer with a pointer **expression** — e.g. ``T.ptx.map_shared_rank``
-  (PTX ``mapa``) giving another cluster CTA's shared address — you must first bind
-  that expression to a pointer ``Var`` (``data`` must be a ``Var``, not an
-  expression), using a ``T.let`` of ``PointerType``:
+- ``T.alloc_buffer(...)`` 分配 storage， **并且** 定义它的 ``data`` pointer。
+- ``T.decl_buffer(..., data=ptr)`` 在已有 pointer ``Var`` ``ptr`` 上声明一个
+  buffer。
+- 如果要用 pointer **expression** 支撑一个 buffer，例如 ``T.ptx.map_shared_rank``
+  （PTX ``mapa`` ）返回另一个 cluster CTA 的 shared address，你必须先用
+  ``PointerType`` 的 ``T.let`` 把该 expression 绑定到 pointer ``Var`` 。 ``data``
+  必须是 ``Var`` ，不能是 expression：
 
   .. code-block:: python
 
