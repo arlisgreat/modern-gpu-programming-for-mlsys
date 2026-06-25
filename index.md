@@ -1,43 +1,23 @@
-# Modern GPU Programming For MLSys
+# MLSys 的现代 GPU 编程
 
-Machine learning systems sit at the heart of modern AI workloads. In these systems, performance
-often comes down to the quality of a small number of GPU kernels. Attention kernels, LLM prefill
-and decode kernels, low-precision block-scaled GEMMs, fused MoE layers, and other large fused
-kernels all directly shape end-to-end speed in both training and serving.
+机器学习系统是现代人工智能工作负载的核心。在这些系统中，性能通常取决于少数 GPU kernels 的质量。 Attention kernels、LLM prefill 和 decode kernels、低精度 block-scaled GEMM、fused MoE 层和其他大型 fused kernels，都会直接影响训练和 serving 的端到端速度。
 
-To make these kernels fast, however, we need more than a list of optimization tricks. Modern GPUs
-are no longer simple variations of the same old design. Recent architectures introduce richer
-memory spaces, new access patterns, and increasingly specialized execution units. To program them
-well, we need both a clear mental model of the hardware and a practical understanding of how
-high-performance kernels are built. This book is about developing both.
+然而，为了使这些 kernels 更快，我们需要的不仅仅是一系列优化技巧。现代 GPUs 不再是相同旧设计的简单变体。最近的架构引入了更丰富的内存空间、新的访问模式和日益专业化的执行单元。为了对它们进行良好的编程，我们既需要清晰的硬件思维模型，又需要对高性能 kernels 的构建方式有实际的了解。本书就是关于两者的发展。
 
-The book follows a simple progression: first understand the GPU hardware, then learn the
-programming model we will use, and finally build state-of-the-art kernels step by step. Our main
-target is the Blackwell generation, and our main running examples are fast matrix multiplication
-(GEMM) and FlashAttention. Along the way, we will also study the core ingredients behind GPU
-optimization: data layout, asynchronous data movement, and asynchronous coordination.
+本书遵循一个简单的流程：首先了解 GPU 硬件，然后学习我们将使用的编程模型，最后一步步构建 state-of-the-art kernels。我们的主要目标是 Blackwell 一代，我们的主要运行示例是快速矩阵乘法（GEMM）和 FlashAttention。在此过程中，我们还将研究 GPU 优化背后的核心要素：数据 layout、异步数据移动和异步协调。
 
-The material grows out of the [Machine Learning Systems](https://mlsyscourse.org/) course series
-at Carnegie Mellon University. To make the ideas easier to study and easier to run, this book uses
-the **TIRx** Python DSL to build real GPU kernel examples step by step. TIRx stays close to the
-hardware, which lets us reason about low-level control while still learning through runnable code.
+该材料源自卡内基梅隆大学的 [Machine Learning Systems](https://mlsyscourse.org/) 课程系列。为了使这些想法更容易学习和更容易运行，本书使用 **TIRx** Python DSL 一步步构建真正的 GPU kernel 示例。 TIRx 与硬件保持密切联系，这使我们能够推理低级控制，同时仍然通过可运行代码进行学习。
 
-## How This Book Is Organized
+## 本书的结构
 
-- **Part I, Understanding the GPU.** This part introduces the overall organization of the GPU,
-  general recipes for writing fast kernels, and key concepts such as data layout, asynchronous
-  memory operations, and coordination. It builds the hardware intuition that the rest of the book
-  relies on.
-- **Part II, TIRx Overview.** This part introduces the key elements of TIRx, which serve as the
-  foundation for the code examples throughout the book.
-- **Part III, GEMM: Tiled to SOTA.** A complete guide to optimizing a tiled GEMM, built up through
-  TMA pipelining, persistent scheduling, warp specialization, and 2-CTA clusters.
-- **Part IV, Flash Attention 4.** A complete attention kernel built from the Part III techniques:
-  two MMAs with softmax between them, online-softmax rescaling, causal masking, and GQA.
-- **Reference.** TIRx language reference and compiler internals.
+- **Part I，了解 GPU。** 这部分介绍了 GPU 的整体组织、快速编写 kernels 的一般秘诀，以及数据 layout、异步内存操作和协调等关键概念。它构建了本书其余部分所依赖的硬件直觉。
+- **Part II、TIRx Overview。**这部分介绍了 TIRx 的关键元素，它们作为全书代码示例的基础。
+- **Part III、GEMM：平铺至 SOTA。** 优化平铺 GEMM 的完整指南，通过 TMA pipeline、persistent scheduling、warp specialization 和 2-CTA 构建 clusters。
+- **Part IV、FlashAttention 4。** 从 Part III 技术构建的完整 Attention kernel：两个 MMA，其间带有 softmax、online softmax rescaling、causal masking 和 GQA。
+- **Reference。** TIRx 语言参考和编译器内部结构。
 
 ```{toctree}
-:caption: Part I, Understanding the GPU
+:caption: Part I, 理解 GPU
 :maxdepth: 1
 
 chapter_background/index
@@ -52,7 +32,7 @@ chapter_clc/index
 ```
 
 ```{toctree}
-:caption: Part II, TIRx Overview
+:caption: Part II, TIRx 概览
 :maxdepth: 1
 
 chapter_intro_tirx/index
@@ -69,7 +49,7 @@ chapter_gemm_advanced/index
 ```
 
 ```{toctree}
-:caption: Part IV, Flash Attention 4
+:caption: Part IV, FlashAttention 4
 :maxdepth: 2
 
 chapter_flash_attention/index

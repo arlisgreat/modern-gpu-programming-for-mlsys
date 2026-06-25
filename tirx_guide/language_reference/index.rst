@@ -20,10 +20,10 @@
 TIRx Language Reference
 =======================
 
-The full language-feature set for writing TIRx device kernels, factored out of the
-:ref:`chap_tirx_primer` walkthrough: parser utilities, data types and expressions,
-buffers and memory, control flow, and thread synchronization. Reach for these pages
-when you need the precise spelling or semantics of a feature.
+这里整理了编写 TIRx device kernels 所需的完整 language-feature 集合，并从
+:ref:`chap_tirx_primer` walkthrough 中拆分出来：parser utilities、data types
+and expressions、buffers and memory、control flow，以及 thread synchronization。
+当你需要确认某个 feature 的精确写法或语义时，查这一组页面。
 
 .. toctree::
    :maxdepth: 1

@@ -18,15 +18,14 @@
 Control flow
 ============
 
-Control flow is ``if``, the loop family, and ``while`` — each maps to the obvious
-CUDA.
+Control flow 包括 ``if`` 、loop family 和 ``while`` ，它们都会映射到直接对应的
+CUDA。
 
 if
 --
 
-A Python ``if`` / ``else`` becomes a CUDA ``if`` / ``else``. Guard work by a
-thread/lane comparison, or elect a single issuing thread with
-``T.ptx.elect_sync()``:
+Python ``if`` / ``else`` 会变成 CUDA ``if`` / ``else`` 。可以用 thread/lane
+comparison 做 guard，也可以用 ``T.ptx.elect_sync()`` 选出一个 issuing thread：
 
 .. code-block:: python
 
@@ -46,8 +45,9 @@ thread/lane comparison, or elect a single issuing thread with
       A_ptr[tx] = A_ptr[tx] + 1.0f;
     }
 
-For an expression-level choice (no branch), use ``T.if_then_else(cond, a, b)``. It
-lowers to a ternary, so it introduces no control-flow divergence:
+如果只是 expression-level choice（不需要 branch），使用
+``T.if_then_else(cond, a, b)`` 。它会降低成 ternary，因此不会引入 control-flow
+divergence：
 
 .. code-block:: c++
 
@@ -56,32 +56,31 @@ lowers to a ternary, so it introduces no control-flow divergence:
 Uniform vs. divergent control flow
 ----------------------------------
 
-Per-thread guards such as ``if tx < 128`` are fine for ordinary work, but
-**collective** operations must be reached *uniformly* by every thread they
-synchronize. 
+``if tx < 128`` 这样的 per-thread guards 对普通工作没问题，但 **collective**
+operations 必须被它们同步范围内的每个 thread *uniformly* 到达。
 
-For example, ``T.cuda.cta_sync()`` maps to ``__syncthreads()``, which requires all
-threads in the thread block. It must never sit inside a thread- or
-warpgroup-divergent branch: if placed inside ``if wg_id == 0:``, the other
-warpgroups will never arrive and the kernel will deadlock. When only one warpgroup
-needs to synchronize, use a warpgroup-scoped ``T.cuda.warpgroup_sync(id)`` (see
-:ref:`chap_gemm_advanced` and :doc:`threads_sync`). 
+例如， ``T.cuda.cta_sync()`` 映射到 ``__syncthreads()`` ，它要求 thread block
+里的所有 threads 都到达。它绝不能放在 thread-divergent 或 warpgroup-divergent
+branch 中：如果把它放在 ``if wg_id == 0:`` 里，其他 warpgroups 永远不会到达，
+kernel 会 deadlock。只有一个 warpgroup 需要同步时，使用 warpgroup-scoped
+``T.cuda.warpgroup_sync(id)`` （见 :ref:`chap_gemm_advanced` 和
+:doc:`threads_sync`）。
 
-The same caution applies to barrier setup. An ``mbarrier`` ``.init()`` lowers to a
-single-thread guard (``if (threadIdx.x < 1)``). Nesting it inside another divergent
-branch can leave the barrier uninitialized, leading to unspecified launch failures.
+同样的谨慎也适用于 barrier setup。 ``mbarrier`` 的 ``.init()`` 会降低为
+single-thread guard（ ``if (threadIdx.x < 1)`` ）。如果把它嵌在另一个 divergent
+branch 里，barrier 可能保持 uninitialized，进而导致未定义的 launch failures。
 
 loop
 ----
 
-Loops come in four flavors; a plain Python ``range`` becomes ``T.serial``:
+Loop 有四种形式；普通 Python ``range`` 会变成 ``T.serial`` ：
 
-- ``T.serial(n)`` — a sequential loop (ptxas may still unroll it).
-- ``T.unroll(n)`` — fully unrolled (expanded to straight-line statements).
-- ``T.vectorized(n)`` — a vectorized loop.
-- ``T.grid(*extents)`` — a nested loop nest.
+- ``T.serial(n)`` — sequential loop（ptxas 仍然可能 unroll 它）。
+- ``T.unroll(n)`` — fully unrolled（展开成 straight-line statements）。
+- ``T.vectorized(n)`` — vectorized loop。
+- ``T.grid(*extents)`` — nested loop nest。
 
-``break`` / ``continue`` work inside loops.
+``break`` / ``continue`` 可以在 loops 内使用。
 
 .. code-block:: python
 
@@ -94,13 +93,13 @@ Loops come in four flavors; a plain Python ``range`` becomes ``T.serial``:
       for (int j = 0; j < 8; ++j)
         B_ptr[i * 8 + j] = max(A_ptr[i * 8 + j], 0.0f);
 
-``T.unroll(4)`` instead expands to four straight-line statements with no loop.
+``T.unroll(4)`` 则会展开成四条 straight-line statements，不留下 loop。
 
 while
 -----
 
-A ``while`` loop runs until its condition is false. Use a mutable scalar counter
-(see :doc:`buffers`):
+``while`` loop 会一直运行到 condition 为 false。使用 mutable scalar counter（见
+:doc:`buffers`）：
 
 .. code-block:: python
 
@@ -109,8 +108,8 @@ A ``while`` loop runs until its condition is false. Use a mutable scalar counter
         A[i] = A[i] + T.float32(1.0)
         i += 1
 
-It lowers to a ``while (1)`` with an early-exit ``break`` (the counter is a
-one-element register buffer):
+它会降低为带 early-exit ``break`` 的 ``while (1)`` （counter 是一个 one-element
+register buffer）：
 
 .. code-block:: c++
 

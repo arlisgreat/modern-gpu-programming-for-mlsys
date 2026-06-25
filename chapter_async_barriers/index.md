@@ -1,25 +1,25 @@
 (chap_async_barriers)=
-# Async Coordination: mbarriers
+# 异步协调：mbarriers
 
-:::{admonition} Overview
+:::{admonition} 概述
 :class: overview
 
-- TMA and the Tensor Core are asynchronous, so issuing work is not the same as finishing it, and consumers need an explicit completion signal.
-- An mbarrier is that signal: producers arrive, consumers wait, and it tracks arrival counts and (for TMA) byte counts.
-- Each barrier carries a *phase* that flips every round; waiting on the correct phase is what gates a consumer safely.
+- TMA 和 Tensor Core 是异步的，因此发出工作与完成工作不同，消费者需要一个显式的完成信号。
+- mbarrier 就是这样的信号：生产者到达，消费者等待，并且它跟踪到达计数和（对于 TMA）字节计数。
+- 每个 barrier 都有一个每轮都会翻转的“阶段”；等待正确的阶段才能安全地保护消费者。
 :::
 
-TMA ({ref}`chap_tma`) and Tensor Core ({ref}`chap_tensor_cores`) operations are asynchronous. When a kernel issues a TMA load or a `tcgen05` MMA, the issuing thread does not wait for the operation to finish. The instruction is only submitted to the hardware engine; the actual data movement or matrix operation continues in parallel with the rest of the program.
+TMA ({ref}`chap_tma`) 和 Tensor Core ({ref}`chap_tensor_cores`) 操作是异步的。当 kernel 发出 TMA load 或 `tcgen05` MMA 时，发出 thread 不会等待操作完成。指令仅提交给硬件引擎；实际的数据移动或矩阵运算与程序的其余部分并行继续。
 
-That is useful because it lets memory movement and compute overlap. It also means that program order is not enough to prove that data is ready. A later instruction may run before the earlier asynchronous operation has completed. If TMA is still writing a shared-memory tile when MMA starts reading it, the MMA reads incomplete data. If the epilogue reads TMEM before the Tensor Core has finished writing the accumulator, it reads the wrong value. If the kernel waits on the wrong condition, it may never make progress.
+这很有用，因为它允许内存移动和计算重叠。这也意味着程序顺序不足以证明数据已准备好。后面的指令可能会在前面的异步操作完成之前运行。如果当 MMA 开始读取共享内存块时，TMA 仍在写入共享内存块，则 MMA 读取不完整的数据。如果 epilogue 在 Tensor Core 完成写入累加器之前读取 TMEM，则会读取错误值。如果 kernel 等待错误的条件，它可能永远不会取得进展。
 
-The kernel therefore needs an explicit completion signal at every asynchronous handoff. An `mbarrier` is that signal. A producer arrives on the barrier when its work is complete, and a consumer waits on the barrier before using the produced data. The same mechanism is used for TMA-to-MMA handoff, MMA-to-epilogue handoff, and buffer reuse across pipeline stages.
+因此，kernel 在每次异步切换时都需要一个明确的完成信号。 `mbarrier` 就是该信号。生产者在其工作完成后到达 barrier，而消费者在使用生成的数据之前在 barrier 上等待。相同的机制用于 TMA 到 MMA 切换、MMA 到 epilogue 切换以及跨 pipeline 阶段的缓冲区重用。
 
-A barrier is not just a one-shot flag. It carries a phase bit, and that phase bit changes every time the barrier completes a round of arrivals. The phase is what lets one barrier be reused across many loop iterations without confusing the completion of one iteration with the completion of another.
+barrier 不仅仅是一面一次性旗帜。它携带一个 phase 位，并且每次 barrier 完成一轮到达时该 phase 位都会改变。阶段允许在许多循环迭代中重用一个 barrier，而不会混淆一次迭代的完成与另一次迭代的完成。
 
-## The mbarrier
+## mbarrier
 
-An `mbarrier`, short for memory barrier, is a hardware synchronization object stored in shared memory. Conceptually, it contains two pieces of state: an arrival counter and a phase bit. The counter tells the barrier how many arrivals are still missing in the current round. The phase bit tells the kernel which round the barrier is currently in.
+`mbarrier`是内存 barrier 的缩写，是存储在共享内存中的硬件同步对象。从概念上讲，它包含两个状态：到达计数器和 phase 位。计数器告诉 barrier 本轮仍有多少到达者失踪。 phase 位告诉 kernel barrier 当前处于哪一轮。
 
 ```{raw} html
 <div style="overflow-x:auto;">
@@ -27,29 +27,29 @@ An `mbarrier`, short for memory barrier, is a hardware synchronization object st
         style="width:100%; min-width:1320px; height:620px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
 </div>
 ```
-*Interactive: an `mbarrier` state view showing the arrival counter, the phase bit, and the `init`, `arrive`, and `wait` operations; click a field to focus it.*
+*交互式：`mbarrier` 状态视图，显示到达计数器、phase 位以及 `init`、`arrive` 和 `wait` 操作；单击一个字段以将其聚焦。*
 
-A barrier starts with initialization. During `init`, the kernel sets how many arrivals this barrier should expect. The barrier begins in phase 0 with its counter loaded to that expected arrival count. From that point on, the barrier is waiting for all required producers or users of a resource to report that they are done.
+barrier 从初始化开始。在 `init` 期间，kernel 设置此 barrier 预计到达的人数。 barrier 从阶段 0 开始，其计数器加载到预期到达计数。从那时起，barrier 正在等待资源的所有必需生产者或用户报告他们已完成。
 
-An arrival reduces the amount of work the barrier is still waiting for. Different parts of a kernel can arrive on a barrier in different ways, and the distinction matters.
+到达减少了 barrier 仍在等待的工作量。 kernel 的不同部分可以以不同的方式到达 barrier，并且区别很重要。
 
-For TMA loads, the usual arrival path is a tx-count arrival. An operation such as `mbarrier.arrive.expect_tx(bytes)` does two things. First, it counts as the issuing thread's arrival on the barrier. Second, it records the number of bytes that the TMA engine is expected to transfer. The barrier is not complete just because the issuing thread has arrived. It also waits for the TMA engine to drain the byte count as the transfer finishes. The phase flips only after both conditions are satisfied: the normal arrival count has reached zero, and the pending tx byte count has reached zero.
+对于 TMA 负载，通常的到达路径是 tx 计数到达。像 `mbarrier.arrive.expect_tx(bytes)` 这样的操作会做两件事。首先，它算作发行 thread 到达 barrier。其次，它记录 TMA 引擎预计传输的字节数。仅仅因为发行的 thread 已经到达，barrier 并不完整。它还等待 TMA 引擎在传输完成时耗尽字节计数。仅在满足两个条件后才会发生 phase 翻转：正常到达计数已达到零，并且待处理的 tx 字节计数已达到零。
 
-This is why `expect_tx` should not be read as "one more ordinary arrival." It sets up a byte budget for the asynchronous copy. The hardware later accounts for the actual copy completion through complete-tx updates. The barrier completes only when the arrivals and the byte transfer have both completed.
+这就是为什么 `expect_tx` 不应被解读为“又一个普通的到来”。它为异步复制设置字节预算。硬件稍后会通过 complete-tx 更新来考虑实际的复制完成情况。仅当到达和字节传输都完成时，barrier 才完成。
 
-For Tensor Core work, the arrival path is different. A `tcgen05` MMA does not automatically advance a barrier just because the MMA was issued. The kernel must explicitly attach a barrier arrival to the commit path, for example with a `tcgen05.commit.mbarrier::arrive` operation. When that committed group completes, the Tensor Core side performs the barrier arrival. If the kernel forgets that commit arrival, the consumer waiting on the barrier will wait forever.
+对于 Tensor Core 工作，到达路径不同。 `tcgen05` MMA 不会仅仅因为发出了 MMA 就自动推进 barrier。 kernel 必须显式地将 barrier 到达附加到提交路径，例如使用 `tcgen05.commit.mbarrier::arrive` 操作。当该提交组完成时，Tensor Core 侧执行 barrier 到达。如果 kernel 忘记提交到达，则在 barrier 上等待的消费者将永远等待。
 
-A normal thread can also arrive directly on a barrier. This is used when ordinary thread code is the producer, or when a set of threads is announcing that it has finished using a resource. For example, after a consumer finishes reading a shared-memory buffer, it can arrive on a barrier that tells the producer the buffer is free to reuse.
+普通的 thread 也可以直接到达 barrier。当普通 thread 代码是生产者时，或者当一组 threads 宣布它已完成资源的使用时，使用此方法。例如，在消费者完成读取共享内存缓冲区后，它可以到达一个 barrier，告诉生产者该缓冲区可以自由重用。
 
-Waiting is the consumer side of the same protocol. A consumer waits until the barrier has completed the phase expected for the current iteration. Only then is it safe to read the data or reuse the resource protected by that barrier.
+等待是同一协议的消费者端。消费者等待直到 barrier 完成当前迭代预期的阶段。只有这样才能安全地读取数据或重用受该 barrier 保护的资源。
 
-The important point is that asynchronous hardware does not only run ahead of the program; it also reports completion back through the barrier. TMA can signal that a shared-memory tile is ready. Tensor Core work can signal that TMEM results are ready. Ordinary threads can signal that a buffer is no longer in use. The barrier gives all of these cases the same producer-consumer shape: the producer arrives, the consumer waits.
+重要的一点是，异步硬件不仅运行在程序之前，而且运行在程序之前。它还通过 barrier 报告完成情况。 TMA 可以发出共享内存块已准备就绪的信号。 Tensor Core 工作可以发出信号，表明 TMEM 结果已准备就绪。普通 threads 可以发出缓冲区不再使用的信号。 barrier 使所有这些情况都具有相同的生产者-消费者形状：生产者到达，消费者等待。
 
-## Phase Tracking
+## phase 跟踪
 
-A barrier is usually not allocated for a single use. A pipelined K-loop may execute the same handoff hundreds of times, and allocating a new shared-memory barrier for every iteration would not be practical. Instead, the kernel keeps a small fixed set of barriers and reuses them as the loop advances.
+barrier 通常不分配用于单一用途。 pipeline 的 K 循环可能会执行相同的切换数百次，并且为每次迭代分配新的共享内存 barrier 是不切实际的。相反，kernel 保留一小部分固定的 barrier，并在循环前进时重复使用它们。
 
-The phase bit is what makes that reuse safe.
+phase 位使重用变得安全。
 
 ```{raw} html
 <div style="overflow-x:auto;">
@@ -57,29 +57,29 @@ The phase bit is what makes that reuse safe.
         style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
 </div>
 ```
-*Interactive: a reused barrier across several pipeline iterations, showing the phase bit flipping after each completed round.*
+*交互式：跨多个 pipeline 迭代的重用 barrier，显示每轮完成后的 phase 位翻转。*
 
-Each time a barrier completes all arrivals for its current round, it flips phase: phase 0 becomes phase 1, phase 1 becomes phase 0, and so on. A wait operation checks the phase expected by the consumer. That expected phase is kept in a register by the kernel. After a stage has successfully waited for one round, the kernel toggles its local phase value before using the barrier for the next round.
+每次 barrier 完成当前轮次的所有到达时，它都会翻转阶段：阶段 0 变为阶段 1，阶段 1 变为阶段 0，依此类推。等待操作检查消费者期望的阶段。该预期 phase 由 kernel 保存在寄存器中。阶段成功等待一轮后，kernel 在使用下一轮 barrier 之前切换其本地 phase 值。
 
-This prevents the kernel from mistaking an old completion for a new one. Suppose a barrier was used for one TMA load and has already completed. If the next loop iteration reused the same barrier without tracking phase, a consumer could observe the previous completion and incorrectly assume the new load is ready. The phase bit separates those two rounds. Iteration 0 waits for one phase, iteration 1 waits for the opposite phase, iteration 2 waits for the first phase again, and the pattern continues.
+这可以防止 kernel 将旧完成误认为是新完成。假设一个 barrier 用于一台 TMA load 并且已经完成。如果下一个循环迭代在没有跟踪阶段的情况下重用相同的 barrier，消费者可能会观察到先前的完成情况并错误地假设新的负载已准备好。 phase 位将这两轮分开。迭代 0 等待一个阶段，迭代 1 等待相反的阶段，迭代 2 再次等待第一个阶段，并且该模式继续。
 
-In a real pipeline, the bookkeeping is usually per stage. The kernel has a fixed number of shared-memory stages, a matching fixed number of barriers, and a small set of phase values in registers. As the loop advances, each logical iteration maps onto one physical stage, and the phase value tells the wait operation which round of that physical barrier it is waiting for.
+在真实的 pipeline 中，簿记通常是按阶段进行的。 kernel 具有固定数量的共享内存级、匹配的固定数量的 barrier 以及寄存器中的一小组 phase 值。随着循环的进行，每个逻辑迭代都映射到一个物理阶段，并且阶段值告诉等待操作它正在等待该物理 barrier 的哪一轮。
 
-This is why the later GEMM code does not need one barrier per K tile ({ref}`chap_gemm_async`). It needs one barrier per reusable stage, plus phase tracking. The stage index selects the shared-memory buffer and barrier. The phase value distinguishes the current use of that stage from the previous one.
+这就是为什么后来的 GEMM 代码不需要每个 K 区块 ({ref}`chap_gemm_async`) 一个 barrier。每个可重复使用的阶段需要一个 barrier，以及阶段跟踪。阶段索引选择共享内存缓冲区和 barrier。阶段值区分该阶段的当前使用与前一阶段。
 
-**Try with your agent**: Give it a two-stage pipeline and ask it to trace four iterations. For each iteration, list the stage index, the local phase value, when the barrier flips, and what would go wrong if the phase were not toggled before the stage is reused.
+**尝试使用您的代理**：给它一个两阶段 pipeline 并要求它跟踪四次迭代。对于每次迭代，列出阶段索引、局部阶段值、barrier 何时翻转，以及如果在重用阶段之前未切换阶段会出现什么问题。
 
-## Synchronization Rules
+## 同步规则
 
-Once the barrier and phase mechanism are clear, the synchronization pattern in a tensor-core kernel is fairly mechanical. Every time one path produces data or releases a resource that another path will consume, the handoff must be made explicit.
+一旦 barrier 和 phase 机制明确，Tensor Core kernel 中的同步模式就相当机械化了。每当一条路径生成数据或释放另一条路径将消耗的资源时，必须明确进行切换。
 
-There are three common cases.
+常见的情况有以下三种。
 
-The first case is thread code producing data for an asynchronous engine. If threads write shared memory and a later TMA store or MMA instruction reads that shared memory, the kernel must make the thread writes visible before the engine reads them. This requires the appropriate thread-level synchronization or fence. The exact instruction depends on the scope of the handoff, but the reason is always the same: the engine must not observe the shared-memory buffer before the producing threads have finished writing it.
+第一种情况是为异步引擎生成数据的 thread 代码。如果 threads 写入共享内存，并且后面的 TMA store 或 MMA 指令读取该共享内存，则 kernel 必须在引擎读取 thread 写入之前使它们可见。这需要适当的 thread 级同步或栅栏。确切的指令取决于切换的 scope，但原因始终相同：在生成的 threads 完成写入之前，引擎不得观察共享内存缓冲区。
 
-The second case is TMA producing data for MMA. A TMA load fills a shared-memory tile asynchronously. The MMA path cannot infer that the tile is ready just because the TMA instruction was issued. The TMA operation must be associated with an `mbarrier`, and the MMA path must wait on that barrier before reading the tile.
+第二种情况是 TMA，为 MMA 生成数据。 TMA load 异步填充共享内存块。 MMA 路径不能仅仅因为发出了 TMA 指令就推断该 tile 已准备好。 TMA 操作必须与 `mbarrier` 关联，并且 MMA 路径必须在读取 tile 之前等待该 barrier。
 
-The third case is MMA producing data for the epilogue. A `tcgen05` MMA writes its result into TMEM asynchronously. The epilogue cannot safely read the accumulator until the Tensor Core has completed the relevant work. The MMA commit path therefore arrives on a completion barrier, and the epilogue waits on that barrier before reading TMEM.
+第三个案例是 MMA，为 epilogue 生成数据。 `tcgen05` MMA 将其结果异步写入 TMEM。在 Tensor Core 完成相关工作之前，epilogue 无法安全地读取累加器。因此，MMA 提交路径到达完成 barrier，epilogue 在读取 TMEM 之前等待该 barrier。
 
 ```{raw} html
 <div style="overflow-x:auto;">
@@ -87,8 +87,8 @@ The third case is MMA producing data for the epilogue. A `tcgen05` MMA writes it
         style="width:100%; min-width:1320px; height:700px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
 </div>
 ```
-*Interactive: a TMA load signaling completion through an `mbarrier`. The MMA path waits for the barrier before reading the shared-memory tile. The Tensor Core to epilogue handoff follows the same shape, except that the Tensor Core commit path performs the arrival instead of TMA.*
+*交互式：通过 `mbarrier` 完成 TMA load 信令。 MMA 路径在读取共享内存块之前等待 barrier。 Tensor Core 到 epilogue 的切换遵循相同的形状，只是 Tensor Core 提交路径执行到达而不是 TMA。*
 
-The same idea also applies to resource reuse. A barrier is not only a data-ready signal. It can also be a "resource is free" signal. A shared-memory stage cannot be overwritten until all consumers of the old tile are done with it. A TMEM region cannot be reused until the previous user has finished reading or writing it. In those cases, the arrival means "I am done with this resource," and the wait means "it is now safe to reuse this resource for the next stage."
+同样的想法也适用于资源重用。 barrier 不仅仅是数据就绪信号。它也可以是“资源免费”的信号。在旧 tile 的所有使用者都使用完共享内存阶段之前，无法覆盖该阶段。在前一个用户完成读取或写入之前，TMEM 区域无法重复使用。在这些情况下，到达意味着“我已完成此资源”，而等待意味着“现在可以安全地在下一阶段重用此资源”。
 
-This is the right way to read the synchronization in a pipelined GEMM kernel. The waits and arrives are not scattered around as defensive programming. Each one marks a concrete ownership transfer: a tile becomes ready, an accumulator becomes readable, or a buffer becomes reusable. Once those handoffs are identified, the control flow becomes much easier to follow.
+这是在 pipeline GEMM kernel 中读取同步的正确方法。等待和到达并不作为防御性编程而分散。每一个都标志着一个具体的所有权转移：一个 tile 准备就绪，一个累加器变得可读，或者一个缓冲区变得可重用。一旦确定了这些切换，控制流程就变得更容易遵循。

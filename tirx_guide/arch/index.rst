@@ -20,7 +20,7 @@
 Compiler Internals
 ==================
 
-Internals of the TIRx compiler, for contributors.
+面向 contributors 的 TIRx compiler internals。
 
 .. toctree::
    :maxdepth: 1
