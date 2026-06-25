@@ -326,9 +326,11 @@
     setRect('arr2', ldst.cx, ldst.top - G, smem.cx, smem.bottom + G);
     setLabel('lbl2', 'cp.async / LD/ST', ldst.cx - 6, (ldst.top + smem.bottom) / 2, 'end');
 
-    /* 3. SMEM → RF (ldmatrix fragments) */
-    setElbow('arr3', smem.right + G, smem.cy, smem.right + G + 12, smem.cy, rf.left - G, rf.cy, rf.left - G, rf.cy);
-    setLabel('lbl3', 'ldmatrix', (smem.right + rf.left) / 2, smem.cy - 8, 'middle');
+    /* 3. SMEM → RF (ldmatrix fragments, routed above the memory row) */
+    var y3bridge = (tc.bottom + smem.top) / 2;
+    var rfInX = rf.left + 24;
+    setElbow('arr3', smem.cx, smem.top - G, smem.cx, y3bridge, rfInX, y3bridge, rfInX, rf.top - G);
+    setLabel('lbl3', 'ldmatrix', (smem.cx + rfInX) / 2, y3bridge - 7, 'middle');
 
     /* 4. RF → TC (mma.sync reads fragments) */
     var upX = rf.cx - 16;

@@ -326,10 +326,11 @@
     setRect('arr2', tma.cx, tma.top - G, smem.cx, smem.bottom + G);
     setLabel('lbl2', 'cp.async.bulk', tma.cx - 6, (tma.top + smem.bottom) / 2, 'end');
 
-    /* 3. SMEM → TC (descriptor operand path) */
-    var x3mid = (smem.right + tc.left) / 2;
-    setElbow('arr3', smem.right + G, smem.cy, x3mid, smem.cy, x3mid, tc.cy, tc.left - G, tc.cy);
-    setLabel('lbl3', 'matrix data', (smem.right + tc.left) / 2, smem.cy - 8, 'middle');
+    /* 3. SMEM → TC (matrix data path, routed above the memory row) */
+    var y3bridge = (tc.bottom + smem.top) / 2;
+    var tcInX = tc.left + 28;
+    setElbow('arr3', smem.cx, smem.top - G, smem.cx, y3bridge, tcInX, y3bridge, tcInX, tc.bottom + G);
+    setLabel('lbl3', 'SMEM operands', (smem.cx + tcInX) / 2, y3bridge - 7, 'middle');
 
     /* 4. RF → TC path for descriptors and optional .rs A operand */
     var upX = rf.cx - 16;
