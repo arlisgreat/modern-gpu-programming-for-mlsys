@@ -7,7 +7,7 @@
 - TIRx layout API 将 layout 表示法从 `chap_data_layout` 转换为编译器对象。主要对象为`TileLayout`、`SwizzleLayout`、`ComposeLayout`。
 - `TileLayout` 描述了指定硬件轴上的仿射放置。它是根据分片规格 `S[...]`、副本规格 `R[...]` 和可选偏移量构建的。
 - layout 将一个逻辑坐标映射到一个或多个物理坐标。 `layout.apply()` 评估该映射。
-- `SwizzleLayout` 描述了用于避免 bank 冲突的基于 XOR 的共享内存 swizzles。 `ComposeLayout` 将 swizzle 堆叠在 tile layout 的顶部。
+- `SwizzleLayout` 描述了用于避免 bank conflict 的基于 XOR 的共享内存 swizzles。`ComposeLayout` 将 swizzle 堆叠在 tile layout 的顶部。
 - 现成的构造函数如 `tmem_datapath_layout`、`tcgen05_atom_layout` 和 `wg_local_layout` 覆盖了 kernels 中重复出现的硬件 layouts。
 :::
 
@@ -67,7 +67,7 @@ acc = TileLayout(S[(128, 256) : (1@TLane, 1@TCol)])
 
 这里逻辑行映射到`TLane`，逻辑列映射到`TCol`。在`chap_tmem`中，硬件坐标称为 Lane 和 Col。在 TIRx layout 表示法中，这些硬件轴被写为`TLane`和`TCol`。
 
-block-scaled MMA 比例因子 layout 使用复制：
+block-scaled MMA scale factor layout 使用复制：
 
 ```python
 scale_factor_layout = TileLayout(
@@ -162,7 +162,7 @@ TileLayout(S[shape : strides] + R[replica_shape : replica_stride] + offset)
 
 layout 具有三个部分。
 
-### 碎片
+### Fragments
 
 分片或 `D` 是由 `S[...]` 构建的部分。它将逻辑索引划分为一个或多个迭代并生成基本物理坐标。
 
@@ -259,7 +259,7 @@ Bank
 TLane, TCol
 ```
 
-`bx`、`by` 和 `bz` 等网格轴在 CTAs 上工作。 `cbx`、`cby` 和 `cbz` 等 cluster 轴将工作置于 CTA cluster 内。 `tx`、`warpid`、`laneid`、`tid_in_wg` 和 `wid_in_wg` 等螺纹轴描述了 CTA 或 warpgroup 内部的所有权。轴 `m` 是默认的线性记忆轴。 `P` 和 `F` 用于二维暂存器式放置。 `Bank` 命名共享内存组。 `TLane` 和 `TCol` 是 TMEM Lane 和 Col 坐标的 TIRx layout 名称。
+`bx`、`by` 和 `bz` 等网格轴在 CTAs 上工作。 `cbx`、`cby` 和 `cbz` 等 cluster 轴将工作置于 CTA cluster 内。 `tx`、`warpid`、`laneid`、`tid_in_wg` 和 `wid_in_wg` 等thread axes描述了 CTA 或 warpgroup 内部的所有权。轴 `m` 是默认的linear memory axis。 `P` 和 `F` 用于二维暂存器式放置。 `Bank` 命名shared memory bank。 `TLane` 和 `TCol` 是 TMEM Lane 和 Col 坐标的 TIRx layout 名称。
 
 轴名称是 layout 的一部分。这很重要，因为具有相同整数值的两个坐标可能意味着不同的硬件事物。 `1@tx` 与 `1@tid_in_wg` 不同。 `1@laneid` 与 `1@TLane` 不同。 layout 使这些含义保持明确。
 
@@ -279,7 +279,7 @@ layout.apply(*coord)
 
 评估规则有四个步骤。
 
-首先，按行优先顺序展平逻辑坐标。对于逻辑坐标：
+首先，按row-major顺序展平逻辑坐标。对于逻辑坐标：
 
 ```text
 x = (x0, x1, ..., xr-1)
@@ -313,7 +313,7 @@ flat = x0 * S1 * S2 * ... * Sr-1
 c0, c1, ..., cn-1
 ```
 
-在分片范围上使用相同的行主顺序。
+在分片范围上使用相同的 row-major顺序。
 
 第三，使用其步幅将每个组件累积到其轴上。如果分片 iter `k` 具有范围 `ek`、步长 `sk` 和轴 `ak`，则组件 `ck` 贡献：
 
@@ -329,7 +329,7 @@ ck * sk @ ak
 
 ## 案例研究：Tensor Core 寄存器块
 
-考虑一个逻辑 `(8, 16)` 区块分布在两个 warps（各 32 个 lane）上。每个 lane 拥有一个小的寄存器片段。寄存器槽由默认内存轴 `m` 表示。
+考虑一个逻辑 `(8, 16)` 区块分布在两个 warps（各 32 个 lane）上。每个 lane 拥有一个小的 register fragment。寄存器槽由默认内存轴 `m` 表示。
 
 ```python
 layout = TileLayout(
@@ -341,7 +341,7 @@ layout = TileLayout(
 
 从 `(8, 16)` tile 中获取逻辑元素 `(i, j)`。
 
-行主平坦索引为：
+row-major平坦索引为：
 
 ```text
 flat = 16 * i + j
@@ -417,13 +417,13 @@ TCol  = 112 * a + c
 TCol in [0, 224)
 ```
 
-224 列跨度是有意为之的。 TMEM layouts 不必是 2 的幂。 block-scaled FP8 GEMM 可以选择 224 列累加器，因为完整的 256 列 tile 不会为两个累加器级加上比例因子留下足够的 TMEM 容量。 layout API 可以直接表达该形状。
+224 列跨度是有意为之的。TMEM layouts 不必是 2 的幂。block-scaled FP8 GEMM 可以选择 224 列累加器，因为完整的 256 列 tile 不会为两个累加器级加上 scale factor 留下足够的 TMEM 容量。layout API 可以直接表达该形状。
 
-## 比例因子 layout
+## scale factor layout
 
-上面的累加器 layout 是纯粹的放置。每个逻辑累加器元素映射到一个 TMEM 坐标。 block-scaled MMA 的比例因子不同，因为同一物理组可能需要在多个 warp 窗口中可见。这就是复制发挥作用的地方。
+上面的累加器 layout 是纯粹的放置。每个逻辑累加器元素映射到一个 TMEM 坐标。block-scaled MMA 的 scale factor 不同，因为同一物理组可能需要在多个 warp 窗口中可见。这就是复制发挥作用的地方。
 
-紧凑比例因子 layout 可写为：
+紧凑 scale factor layout 可写为：
 
 ```python
 scale = TileLayout(
@@ -432,7 +432,7 @@ scale = TileLayout(
 )
 ```
 
-分片在 TMEM 中放置一个 32 行比例因子组：
+分片在 TMEM 中放置一个 32 行 scale factor group：
 
 ```text
 TLane = r
@@ -448,11 +448,11 @@ TLane = r + 32 * q, where q in {0, 1, 2, 3}
 TCol  = s
 ```
 
-因此，32 行组在 TMEM lane 0 到 31、32 到 63、64 到 95 以及 96 到 127 处可见。这是 `warpx4` 广播模式 ({ref}`chap_layout_generations`)。四个 warp 大小的 TMEM lane 窗口中的每一个都看到相同的比例因子组。
+因此，32 行组在 TMEM lane 0 到 31、32 到 63、64 到 95 以及 96 到 127 处可见。这是 `warpx4` 广播模式 ({ref}`chap_layout_generations`)。四个 warp 大小的 TMEM lane 窗口中的每一个都看到相同的 scale factor group。
 
-在完整的 block-scaled MMA layout 中，该原子与 M 行和 K 比例因子组上的外部迭代组合。多个比例因子也可以打包到一个 32 位 `TCol` 单元中，具体取决于比例因子 dtype。例如，fp8 比例因子可以将四个值打包到一个 32 位列单元中。然后，可选的零步重用和 pipeline 深度迭代器可以描述跨多个 MMA 和双缓冲的规模重用。
+在完整的 block-scaled MMA layout 中，该 atom 与 M 行和 K scale factor group 上的外部迭代组合。多个 scale factor 也可以打包到一个 32 位 `TCol` 单元中，具体取决于 scale factor dtype。例如，fp8 scale factor 可以将四个值打包到一个 32 位列单元中。然后，可选的 zero-stride reuse 和 pipeline depth iterator 可以描述跨多个 MMA 和 double buffering 的 scale reuse。
 
-重要的是，相同的 `TileLayout` 模型描述了这两种情况。累加器单独放置在 TMEM 中。比例因子是同一 TMEM 地址空间中的复制放置。
+重要的是，相同的 `TileLayout` 模型描述了这两种情况。累加器单独放置在 TMEM 中。scale factor 是同一 TMEM 地址空间中的复制放置。
 
 ## 现成的 layout
 
@@ -480,9 +480,9 @@ wg_local_layout(cols, rows=128)
 
 ## SwizzleLayout 和 ComposeLayout
 
-`TileLayout` 是仿射的。它可以表达指定轴上的步幅、复制和偏移。这对于许多放置来说已经足够了，包括 thread 片段、TMEM 切片和紧凑比例因子 layouts。
+`TileLayout` 是仿射的。它可以表达指定轴上的步幅、复制和偏移。这对于许多放置来说已经足够了，包括 thread 片段、TMEM 切片和紧凑 scale factor layouts。
 
-共享内存 swizzles 需要其他东西。用于避免库冲突的 swizzle 不是仿射步幅模式。它是线性共享内存地址的基于异或的排列。
+共享内存 swizzles 需要其他东西。用于避免 bank conflict 的 swizzle 不是仿射步幅模式。它是线性共享内存地址的基于异或的排列。
 
 因此，TIRx 作为单独的 layout 对象保持混合：
 
@@ -498,11 +498,11 @@ ComposeLayout(swizzle, tile)
 
 块 layout 首先产生一个线性内存地址。然后 swizzle 排列该地址。保持这两层分离比将 XOR 排列强制到仿射 layout 模型中更清晰。
 
-## 为什么要调配
+## 为什么要swizzle
 
-共享内存分为 32 个 bank，每个 bank 字保存 4 个字节。当一次访问的 lane 接触同一 bank 中的不同地址时，该访问会因 bank 冲突而串行化。
+共享内存分为 32 个 bank，每个 bank 字保存 4 个字节。当一次访问的 lane 接触同一 bank 中的不同地址时，该访问会因 bank conflict 而串行化。
 
-普通的行主 tile 可能会在结构上造成这种冲突。考虑具有行主 layout 的 `(8, 64)` float16 tile：
+普通的 row-major tile 可能会在结构上造成这种冲突。考虑具有row-major layout 的 `(8, 64)` float16 tile：
 
 ```python
 TileLayout(S[(8, 64) : (64@m, 1@m)])
@@ -516,7 +516,7 @@ m = 64 * i + j
 
 每行有 64 个 float16 值，即 128 个字节。这正是一个完整的共享 bank 行。如果 warp 向下读取具有固定 `j` 的列，则每一行步长都会前进一个完整的 128 字节行。 Bank 索引重复，因此列读取会跨行折叠到同一 Bank 上。
 
-swizzle 通过使低地址位依赖于高行位来改变这一点。本来会反复登陆同一岸的纵队却分散在不同的岸上。
+swizzle 通过使低地址位依赖于高行位来改变这一点。本来会反复登陆same bank的纵队却分散在different banks上。
 
 ## Swizzle 变换
 
@@ -536,7 +536,7 @@ atom_len    = S
 x = m >> M
 ```
 
-然后将`x`的`[S, S + B)`位置处的位组异或为`x`的位组`[0, B)`。然后通过将未更改的低 `M` 位放回来形成混合地址。
+然后将`x`的`[S, S + B)`位置处的位组异或为`x`的位组`[0, B)`。然后通过将未更改的低 `M` 位放回来形成swizzled address。
 
 等效地：
 
@@ -552,7 +552,7 @@ addr = (x2 << M) | low
 
 为了使 layout 格式良好，`S` 必须至少为 `B`。
 
-变换的重点不是改变 tile 中的逻辑元素。它改变了这些元素在共享内存中的位置。 MMA 仍然读取相同的逻辑块。 swizzle 让实体银行模式变得更好。
+变换的重点不是改变 tile 中的逻辑元素。它改变了这些元素在共享内存中的位置。MMA 仍然读取相同的逻辑块。swizzle 让 physical bank pattern 变得更好。
 
 ## 选择 Swizzle 参数
 
@@ -574,7 +574,7 @@ SwizzleLayout(per_element=3, swizzle_len=3, atom_len=3)
 
 大多数代码不应该手动导出这些参数。 dtype 和描述符模式通常决定它们。对于程序员来说重要的是 TIRx layout 中的 swizzle、TMA 描述符和 MMA 期望都匹配。
 
-因此，混合共享内存分配如下所示：
+因此，swizzled shared memory分配如下所示：
 
 ```python
 tile = TileLayout(S[(8, 64) : (64@m, 1@m)])
@@ -585,17 +585,17 @@ layout = ComposeLayout(swizzle, tile)
 
 组成的 layout 被附加到共享内存缓冲区。
 
-## 元素的岸和线
+## Element Banks and Lines
 
-要查看 swizzle 是否有帮助，请将混合后的元素地址转换回共享内存组。
+要查看 swizzle 是否有帮助，请将 swizzled element address 转换回 shared memory bank。
 
-令 `addr` 为混合元素地址，并令 `b` 为元素大小（以字节为单位）。字节地址为：
+令 `addr` 为 swizzled element address，并令 `b` 为元素大小（以字节为单位）。字节地址为：
 
 ```text
 byte = addr * b
 ```
 
-银行是：
+bank 为：
 
 ```text
 bank = floor(byte / 4) mod 32
@@ -607,7 +607,7 @@ bank = floor(byte / 4) mod 32
 line = floor(byte / 128)
 ```
 
-对于 float16、`b = 2`，因此银行公式变为：
+对于 float16、`b = 2`，因此 bank formula 变为：
 
 ```text
 bank = floor(addr / 2) mod 32
@@ -617,7 +617,7 @@ bank = floor(addr / 2) mod 32
 
 ## 工作示例：`(8, 64)` float16 tile 上的 128B Swizzle
 
-返回行主 float16 tile：
+返回 row-major float16 tile：
 
 ```text
 m = 64 * i + j
@@ -649,7 +649,7 @@ q = floor(j / 8)
 r = j mod 8
 ```
 
-混合后的地址是：
+swizzled address 是：
 
 ```text
 addr = 64 * i + 8 * (q xor i) + r
@@ -661,7 +661,7 @@ addr = 64 * i + 8 * (q xor i) + r
 addr = 72 * i
 ```
 
-对于 float16，银行是：
+对于 float16，bank 为：
 
 ```text
 bank = floor(addr / 2) mod 32
@@ -680,9 +680,9 @@ i = 6: bank 24
 i = 7: bank 28
 ```
 
-该专栏现在涉及八家不同的银行。冲突消失了。
+该 column 现在涉及 eight different banks。bank conflict 消失了。
 
-没有混合，同一列有地址：
+without swizzle，同一列有地址：
 
 ```text
 m = 64 * i
@@ -702,7 +702,7 @@ bank = floor(64 * i / 2) mod 32 = 0
 
 layout API 遵循三种设计选择。
 
-首先，它支持一般形状。硬件块并不总是 2 的幂。全局张量、共享内存阶段、TMEM 累加器和比例因子缓冲区通常具有来自容量限制或算法选择的形状。 layout 模型将这些形状视为正常形状。
+首先，它支持一般形状。硬件块并不总是 2 的幂。全局张量、共享内存阶段、TMEM 累加器和 scale factor 缓冲区通常具有来自容量限制或算法选择的形状。layout 模型将这些形状视为正常形状。
 
 其次，从逻辑坐标到物理坐标的映射。这个方向很重要，因为复制很常见。一个逻辑元素可能存在于多个物理位置。逻辑到物理映射将其直接表示为一组坐标。
 

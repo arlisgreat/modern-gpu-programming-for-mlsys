@@ -33,9 +33,9 @@ barrier 从初始化开始。在 `init` 期间，kernel 设置此 barrier 预计
 
 到达减少了 barrier 仍在等待的工作量。 kernel 的不同部分可以以不同的方式到达 barrier，并且区别很重要。
 
-对于 TMA 负载，通常的到达路径是 tx 计数到达。像 `mbarrier.arrive.expect_tx(bytes)` 这样的操作会做两件事。首先，它算作发行 thread 到达 barrier。其次，它记录 TMA 引擎预计传输的字节数。仅仅因为发行的 thread 已经到达，barrier 并不完整。它还等待 TMA 引擎在传输完成时耗尽字节计数。仅在满足两个条件后才会发生 phase 翻转：正常到达计数已达到零，并且待处理的 tx 字节计数已达到零。
+对于 TMA load，通常的到达路径是 tx-count arrive。像 `mbarrier.arrive.expect_tx(bytes)` 这样的操作会做两件事。首先，它算作 issuing thread 到达 barrier。其次，它记录 TMA engine 预计传输的字节数。仅仅因为 issuing thread 已经到达，barrier 并不完整。它还等待 TMA engine 在传输完成时 drain 字节计数。仅在满足两个条件后才会发生 phase 翻转：正常到达计数已达到零，并且待处理的 tx 字节计数已达到零。
 
-这就是为什么 `expect_tx` 不应被解读为“又一个普通的到来”。它为异步复制设置字节预算。硬件稍后会通过 complete-tx 更新来考虑实际的复制完成情况。仅当到达和字节传输都完成时，barrier 才完成。
+这就是为什么 `expect_tx` 不应被解读为“又一个普通 arrive”。它为 async copy 设置字节预算。硬件稍后会通过 complete-tx 更新来计入实际的 copy 完成情况。仅当 arrive 和字节传输都完成时，barrier 才完成。
 
 对于 Tensor Core 工作，到达路径不同。 `tcgen05` MMA 不会仅仅因为发出了 MMA 就自动推进 barrier。 kernel 必须显式地将 barrier 到达附加到提交路径，例如使用 `tcgen05.commit.mbarrier::arrive` 操作。当该提交组完成时，Tensor Core 侧执行 barrier 到达。如果 kernel 忘记提交到达，则在 barrier 上等待的消费者将永远等待。
 
