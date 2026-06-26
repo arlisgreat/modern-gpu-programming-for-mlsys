@@ -153,7 +153,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -313,7 +313,7 @@
 <p>第一个查询是 <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.is_canceled</span></code>。它返回一个谓词，告诉 kernel 取消是否成功。真正的谓词意味着 scheduler 发现了一个待处理的 cluster 启动，取消了它，并返回了它的坐标。错误的谓词意味着没有剩余的待完成工作。</p>
 <p>仅当 <code class="docutils literal notranslate"><span class="pre">is_canceled</span></code> 为 true 时，kernel 才应读取坐标。它使用 <code class="docutils literal notranslate"><span class="pre">clusterlaunchcontrol.query_cancel.get_first_ctaid</span></code> 执行此操作，提取已取消的 cluster 的第一个 CTA id。 That CTA id is a coordinate vector, usually read as <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code>, and the kernel decodes it into the output tile it should compute next.</p>
 <p>该协议中没有数字哨兵 tile ID。 kernel 在谓词上分支。如果谓词为真，则坐标有效。如果谓词为假，则工作窃取循环完成。</p>
-<p>在引擎盖下，这种形状直接遵循 CLC 正在做的事情。硬件没有从软件队列中分配抽象任务。它正在取消尚未发布的 cluster 发布。因此，成功的响应包含真实的 cluster 坐标。响应失败仅仅意味着启动队列已耗尽。</p>
+<p>在底层，这种形状直接遵循 CLC 正在做的事情。硬件没有从软件队列中分配抽象任务。它正在取消尚未 launch 的 cluster launch。因此，成功的响应包含真实的 cluster 坐标。响应失败仅仅意味着 launch queue 已耗尽。</p>
 </section>
 <section id="id2">
 <h2>工作窃取循环<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
@@ -335,7 +335,7 @@
 <h2>与持久 GEMM 的关系<a class="headerlink" href="#gemm" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">通过 Warp 专业化和 cluster 扩展 GEMM</span></a> 中的持久 GEMM 在主要演练中使用静态 scheduler。静态 scheduler 更容易解释，因为可以直接从循环状态计算下一个 tile。例如，诸如 <code class="docutils literal notranslate"><span class="pre">ClusterPersistentScheduler2D</span></code> 之类的 scheduler 可以在输出 tile 空间上使用 grid 步幅模式来分配 tile。</p>
 <p>CLC 是该静态分配的动态替代。外循环保持不变：每个驻留 cluster 重复计算一个输出 tile，然后前进到另一个输出 tile。改变的是下一个 tile 的来源。使用静态 scheduler，下一个 tile 是通过公式计算的。对于 CLC，下一个 tile 是通过硬件工作窃取返回的。</p>
-<p>这种差异在发布临近 epilogue 时最为重要。在静态计划中，剩余的工作可能不会均匀分配。一些 SMs 可能会用完分配的 tile，而其他一些则还剩下几个 tile。对于 CLC，提前完成的 cluster 请求另一个待处理的 cluster 坐标。只要启动队列中还有剩余工作，早期完成者就会不断拉出更多的 tile。</p>
+<p>这种差异在接近 epilogue 时最为重要。在静态计划中，剩余的工作可能不会均匀分配。一些 SMs 可能会用完分配的 tile，而其他一些则还剩下几个 tile。对于 CLC，提前完成的 cluster 请求另一个待处理的 cluster 坐标。只要 launch queue 中还有剩余工作，早期完成者就会不断拉出更多的 tile。</p>
 <p>当 tile 成本不统一时，这也很重要。由于边界、掩蔽、稀疏性、分组调度或围绕主矩阵乘法的融合工作，某些 GEMM 块可能会采用不同的路径。静态调度假设在观察到任何这些成本之前 tile 分配足够好。 CLC 不需要该假设。仅当 cluster 可用后，它才会分配更多工作。</p>
 <p>因此，在 TIRx 中，CLC 可以公开为动态 tile scheduler。编程模型不需要改变 tile 的计算。 tile 主体与静态 scheduler 使用的持久 GEMM 主体相同。 scheduler 从“根据公式计算下一个 tile 坐标”更改为“向硬件询问下一个可用的 cluster 坐标”。结果是相同的持久循环，但采用硬件驱动的工作分配，而不是固定的启动时间安排。</p>
 </section>

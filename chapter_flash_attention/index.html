@@ -155,7 +155,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -318,7 +318,7 @@
 </div>
 <p>Attention 是决定 Transformer 是否运行的 kernel，它也是我们迄今为止构建的所有内容最终必须协同工作的地方。我们为 GEMM 组装的每件作品都在这里：TMA tile 运动、<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA、TMEM、warpgroup 寄存器 tile 和显式 barrier。</p>
 <p>挑战在于，Attention 不是 MMA 的重复。它是两个 MMA，它们之间夹杂着实际工作：online softmax、causal masking，以及使较早和较晚的区块保持相同比例的重新缩放。</p>
-<p>中间阶段就是新困难所在。普通的 matmul 只会添加到它的累加器中；当新的键和值流入时，Attention 必须重新审视和重新调整已经计算出的结果。 softmax 工作本身也在两个 Tensor Core MMA 之间的 CUDA cores 上运行，因此指数和行式缩减直接位于关键路径上。</p>
+<p>中间阶段就是新困难所在。普通的 matmul 只会添加到它的累加器中；当新的键和值流入时，Attention 必须重新审视和重新调整已经计算出的结果。softmax 工作本身也在两个 Tensor Core MMA 之间的 CUDA cores 上运行，因此指数和 row-wise reduction 直接位于关键路径上。</p>
 <p>这就是为什么如此多的 Attention 优化实际上是 softmax 优化：重新制定 <code class="docutils literal notranslate"><span class="pre">exp</span></code>，并将 softmax 与 MMA 重叠，而不是停滞不前。</p>
 <p>本章的目标不是从头开始重新推导 FlashAttention。我们将保留足够的算法以使 kernel 可读，然后把重点放在真正新的部分上：该算法如何变成 TIRx。</p>
 <p>最清晰的方法是跟随单个 tile 流经 kernel。 <code class="docutils literal notranslate"><span class="pre">Q</span></code>、<code class="docutils literal notranslate"><span class="pre">K</span></code> 和 <code class="docutils literal notranslate"><span class="pre">V</span></code> 作为输入 tile 输入，从 GMEM 加载到 SMEM。分数 MMA 将 <code class="docutils literal notranslate"><span class="pre">Q</span></code> 和 <code class="docutils literal notranslate"><span class="pre">K</span></code> 相乘，形成 TMEM 中的分数 tile <code class="docutils literal notranslate"><span class="pre">S</span></code>。 Softmax 将<code class="docutils literal notranslate"><span class="pre">S</span></code>变成分子 tile<code class="docutils literal notranslate"><span class="pre">P</span></code>，并且值 MMA 组合<code class="docutils literal notranslate"><span class="pre">P</span></code>和<code class="docutils literal notranslate"><span class="pre">V</span></code>来更新输出累加器<code class="docutils literal notranslate"><span class="pre">O</span></code>。</p>
@@ -456,7 +456,7 @@ row_max = m_new
 </tr>
 <tr class="row-odd"><td><p>工作组 2</p></td>
 <td><p>更正和 epilogue</p></td>
-<td><p>在 TMEM 中重新缩放 O，标准化，分级输出</p></td>
+<td><p>在 TMEM 中重新缩放 O，标准化，stage 输出</p></td>
 </tr>
 </tbody>
 </table>
@@ -469,7 +469,7 @@ row_max = m_new
 </div>
 <p>当你阅读 kernel 时，首先找到角色分支。它告诉您哪个团队拥有嵌套在其中的每个 tile primitive。</p>
 <ul class="simple">
-<li><p>WG3 warp 1 启动 TMA load 命令。一个选定的 lane 发出副本，TMA 引擎移动 tile。</p></li>
+<li><p>WG3 warp 1 启动 TMA load command。一个选定的 lane 发出 copy command，TMA engine 移动 tile。</p></li>
 <li><p>WG3 warp 0 发出 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 指令。</p></li>
 <li><p>WG0 和 WG1 在完整的 warpgroup scope 下运行 softmax。</p></li>
 <li><p>WG2 在完整的 warpgroup scope 下运行校正和 epilogue 工作。</p></li>
@@ -506,10 +506,10 @@ row_max = m_new
 <td><p>小行最大变化的跳过阈值；当前的 kernel 使用 <code class="docutils literal notranslate"><span class="pre">8.0</span></code>，并且跳过的重新缩放将 <code class="docutils literal notranslate"><span class="pre">acc_scale</span></code> 精确设置为 <code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scale_log2</span></code></p></td>
-<td><p>softmax 以 log2 为单位的刻度 <code class="docutils literal notranslate"><span class="pre">log2(e)/√d</span></code>，因此 <code class="docutils literal notranslate"><span class="pre">P</span> <span class="pre">=</span> <span class="pre">exp2((S</span> <span class="pre">-</span> <span class="pre">m)</span> <span class="pre">·</span> <span class="pre">scale_log2)</span></code></p></td>
+<td><p>softmax 以 log2 为单位的scale <code class="docutils literal notranslate"><span class="pre">log2(e)/√d</span></code>，因此 <code class="docutils literal notranslate"><span class="pre">P</span> <span class="pre">=</span> <span class="pre">exp2((S</span> <span class="pre">-</span> <span class="pre">m)</span> <span class="pre">·</span> <span class="pre">scale_log2)</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">acc_scale</span></code></p></td>
-<td><p>每行重新缩放因子 softmax 通过 SMEM 邮箱传递到 WG2</p></td>
+<td><p>每行重新scale factor softmax 通过 SMEM 邮箱传递到 WG2</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">chunk_start</span></code>/<code class="docutils literal notranslate"><span class="pre">chunk_end</span></code>、<code class="docutils literal notranslate"><span class="pre">p_start</span></code>/<code class="docutils literal notranslate"><span class="pre">p_end</span></code></p></td>
 <td><p>正在读取/写入的 32 宽 softmax 块的列范围</p></td>
@@ -550,7 +550,7 @@ P, V -&gt; value MMA -&gt; O
 <blockquote>
 <div><p><strong>tile 原始读数：分数 MMA</strong></p>
 <ul class="simple">
-<li><p>范围：WG3 warp 0 发布；一条选定的 lane 到达 <code class="docutils literal notranslate"><span class="pre">s_ready</span></code>。</p></li>
+<li><p>范围：WG3 warp 0 issue；一条选定的 lane 到达 <code class="docutils literal notranslate"><span class="pre">s_ready</span></code>。</p></li>
 <li><p>layout：SMEM 中的 Q、K → TMEM 中的 <code class="docutils literal notranslate"><span class="pre">S</span></code> (<code class="docutils literal notranslate"><span class="pre">S_region[q_stage]</span></code>)。</p></li>
 <li><p>调度：<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code>。</p></li>
 <li><p>切换：<code class="docutils literal notranslate"><span class="pre">s_ready</span></code>（→ softmax）。</p></li>
@@ -804,11 +804,11 @@ P, V -&gt; value MMA -&gt; O
 <p>将其视为时间线而不是 barrier 图。它显示了哪些角色在大致相同的时刻处于活动状态，而早期的 barrier 流图可以让您检查确切的生产者-消费者等待情况。这两个数字回答了我们在本节开头提出的两个不同问题。</p>
 <p>每行都与代码的角色分支之一匹配：</p>
 <ul class="simple">
-<li><p>WG3 warp 1 发出 TMA 负载。</p></li>
-<li><p>WG3 warp 0 问题的得分为 MMA，价值为 MMA。</p></li>
+<li><p>WG3 warp 1 issue TMA load。</p></li>
+<li><p>WG3 warp 0 issue score MMA 和 value MMA。</p></li>
 <li><p>WG0 和 WG1 为两个 Q 阶段运行 softmax。</p></li>
 <li><p>WG2 释放或重新缩放 <code class="docutils literal notranslate"><span class="pre">O</span></code>，然后标准化最终输出。</p></li>
-<li><p>WG3 warp 2 发布 TMA store。</p></li>
+<li><p>WG3 warp 2 issue TMA store。</p></li>
 </ul>
 <p>下图从左到右描绘了一个具有代表性的 pipeline 波。负载 warp 从 <code class="docutils literal notranslate"><span class="pre">Q0</span></code>、<code class="docutils literal notranslate"><span class="pre">K[n-1]</span></code>、<code class="docutils literal notranslate"><span class="pre">Q1</span></code>、<code class="docutils literal notranslate"><span class="pre">V[n-1]</span></code> 开始，然后继续流式传输较低索引的 K/V 块。 MMA warp 发出第一个分数 MMA 来生成 <code class="docutils literal notranslate"><span class="pre">S0</span></code> 和 <code class="docutils literal notranslate"><span class="pre">S1</span></code>，WG0/WG1 将它们转换为 <code class="docutils literal notranslate"><span class="pre">P0</span></code> 和 <code class="docutils literal notranslate"><span class="pre">P1</span></code>。</p>
 <p>重要的是，MMA warp <em>不会</em>运行所有得分 MMA，然后运行所有价值 MMA。一旦两个 Q 阶段都已启动，它就会交织两种类型：当前 <code class="docutils literal notranslate"><span class="pre">V</span></code> 块的值 MMA，然后下一个 <code class="docutils literal notranslate"><span class="pre">K</span></code> 块的分数 MMA，依此类推：</p>

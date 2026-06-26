@@ -153,7 +153,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -332,7 +332,7 @@
 <ul class="simple">
 <li><p>范围：一个 warpgroup 步行负载 → MMA → 按顺序写回变成由满/空 barrier 连接的三个并发角色（TMA 生产者、MMA 消费者、写回）。</p></li>
 <li><p>layout：不变，与步骤 6 相同的 SMEM 级和 TMEM 累加器。</p></li>
-<li><p>调度：不变，TMA 负载，<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA。</p></li>
+<li><p>调度：不变，TMA load，<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA。</p></li>
 </ul>
 </div></blockquote>
 <p><strong>主题。</strong></p>
@@ -340,9 +340,8 @@
 <li><p>扭曲专业化：将不同的 warps/warpgroups 专用于不同的任务</p></li>
 <li><p>高级 barrier 抽象：<code class="docutils literal notranslate"><span class="pre">TMABar</span></code>、<code class="docutils literal notranslate"><span class="pre">TCGen05Bar</span></code>、<code class="docutils literal notranslate"><span class="pre">MBarrier</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">PipelineState</span></code> 用于自动阶段/阶段管理</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">warpgroup_sync</span></code> 用于每个 warpgroup 同步的 barrier ID</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">warpgroup_sync</span></code> 用于每个 warpgroup 同步的 barrier ID （多级 SMEM pipeline 和持久 <code class="docutils literal notranslate"><span class="pre">ClusterPersistentScheduler2D</span></code> 与步骤 5-6 一样重复使用；这里只有 scope 拆分是新的。）</p></li>
 </ul>
-<p>（多级 SMEM pipeline 和持久 <code class="docutils literal notranslate"><span class="pre">ClusterPersistentScheduler2D</span></code> 与步骤 5-6 一样重复使用；这里只有 scope 拆分是新的。）</p>
 <section id="id1">
 <h3>从顺序到并发<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>在介绍角色和 barrier 之前，先隔离一下 warp specialization 消除的调度瓶颈。下图使用 Step-4 样式的顺序时间线作为步骤 4-6 中预专业化 kernels 的紧凑参考，然后将其放在步骤 7 warp-specialized 时间表之上，因此引擎利用率的差异一目了然。</p>
@@ -352,7 +351,7 @@
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">tma2mma</span></code></strong> (TMA → MMA)：表示加载的 SMEM 数据已准备好供 MMA 使用。</p></li>
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">mma2tma</span></code></strong> (MMA → TMA)：表示 MMA 已完成读取缓冲区，因此 TMA 可以将其重新用于下一次加载。</p></li>
 </ul>
-<p>图中的一个细节乍一看可能像是一个错误：<code class="docutils literal notranslate"><span class="pre">mma2tma</span></code> 箭头向前跳了一个阶段。原因是环形缓冲区。对于 <code class="docutils literal notranslate"><span class="pre">PIPE_DEPTH=2</span></code>，有两个 SMEM 缓冲区，阶段 0 和阶段 1； TMA Load k=0 填充缓冲区 0，TMA Load k=1 填充缓冲区 1。当 MMA Compute k=0 完成读取缓冲区 0 时，它向 <code class="docutils literal notranslate"><span class="pre">mma2tma</span></code> 发出信号，表示缓冲区空闲，但实际想要缓冲区 0 回来的负载是 TMA Load k=2，不是 k=1（使用缓冲区 1）。这就是为什么 <code class="docutils literal notranslate"><span class="pre">mma2tma</span></code> 箭头从 MMA 计算 k=0 一直到达 TMA 负载 k=2。仅仅因为环有两个插槽，该版本就跃升了一个阶段。</p>
+<p>图中的一个细节乍一看可能像是一个错误：<code class="docutils literal notranslate"><span class="pre">mma2tma</span></code> 箭头向前跳了一个阶段。原因是环形缓冲区。对于 <code class="docutils literal notranslate"><span class="pre">PIPE_DEPTH=2</span></code>，有两个 SMEM 缓冲区，阶段 0 和阶段 1；TMA Load k=0 填充缓冲区 0，TMA Load k=1 填充缓冲区 1。当 MMA Compute k=0 完成读取缓冲区 0 时，它向 <code class="docutils literal notranslate"><span class="pre">mma2tma</span></code> 发出信号，表示缓冲区空闲，但实际想要缓冲区 0 回来的 load 是 TMA Load k=2，不是 k=1（使用缓冲区 1）。这就是为什么 <code class="docutils literal notranslate"><span class="pre">mma2tma</span></code> 箭头从 MMA Compute k=0 一直到达 TMA Load k=2。仅仅因为环有两个插槽，该版本就跃升了一个阶段。</p>
 </section>
 <section id="id2">
 <h3>扭曲角色<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
@@ -416,7 +415,7 @@
 </tbody>
 </table>
 </div>
-<p>为什么每个 barrier 都有它的<em>类型</em>？该类型遵循生产者宣布其完成的方式。 <strong>TMA 负载</strong>使用 <code class="docutils literal notranslate"><span class="pre">TMABar</span></code>，这是一个具有字节计数功能的 mbarrier：一旦传输的字节到达，TMA 硬件本身就会到达 barrier，因此消费者知道数据已准备好，而无需任何 thread 进行轮询。 <strong>TMA store</strong>不能使用此功能（store 没有人需要通知），因此它们回退到 <code class="docutils literal notranslate"><span class="pre">cp_async.bulk.commit_group()</span></code> + <code class="docutils literal notranslate"><span class="pre">wait_group(0)</span></code>，其中发行的 thread 只是等待其自己的写入耗尽。 <strong>MMA 操作</strong> 使用 <code class="docutils literal notranslate"><span class="pre">TCGen05Bar</span></code>，其中 <code class="docutils literal notranslate"><span class="pre">tcgen05.commit()</span></code> 指令在 MMA 完成时发出 barrier 信号。</p>
+<p>为什么每个 barrier 都有它的<em>类型</em>？该类型遵循生产者宣布其完成的方式。<strong>TMA load</strong> 使用 <code class="docutils literal notranslate"><span class="pre">TMABar</span></code>，这是一个具有字节计数功能的 mbarrier：一旦传输的字节到达，TMA 硬件本身就会到达 barrier，因此消费者知道数据已准备好，而无需任何 thread 进行轮询。<strong>TMA store</strong> 不能使用此功能（store 没有人需要通知），因此它们回退到 <code class="docutils literal notranslate"><span class="pre">cp_async.bulk.commit_group()</span></code> + <code class="docutils literal notranslate"><span class="pre">wait_group(0)</span></code>，其中 issuing thread 只是等待其自己的写入耗尽。<strong>MMA operation</strong> 使用 <code class="docutils literal notranslate"><span class="pre">TCGen05Bar</span></code>，其中 <code class="docutils literal notranslate"><span class="pre">tcgen05.commit()</span></code> 指令在 MMA 完成时发出 barrier 信号。</p>
 <p>这里的一个小细节将在步骤 8 中得到回报。<code class="docutils literal notranslate"><span class="pre">arrive</span></code> 调用会传递 <code class="docutils literal notranslate"><span class="pre">cta_mask=0</span></code>，因为在单个 CTA kernel 中，没有其他 CTA 需要发信号。当步骤 8 形成 cluster 时，该参数将变为非零，并成为唤醒协作 CTAs 的机制。</p>
 </section>
 <section id="pipelinestate">
@@ -623,7 +622,7 @@
 </section>
 <section id="epilogue">
 <h3>epilogue（回写）详细信息<a class="headerlink" href="#epilogue" title="Link to this heading">#</a></h3>
-<p>第 7 步可以提供一个令人愉快的简单 epilogue。仅使用 <code class="docutils literal notranslate"><span class="pre">BLK_N=128</span></code> 列，回写 warpgroup 将整个 TMEM 块一次性读取到寄存器中，然后发出一个 TMA store。第 8 步和第 9 步不会有这种奢侈，这正是它们引入我们稍后添加的分块的原因，但现在的顺序是：</p>
+<p>第 7 步可以使用一个很简单的 epilogue。仅使用 <code class="docutils literal notranslate"><span class="pre">BLK_N=128</span></code> 列，回写 warpgroup 将整个 TMEM 块一次性读取到寄存器中，然后发出一个 TMA store。第 8 步和第 9 步不能这么做，这正是它们引入后续分块的原因，但现在的顺序是：</p>
 <ol class="arabic simple">
 <li><p>等待 MMA：<code class="docutils literal notranslate"><span class="pre">mma2ld.wait(phase)</span></code>。本教程中的步骤 8 和 9 在此添加 <code class="docutils literal notranslate"><span class="pre">fence.after_thread_sync()</span></code> 作为保守的额外内容； MMA-完成 mbarrier 已经涵盖了排序，并且大多数 kernels（包括 CUTLASS）省略了它，所以步骤 7 也是如此。</p></li>
 <li><p>读取 TMEM -&gt; 寄存器（每个 thread、warpgroup scope 128 个 fp32，先通过 <code class="docutils literal notranslate"><span class="pre">Tx.copy_async(reg_wg,</span> <span class="pre">tmem[:,</span> <span class="pre">:BLK_N])</span></code>，然后是 <code class="docutils literal notranslate"><span class="pre">T.ptx.tcgen05.wait.ld()</span></code>）。</p></li>
@@ -680,7 +679,7 @@
 <li><p>对于 <code class="docutils literal notranslate"><span class="pre">cta_group=2</span></code>，MMA 硬件通过跨 CTA 共享内存访问从 <strong>两个</strong> CTAs’ SMEM 读取 B，因此它看到完整的逻辑输出列范围。</p></li>
 <li><p>结果：两个 CTAs 在一个 256x256 输出块上协作。每个 CTA 写入该 tile 的 128x256 行条带。</p></li>
 </ul>
-<p>值得停下来看看为什么这是一次真正的胜利，而不仅仅是工作的重新洗牌。每个 CTA 仍然只加载 A 的 128×K 和 B 的 128×K，因此 cluster 作为一个整体阶段大约是单个 CTA 操作数的 2 倍，但它会生成一个 256×256 的 tile，其中包含大约 4 倍 128×128 块的输出 FLOP。因此，MMA 在每个分段操作数字节上执行的工作大约是两倍，因为每个 CTA 的 B 片都通过协作 MMA 重用于其他 CTA 的 A 片。换句话说，算术强度大约翻倍，而这正是仍然依赖内存的 kernel 所需的杠杆：端到端表中约 2.2 倍的加速来自于将相同的字节提供给更多的数学运算。</p>
+<p>值得停下来看看为什么这是一次真正的胜利，而不仅仅是工作的重新洗牌。每个 CTA 仍然只加载 A 的 128×K 和 B 的 128×K，因此 cluster 作为一个整体 stage 大约是单个 CTA 操作数的 2 倍，但它会生成一个 256×256 的 tile，其中包含大约 4 倍 128×128 块的输出 FLOP。因此，MMA 在每个 staged 操作数字节上执行的工作大约是两倍，因为每个 CTA 的 B 片都通过协作 MMA 重用于其他 CTA 的 A 片。换句话说，算术强度大约翻倍，而这正是仍然依赖内存的 kernel 所需的关键收益来源：端到端表中约 2.2 倍的加速来自于将相同的字节提供给更多的数学运算。</p>
 </section>
 <section id="id4">
 <h3>平铺地址计算<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
@@ -723,7 +722,7 @@
 </section>
 <section id="cluster">
 <h3>cluster 范围的变更<a class="headerlink" href="#cluster" title="Link to this heading">#</a></h3>
-<p>这六个编辑都源于同一个转变：协作的 scope 现在是 cluster，而不是单个 CTA。以下几点说明了这种扩大在实践中意味着什么：每个 CTA 如何找到自己的位置，cluster 协调的 barrier，以及 CTA 实际发行合作 MMA。</p>
+<p>这六个编辑都源于同一个转变：协作的 scope 现在是 cluster，而不是单个 CTA。以下几点说明了这种扩大在实践中意味着什么：每个 CTA 如何找到自己的位置，cluster 协调的 barrier，以及 CTA 实际 issue cooperative MMA。</p>
 <ul class="simple">
 <li><p><strong>cluster CTA ID</strong>：<code class="docutils literal notranslate"><span class="pre">cbx</span></code> 告诉每个 CTA 它在 cluster 中的位置（0 或 1）。 CTA-0 处理 A 行 0-127，CTA-1 处理 A 行 128-255。</p></li>
 <li><p><strong>远程 barrier 视图</strong>：在 cluster 中，每个 CTA 都有自己的 SMEM 和自己的 barrier，这提出了一个明显的问题：如果 CTA-1 需要等待 CTA-0 生成的内容，那么它实际上会触及谁的 barrier？答案是指定 CTA-0 的 barrier 作为单个协调点，并让 cluster 中的任何 CTA 到达它们。 <code class="docutils literal notranslate"><span class="pre">map_shared_rank(tma2mma.ptr_to([0]),</span> <span class="pre">0)</span></code> 使用 TIRx 包装器 <code class="docutils literal notranslate"><span class="pre">tma2mma.remote_view(0)</span></code> 返回一个指向 CTA-0 barrier 的 cluster 范围的指针，从那时起，每个到达和等待目标 CTA-0 的副本。</p></li>
@@ -919,7 +918,7 @@
 </section>
 <section id="warp">
 <span id="chap-multi-consumer"></span><h2>第 9 步：多消费者 Warp 专业化<a class="headerlink" href="#warp" title="Link to this heading">#</a></h2>
-<p>到第 8 步，MMA 确实很忙，但是单个消费者 warp 只能如此快速地咀嚼暂存的 B tile，并且该 B tile 始终位于 SMEM 中，可供任何愿意阅读它的人使用。最终的优化利用了这一点：它添加了第二个 MMA 消费者，将<em>不同的</em> A 块与<em>相同的</em> B 块相乘。每个 CTA 的计算密度翻倍，cluster 输出从 256×256 增长到 512×256。如前所述，M=N=K=4096。</p>
+<p>到第 8 步，MMA 确实很忙，但是单个消费者 warp 只能以有限速度消耗 staged B tile，并且该 B tile 始终位于 SMEM 中，可供其他消费者读取。最终的优化利用了这一点：它添加了第二个 MMA 消费者，将<em>不同的</em> A 块与<em>相同的</em> B 块相乘。每个 CTA 的计算密度翻倍，cluster 输出从 256×256 增长到 512×256。如前所述，M=N=K=4096。</p>
 <blockquote>
 <div><p><strong>此步骤更改的内容：范围 + layout</strong></p>
 <ul class="simple">
@@ -1245,14 +1244,14 @@
 <p>将这些数字作为在受控条件下运行的单个 B200 参考运行来读取，而不是作为排行榜条目。每个步骤中嵌入的 <code class="docutils literal notranslate"><span class="pre">{.python</span> <span class="pre">.input}</span></code> 基准单元都是烟雾基准：它们有利于发现趋势，而不是声称峰值性能。</p>
 <p>四种技术几乎占据了所有收益：</p>
 <ol class="arabic simple">
-<li><p><strong>TMA 异步数据移动</strong>：硬件复制引擎取代了软件复制（从步骤 1 → 步骤 4 约为 142 倍）。正确读取这个 142× 非常重要：它反映了从单个 128×128 平铺 kernel (grid 1×1) 一直到具有 K 循环、空间平铺等的完整平铺和并行 kernel CTAs，<em>连同</em> TMA；这并不是 TMA 的孤立贡献。隔离 TMA 意味着比较两个仅在复制机制上不同的全尺寸 kernels。</p></li>
+<li><p><strong>TMA 异步数据移动</strong>：hardware copy engine 取代了 software copy（从步骤 1 → 步骤 4 约为 142 倍）。正确读取这个 142× 非常重要：它反映了从单个 128×128 tiled kernel (grid 1×1) 一直到具有 K 循环、空间 tiling 等的完整 tiled 和并行 kernel CTAs，<em>连同</em> TMA；这并不是 TMA 的孤立贡献。隔离 TMA 意味着比较两个仅在 copy mechanism 上不同的全尺寸 kernels。</p></li>
 <li><p><strong>软件 pipeline + Warp 专业化</strong>：通过赋予每个角色自己的专用角色来重叠加载和计算（步骤 4 → 步骤 7 的约 2.2 倍）。</p></li>
 <li><p><strong>CTA cluster</strong>：2-SM 协作 MMA 改进了 CTAs 中的 B-tile 重用（本基准测试中步骤 7 → 步骤 8 的约 2.2 倍）。</p></li>
 <li><p><strong>多消费者</strong>：两个 MMA warps 可实现更高的计算密度（步骤 8 → 步骤 9 的约 10%）。</p></li>
 </ol>
 <p>在测量的里程碑上绘制的，这四个相同的贡献追踪从同步平铺 kernel 到 cuBLAS 参考的下降。下图显示了所选的测量点：</p>
 <p><img alt="GEMM 优化之旅" src="../_images/gemm_perf.png" /></p>
-<p>请注意，随着我们沿着清单往下走，收益会缩小，这是结构性原因，而不是努力减弱。早期的步骤是针对“内存”瓶颈（TMA 替换软件副本，clusters 提高算术强度），而这正是 70 毫秒的大部分实际花费的地方，因此这些步骤的回报最大。到第 8 步，kernel 已经在 cuBLAS 的约 10% 范围内（0.104 vs 0.094 ms），并且接近<em>计算限制</em>，这意味着几乎没有内存停顿可以隐藏；第 9 步的多消费者重叠恢复了大部分剩余的内容。大约 10% 的最终增益正是接近计算上限时所期望的：它是接近解决的问题的收益递减，而不是弱优化的标志。</p>
+<p>请注意，随着我们沿着清单往下走，收益会缩小，这是结构性原因，而不是努力减弱。早期的步骤是针对“内存”瓶颈（TMA 替换 software copy，clusters 提高算术强度），而这正是 70 毫秒的大部分实际花费的地方，因此这些步骤的回报最大。到第 8 步，kernel 已经在 cuBLAS 的约 10% 范围内（0.104 vs 0.094 ms），并且接近 <em>compute-bound</em>，这意味着几乎没有内存停顿可以隐藏；第 9 步的多消费者重叠恢复了大部分剩余的内容。大约 10% 的最终增益正是接近 compute roofline 时所期望的：它是接近解决的问题的收益递减，而不是弱优化的标志。</p>
 <p>我们在本章中构建的所有内容（TMA 加载、<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA、TMEM 读回和 warp-specialized barrier）将直接延续到下一章。 FlashAttention 重用所有这些，然后通过在两个 MMA 阶段之间插入在线 softmax 步骤而不是简单地重复单个阶段来提高难度。</p>
 </section>
 <section id="id9">

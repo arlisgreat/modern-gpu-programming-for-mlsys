@@ -55,7 +55,7 @@
     <link rel="icon" href="../_static/mlc-favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="是什么让内核变得更快" href="../chapter_performance/index.html" />
+    <link rel="next" title="是什么让 kernel 变得更快" href="../chapter_performance/index.html" />
     <link rel="prev" title="MLSys 的现代 GPU 编程" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -155,7 +155,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -337,11 +337,11 @@
 <ul class="simple">
 <li><p><strong>thread</strong>：执行的标量单元。每个 thread 都有自己的程序计数器和自己的寄存器，并由其 warp 内的 lane ID 进行标识。</p></li>
 <li><p><strong>Warp</strong>：在 SIMT 中执行的 32 个 threads（<em>单指令，多个 threads</em>）。 warp 的 lane 一起发出相同的指令，但每个 lane 都保留自己的寄存器，并且可以自行屏蔽，这使得单个 warp 的 lane 遵循不同的分支。</p></li>
-<li><p><strong>warpgroup</strong>：四个连续的 warps，或 128 个 threads。 Hopper 引入了 warpgroup 作为发行 warpgroup 级 MMA（<code class="docutils literal notranslate"><span class="pre">wgmma</span></code>）的单元，在 Blackwell 上它承担了第二个角色：它是 Tensor Memory 接入的配合单元，其中 128 个 threads 一起将 TMEM 块移入或移出寄存器。</p></li>
+<li><p><strong>warpgroup</strong>：四个连续的 warps，或 128 个 threads。Hopper 引入了 warpgroup 作为 issue warpgroup 级 MMA（<code class="docutils literal notranslate"><span class="pre">wgmma</span></code>）的单元，在 Blackwell 上它承担了第二个角色：它是 Tensor Memory 接入的配合单元，其中 128 个 threads 一起将 TMEM 块移入或移出寄存器。</p></li>
 <li><p><strong>CTA</strong>（<em>Cooperative Thread Array</em>，CUDA 也称为 thread block）：硬件调度的基本单元。 CTA 在单个 SM 上运行，并在其中拥有私有共享内存分配。多个 CTAs 可以同时驻留在同一个 SM 上，并且当它们驻留在同一 SM 上时，它们会在它们之间分配 SM 的共享内存容量。</p></li>
 <li><p><strong>cluster</strong>：一组合作的 CTAs，可能生活在不同的 SMs 上。 cluster 中的 CTAs 可以相互同步，并且可以读写彼此的共享内存，这种功能称为分布式共享内存。</p></li>
 </ul>
-<p>这些级别值得详细讨论，因为与早期架构不同，Blackwell 的关键操作<strong>并非全部由同一组 threads</strong> 发出。 TMA 副本由单个 thread 发起，然后由硬件执行。 TMEM 到寄存器的加载是 warpgroup 分布式的：四个 warps 协作，每个移动自己的 TMEM 切片。 <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA 由一个当选的 thread 提交，而 cluster MMA 一次跨越两个 CTAs。因此，每个操作都有自己的自然粒度，运行它的 threads 集合就是我们所说的操作的 <strong>scope</strong>，这是本书反复讨论的三个重复设计元素（scope、layout 和 dispatch）中的第一个。</p>
+<p>这些级别值得详细讨论，因为与早期架构不同，Blackwell 的关键操作<strong>并非全部由同一组 threads</strong> 发出。TMA copy 由单个 thread 发起，然后由硬件执行。TMEM 到寄存器的 load 是 warpgroup 分布式的：四个 warps 协作，每个移动自己的 TMEM 切片。<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA 由一个 elected thread 提交，而 cluster MMA 一次跨越两个 CTAs。因此，每个操作都有自己的自然粒度，运行它的 threads 集合就是我们所说的操作的 <strong>scope</strong>，这是本书反复讨论的三个重复设计元素（scope、layout 和 dispatch）中的第一个。</p>
 </section>
 <section id="id2">
 <h2>内存空间<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
@@ -378,11 +378,11 @@
 </tbody>
 </table>
 </div>
-<p>按顺序阅读，这些空格描述了一条路径。本书中几乎每个 kernel 的数据路径都是<strong>GMEM→SMEM→（计算）→寄存器→SMEM→GMEM</strong>，对于 Tensor Corekernels TMEM 位于该路径的中间，在数学运行时持有累加器。</p>
+<p>按顺序阅读，这些空间描述了一条路径。本书中几乎每个 kernel 的数据路径都是<strong>GMEM→SMEM→（计算）→寄存器→SMEM→GMEM</strong>，对于 Tensor Core kernels，TMEM 位于该路径的中间，在数学运行时持有累加器。</p>
 <p>在这四款产品中，<strong>Tensor Memory (TMEM)</strong> 是唯一一款在 Blackwell 之前的硬件上没有模拟功能的产品，其完整详细信息要等到 <a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a> 为止。不过，现在值得理解其动机。早期的 GPUs 将大型 MMA 累加器保留在寄存器中，它们在寄存器中争夺稀缺资源。 Blackwell 相反，将 <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> 累加器输出写入 TMEM，这是一个 CTA 范围的 2D 暂存器，有 128 个 lane，每个 CTA 最多 512 个 32 位列（该阵列物理上位于 SM）。然后，kernel 必须在 epilogue 之前将 TMEM 显式读回到寄存器中。这个额外的步骤并不是免费的，它的两个后果将在整本书中重复出现。首先，TMEM 读取是<strong>显式且 warpgroup 分布式</strong>，由 warpgroup 的四个 warps 协作执行。第二个是 TMEM 与寄存器不同，必须<strong>显式分配和释放</strong>。</p>
 <section id="distributed-shared-memory-cluster">
 <h3>Distributed Shared Memory 跨 cluster<a class="headerlink" href="#distributed-shared-memory-cluster" title="Link to this heading">#</a></h3>
-<p>cluster 是层次结构中的一个级别，其成员可以跨越多个 SMs，并且该范围购买了其他级别所缺乏的内存功能。一个 CTA 在一个 SM 上运行，并在 SM 的共享内存中工作，但单个 CTA 的 SMEM 预算是有限的，大块通常需要更多的操作数存储或更多的重用，而单个块无法提供。 Hopper 的答案是<strong>thread blockcluster</strong>：一组比独立块合作更紧密的 CTAs，因为它们可以一起同步并读写彼此的共享内存，这种能力称为<strong>分布式共享内存（DSMEM）</strong>。 Blackwell 保留 clusters 并向其添加，具有动态调度（<a class="reference internal" href="../chapter_clc/index.html#chap-clc"><span class="std std-ref">高级：Cluster Launch Control</span></a>）和 2-CTA 协作 MMA。</p>
+<p>cluster 是层次结构中的一个级别，其成员可以跨越多个 SMs，并且这个 scope 提供了其他级别所缺乏的内存能力。一个 CTA 在一个 SM 上运行，并在 SM 的共享内存中工作，但单个 CTA 的 SMEM 预算是有限的，大块通常需要更多的操作数存储或更多的重用，而单个块无法提供。Hopper 的答案是 <strong>thread block cluster</strong>：一组比独立块合作更紧密的 CTAs，因为它们可以一起同步并读写彼此的共享内存，这种能力称为<strong>分布式共享内存（DSMEM）</strong>。Blackwell 保留 clusters 并向其添加动态调度（<a class="reference internal" href="../chapter_clc/index.html#chap-clc"><span class="std std-ref">高级：Cluster Launch Control</span></a>）和 2-CTA 协作 MMA。</p>
 <p>DSMEM 让 CTA 直接寻址并访问对等 CTA 的共享内存。 thread 可以命名对等方的 SMEM 中的位置，并将 tile 直接从其自己的 SMEM 批量复制到对等方的中，一旦字节到达，就会提高完成 barrier（<a class="reference internal" href="../chapter_async_barriers/index.html#chap-async-barriers"><span class="std std-ref">异步协调：mbarriers</span></a>）。 Part III 中的 2-CTA cluster GEMM 正是基于此机制构建的，使用它在 CTAs 对之间共享操作数块，而无需通过全局内存将它们路由回。</p>
 <p>下图显示了 CTA cluster 可能实现的额外 DSMEM 跳；单击一块可以查看每个 CTA 拥有什么以及跨 CTA 读取发生在哪里。</p>
 <div style="overflow-x:auto;">
@@ -395,7 +395,7 @@
 <h2>计算：CUDA Cores 和 Tensor Cores<a class="headerlink" href="#cuda-cores-tensor-cores" title="Link to this heading">#</a></h2>
 <p>threads 及其移动的数据必须在算术单元上满足，并且 SM 提供两种不同类型的数学引擎，而不是一种。两者之间的分工决定了几乎每个 kernel 的编写方式，并且它们发挥着互补的作用。</p>
 <ul class="simple">
-<li><p><strong>CUDA cores</strong> 是通用 SIMT ALU。它们运行处理索引算术、元素数学、归约和控制流的标量和向量指令，以及围绕繁重矩阵工作的粘合逻辑。</p></li>
+<li><p><strong>CUDA cores</strong> 是通用 SIMT ALU。它们运行处理索引算术、elementwise math、reduction 和控制流的标量和向量指令，以及围绕繁重矩阵工作的粘合逻辑。</p></li>
 <li><p><strong>Tensor Cores</strong> 是固定功能单元，以 <em>tile</em> 粒度执行密集矩阵乘法累加，在单个指令中计算 <span class="math notranslate nohighlight">\(D = AB + C\)</span>。</p></li>
 </ul>
 <p>这种划分很重要的原因是，Tensor Cores 提供的算术吞吐量远高于 CUDA cores，大约为 FLOP/s 的 10 倍或更多，因此密集线性代数（GEMM、卷积和 Attention）只有在 Tensor Cores 上运行时才能达到峰值性能。因此，获得性能很大程度上取决于让这些 Tensor Cores 得到满足。从一代 GPU 到下一代的变化是 Tensor Cores 的“如何”编程以及其结果“在哪里”得以保存。 Hopper 推出异步 warpgroup MMA（<code class="docutils literal notranslate"><span class="pre">wgmma.mma_async</span></code>）； Blackwell 的第五代 Tensor Core，<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code>，将其累加器放在 Tensor Memory 而不是寄存器中，我们将<code class="docutils literal notranslate"><span class="pre">chap_tensor_cores</span></code>奉献给它。</p>
@@ -407,14 +407,14 @@
 <div style="overflow-x:auto;">
 <iframe src="../demo/pipeline_arch.html" title="Blackwell GEMM data pipeline" loading="lazy"
         style="width:100%; min-width:1320px; height:680px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
-</div><p><em>交互：加载→MMA→Blackwell 上的 epiloguepipeline；单击一个操作以跟踪其跨硬件单元的数据路径。</em></p>
+</div><p><em>交互：load→MMA→Blackwell 上的 epilogue pipeline；单击一个操作以跟踪其跨硬件单元的数据路径。</em></p>
 <p>单个 GEMM 块流经三个阶段。</p>
 <ol class="arabic simple">
-<li><p><strong>加载。</strong> TMA 副本 (<a class="reference internal" href="../chapter_tma/index.html#chap-tma"><span class="std std-ref">异步数据移动：TMA</span></a>) 将 A 或 B 操作数块从 GMEM 流式传输到 SMEM。一份 thread 发出副本，预先记录预计到达的字节数。当字节到达时，TMA 引擎会报告其进度，并且只有在所有预期字节都已交付后，完成 barrier 才会翻转。</p></li>
-<li><p><strong>计算。</strong> <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA (<a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a>) 从 SMEM 中读取操作数块，并将乘积累加到 TMEM 块中。一个当选的 thread 发出它，当数学完成时它发出一个 barrier 信号。</p></li>
+<li><p><strong>load。</strong> TMA copy (<a class="reference internal" href="../chapter_tma/index.html#chap-tma"><span class="std std-ref">异步数据移动：TMA</span></a>) 将 A 或 B 操作数块从 GMEM stream 到 SMEM。一个 thread 发出 copy command，并预先记录预计到达的字节数。当字节到达时，TMA engine 会报告其进度，并且只有在所有预期字节都已交付后，完成 barrier 才会翻转。</p></li>
+<li><p><strong>compute。</strong> <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA (<a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a>) 从 SMEM 中读取操作数块，并将乘积累加到 TMEM 块中。一个 elected thread 发出它，当数学完成时它发出一个 barrier 信号。</p></li>
 <li><p><strong>epilogue。</strong> warpgroup 将 TMEM 累加器读回到寄存器中，将结果转换为输出数据类型，并将其存储到 GMEM，通常通过暂存 SMEM 并发出 TMA store 来实现。</p></li>
 </ol>
-<p>以这种方式编写的三个阶段看起来严格顺序，但慢速 kernel 和快速 kernel 之间的全部区别在于<strong>重叠</strong>。天真的 kernel 确实按顺序运行步骤（加载、等待、计算、等待、存储），因此每个引擎在等待前一个引擎时都处于空闲状态。相反，快速的 kernel 对它们进行 pipeline 处理：当 Tensor Core 在 tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 上计算时，TMA 引擎已经在获取 tile <code class="docutils literal notranslate"><span class="pre">k+1</span></code>，而 epilogue 正忙于耗尽 tile <code class="docutils literal notranslate"><span class="pre">k-1</span></code>，因此所有三个引擎同时保持占用状态。让三个异步引擎安全地相互传递工作正是 barrier 和阶段模型 (<a class="reference internal" href="../chapter_async_barriers/index.html#chap-async-barriers"><span class="std std-ref">异步协调：mbarriers</span></a>) 的工作，Part III 的 GEMM 梯子构建在其之上。</p>
+<p>以这种方式编写的三个阶段看起来严格顺序，但慢速 kernel 和快速 kernel 之间的全部区别在于<strong>重叠</strong>。naive kernel 确实按顺序运行步骤（load、wait、compute、wait、store），因此每个引擎在等待前一个引擎时都处于空闲状态。相反，快速的 kernel 对它们进行 pipeline 处理：当 Tensor Core 在 tile <code class="docutils literal notranslate"><span class="pre">k</span></code> 上计算时，TMA engine 已经在获取 tile <code class="docutils literal notranslate"><span class="pre">k+1</span></code>，而 epilogue 正忙于 drain tile <code class="docutils literal notranslate"><span class="pre">k-1</span></code>，因此所有三个引擎同时保持占用状态。让三个异步引擎安全地相互传递工作正是 barrier 和 stage 模型 (<a class="reference internal" href="../chapter_async_barriers/index.html#chap-async-barriers"><span class="std std-ref">异步协调：mbarriers</span></a>) 的工作，Part III 的 GEMM 阶梯构建在其之上。</p>
 </section>
 <section id="id3">
 <h2>接下来读什么<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
@@ -452,7 +452,7 @@
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">是什么让内核变得更快</p>
+        <p class="prev-next-title">是什么让 kernel 变得更快</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -4,9 +4,9 @@
 :::{admonition} 概述
 :class: overview
 
-- *数据 layout* 将张量的逻辑索引映射到物理位置，并决定合并、bank 冲突以及引擎是否可以读取 tile。
+- *数据 layout* 将张量的逻辑索引映射到物理位置，并决定 coalescing、bank conflict 以及引擎是否可以读取 tile。
 - 本书用一种表示法编写 layouts：`S[(shape) : (strides)]`，带有命名轴（`@laneid`、`@TLane`，...）和用于广播或复制数据的复制术语 `R[...]`。
-- Swizzle 是地址的 XOR 重新映射，可消除共享 bank 冲突。
+- Swizzle 是地址的 XOR 重新映射，可消除 shared memory bank conflict。
 :::
 
 以不同物理排列写入内存的相同数字在同一 GPU 上运行的数量级可能相差一个数量级。
@@ -19,13 +19,13 @@
 
 ## 形状-步幅模型
 
-在我们讨论 GPU 特定的 layouts 之前，值得从最简单的开始，因为本章中的其他所有内容都是建立在它之上的。从本质上讲，layout 只有两件事：**形状**和一组匹配的**步幅**。我们将这对写为 `S[(shape) : (strides)]`，为了找到逻辑索引所在的位置，我们采用该索引与步幅的点积。例如，行主 4×4 矩阵如下所示：
+在我们讨论 GPU 特定的 layouts 之前，值得从最简单的开始，因为本章中的其他所有内容都是建立在它之上的。从本质上讲，layout 只有两件事：**形状**和一组匹配的**步幅**。我们将这对写为 `S[(shape) : (strides)]`，为了找到逻辑索引所在的位置，我们采用该索引与步幅的点积。例如，row-major 4×4 矩阵如下所示：
 
 ```text
 S[(4, 4) : (4, 1)]        addr(i, j) = i·4 + j·1
 ```
 
-这只不过是经典的形状/步幅模型，编写紧凑（CuTe 表示法的行主要简化），并且接下来的所有内容都是根据它构建的。
+这只不过是经典的形状/步幅模型，编写紧凑（比 CuTe 表示法的 row-major 版本更简洁），并且接下来的所有内容都是根据它构建的。
 
 事实上，您几乎肯定已经使用过这个模型。任何编写过 PyTorch 或 NumPy 的人都会这样做，因为这些库中的张量*就是*精确的形状以及平面存储缓冲区上的跨距：
 
@@ -71,7 +71,7 @@ S[(4, 2, 2, 4) : (16, 4, 8, 1)]
 
 到目前为止，`S[...]` 中的每一步都已命名为线性内存中的偏移量，并且我们已将地址视为其中的位置。不过，在 GPU 上，数据可以驻留在多个位置：除了内存之外，tile 还可以分布在 warp lane、thread 寄存器或 TMEM lane 和列上。为了统一描述所有这些，我们用**命名轴**扩展符号。这个想法是让每个步幅系数带有一个轴标签，说明它移动的空间：`@m`用于普通内存，`@laneid`用于 warp lane，`@reg`用于寄存器，`@warpid`用于 warps，以及`@TLane` / `@TCol` 为 TMEM 坐标。有了标签，单个 layout 不仅可以描述数据在内存中的位置，还可以描述数据如何分布在运行其上的硬件资源上。
 
-一旦内存标签变得明确，内存中的行主 8×16 块就很简单了
+一旦内存标签变得明确，内存中的 row-major 8×16 块就很简单了
 
 ```text
 S[(8, 16) : (16@m, 1@m)]
@@ -103,9 +103,9 @@ S[(2, 4, 8) : (1@gpuid_y, 8@m, 1@m)] + R[2 : 1@gpuid_x]
 ```
 *交互式：layout 分布在 2×2 GPU 网格上；单击一个单元格即可查看哪个 device(s) 持有它。*
 
-### 内核内复制模式：TMEM 中的比例因子
+### 内核内复制模式：TMEM 中的 scale factor
 
-我们刚刚为 GPU 网格引入的复制维度 `R[...]` 不仅仅涉及多个设备。事实证明，相同的构造也描述了完全在单个 kernel 内部发生的事情：硬件“跨 lane 广播”的数据。 Blackwell 的 block-scaled MMA ({ref}`chap_layout_generations`) 就是一个很好的例子。它的比例因子位于 TMEM 中，其中 128 行比例向量仅存储在 **32 个 TMEM lane**中，其中逻辑行 `r` 转到 TMEM lane `r % 32`，其中 `r // 32` 沿列运行。然后，这 32 个存储的 TMEM lane**沿 TMEM `TLane` 轴**复制，从 32 个到 128 个 TMEM lane，以便读数 warpgroup 中的四个 warps 中的每一个都在其拥有 32 laneTMEM 窗口。这是一个 `warpx4` 广播，我们用复制维度来编写它。读取本身由 warps' threads 执行：
+我们刚刚为 GPU 网格引入的复制维度 `R[...]` 不仅仅涉及多个设备。事实证明，相同的构造也描述了完全在单个 kernel 内部发生的事情：硬件“跨 lane 广播”的数据。 Blackwell 的 block-scaled MMA ({ref}`chap_layout_generations`) 就是一个很好的例子。它的 scale factor 位于 TMEM 中，其中 128 行 scale vector 仅存储在 **32 个 TMEM lane** 中，其中逻辑行 `r` 转到 TMEM lane `r % 32`，其中 `r // 32` 沿列运行。然后，这 32 个存储的 TMEM lane **沿 TMEM `TLane` 轴**复制，从 32 个到 128 个 TMEM lane，以便读取 warpgroup 中的四个 warps 中的每一个都拥有自己的 32-lane TMEM 窗口。这是一个 `warpx4` 广播，我们用复制维度来编写它。读取本身由 warps' threads 执行：
 
 ```text
 S[(32, …) : (1@TLane, …)] + R[4 : 32@TLane]
@@ -119,29 +119,29 @@ S[(32, …) : (1@TLane, …)] + R[4 : 32@TLane]
 <iframe src="../demo/sf_tmem.html" title="Scale factors in TMEM: packing and warpx4 replication" loading="lazy"
         style="width:100%; min-width:1040px; height:560px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
 ```
-*交互：点击比例因子`SFA[m, sf]`；它在 lane `m mod 32`、列 `(m // 32)·4 + sf` 处打包到 TMEM 中，然后通过 `TLane` 轴将 `warpx4` 广播到四个 lane 副本（`l`、`l+32`、`l+64`、`l+96`)，每个 warp 的 32 lane 窗口一个。*
+*交互：点击 scale factor `SFA[m, sf]`；它在 lane `m mod 32`、列 `(m // 32)·4 + sf` 处打包到 TMEM 中，然后通过 `TLane` 轴将 `warpx4` 广播到四个 lane 副本（`l`、`l+32`、`l+64`、`l+96`），每个 warp 的 32-lane 窗口一个。*
 
 每列内的字节打包（`scale_vec` 1X/2X/4X 模式）和 `cta_group::2` 分割在 {ref}`chap_layout_generations` 中介绍。
 
-已经了解 CuTe 的读者可以将本章中的符号视为它的行主变体，并使用显式硬件命名轴和专用复制结构进行扩展。
+已经了解 CuTe 的读者可以将本章中的符号视为它的 row-major 变体，并使用显式硬件命名轴和专用复制结构进行扩展。
 
-## 混合 layout
+## swizzled layout
 
-本章中最后一个 layout 的存在是为了解决一个特定的硬件问题。 GPU 上的共享内存被组织成 bank，当不同 lane 落在不同库上时，访问运行速度最快。当多个 lane 到达“同一”bank 中的不同地址时，硬件别无选择，只能将它们序列化，并且我们付出了**bank 冲突**的代价。
+本章中最后一个 layout 的存在是为了解决一个特定的硬件问题。 GPU 上的 shared memory 被组织成 banks，当不同 lane 落在 different banks 上时，访问运行速度最快。当多个 lane 到达 same bank 中的不同地址时，硬件别无选择，只能将它们序列化，并且我们付出了 **bank conflict** 的代价。
 
-在张量程序中，这是很难避免的，因为内存不是以纯线性顺序访问的。使用矩阵时，我们通常需要读取同一 tile 的行切片和列切片，这会产生真正的紧张：对行访问有效的 layout 往往会在列访问中产生库冲突，而有利于列的访问会损害行。 **Swizzling** 是旨在打破这种紧张的技术。
+在张量程序中，这是很难避免的，因为内存不是以纯线性顺序访问的。使用矩阵时，我们通常需要读取同一 tile 的行切片和列切片，这会产生真正的紧张：对行访问有效的 layout 往往会在列访问中产生 bank conflict，而有利于列的访问会损害行。 **Swizzling** 是旨在打破这种紧张的技术。
 
 swizzle 背后的想法是排列地址映射，通常通过对列索引与行进行异或，以便行和列访问最终分布在 bank 中。它提供的无冲突保证是特定的：它适用于匹配元素宽度、swizzle 模式和访问模式（引擎描述符期望的模式），而不适用于任意元素宽度或对齐方式。
 
-下面的第一个交互式演示使这一点变得具体。单击列索引并观察每个元素落在哪个 bank 中：在左侧的普通行主 tile 中，一列将所有八个元素汇集到一个 bank 中，因此读取序列化为八个周期；在右侧的 XOR 混合 layout 中，同一列分布在八个不同的 bank 中，并在一个周期中读取。
+下面的第一个交互式演示使这一点变得具体。单击列索引并观察每个元素落在哪个 bank 中：在左侧的普通 row-major tile 中，一列将所有八个元素汇集到一个 bank 中，因此读取序列化为八个周期；在右侧的 XOR swizzled layout 中，同一列分布在八个不同的 bank 中，并在一个周期中读取。
 
 ```{raw} html
 <iframe src="../demo/swizzle_8x8.html" title="8x8 XOR swizzle" loading="lazy"
         style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe>
 ```
-*交互式：8×8 块，按普通行优先的列发生银行冲突，XOR swizzle 后无冲突。*
+*交互式：8×8 块，按普通 row-major 的列发生 bank conflict，XOR swizzle 后无冲突。*
 
-这个 8×8 的小例子抓住了核心思想，但真正的 GPU 存储器的 bank 比玩具图片显示的要多得多。为了使混合工作全面进行，我们不会将整个 tile 视为一个整体对象。相反，我们将内存切成小段，并在每个段内应用 swizzle 模式。实践中最常见的情况是 `SWIZZLE_128B`，它围绕 128 字节段组织，因此相同的行/列重新映射技巧自然适合 32 组内存系统。
+这个 8×8 的小例子抓住了核心思想，但真正的 GPU 存储器的 bank 比玩具图片显示的要多得多。为了使 swizzling 全面进行，我们不会将整个 tile 视为一个整体对象。相反，我们将内存切成小段，并在每个段内应用 swizzle 模式。实践中最常见的情况是 `SWIZZLE_128B`，它围绕 128 字节段组织，因此相同的行/列重新映射技巧自然适合 32-bank memory system。
 
 下面的交互式演示显示了一个具体硬件 swizzle、`SWIZZLE_128B`，因此在我们推广跨格式之前，逐段重复的模式是可见的。
 
@@ -151,7 +151,7 @@ swizzle 背后的想法是排列地址映射，通常通过对列索引与行进
 ```
 *交互式：128 字节段内的`SWIZZLE_128B`模式；逐步执行读取周期以查看 `physical_sector = logical_sector XOR row` 将每列分布在不同的 bank 中。*
 
-同样的想法也适用于 128 字节的情况。为了简化可视化，我们现在将使用单一色块来引用一个段，而不是绘制单独的银行。一般来说，硬件定义了一个小的重复**原子**，在其上应用排列，并且不同的 swizzle 模式选择不同的原子大小。 `SWIZZLE_128B`使用 8×128 B 原子，`SWIZZLE_64B`使用 8×64 B 原子，`SWIZZLE_32B`使用 8×32 B 原子；然后，整个 tile 将由正在使用的原子进行平铺。
+同样的想法也适用于 128 字节的情况。为了简化可视化，我们现在将使用单一色块来引用一个段，而不是绘制单独的 bank。一般来说，硬件定义了一个小的重复**原子**，在其上应用排列，并且不同的 swizzle 模式选择不同的原子大小。 `SWIZZLE_128B` 使用 8×128 B 原子，`SWIZZLE_64B` 使用 8×64 B 原子，`SWIZZLE_32B` 使用 8×32 B 原子；然后，整个 tile 将由正在使用的原子进行平铺。
 
 最终的交互式演示可让您在这些格式之间切换（包括 16 B 交错模式），选择一种数据类型，并将鼠标悬停在任何单元格上以直接检查一个原子内的元素排列，这是推理加载/存储指令所需的 swizzle 的正确详细程度。
 

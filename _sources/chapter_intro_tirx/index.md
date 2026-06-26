@@ -31,7 +31,7 @@ TIRx (Tensor IR neXt) 是一种 Python DSL，它将这三个决策公开：**sco
 
 ## 第一个内核：单 MMA GEMM
 
-我们承诺的 kernel 是最小的 GEMM，缩减到仍然使用 Tensor Core 的最小版本。它计算 `D = A B^T` 的单个 128 x 128 输出 tile，其中 K = 64。整个计算从头到尾表示为一个 `Tx.gemm_async` tile 操作。（该 tile 操作不会映射到单个硬件指令：因为硬件 MMA K-atom 为 16，所以 K=64 tile 会降低为沿 K 步进的 `tcgen05.mma` 指令短序列。 DSL 的要点恰恰是我们编写 tile，而不是手写指令序列。）围绕该操作，kernel 执行通常的杂务：它分配 shared memory (SMEM) 和 Tensor Memory (TMEM)，将 A 和 B 从 global memory 复制到 shared memory，将 tile MMA 发送到 TMEM accumulator，通过 registers 读回该 accumulator，并存储结果。尽管 kernel 很小，但它是我们在 {ref}`chap_gemm_basics` 中攀爬的 GEMM 阶梯的第一步，它会带着完整的演练返回。
+我们承诺的 kernel 是最小的 GEMM，简化到仍然使用 Tensor Core 的最小版本。它计算 `D = A B^T` 的单个 128 x 128 输出 tile，其中 K = 64。整个计算从头到尾表示为一个 `Tx.gemm_async` tile 操作。（该 tile 操作不会映射到单个硬件指令：因为硬件 MMA K-atom 为 16，所以 K=64 tile 会降低为沿 K 步进的 `tcgen05.mma` 指令短序列。DSL 的要点恰恰是我们编写 tile，而不是手写指令序列。）围绕该操作，kernel 执行通常的杂务：它分配 shared memory (SMEM) 和 Tensor Memory (TMEM)，将 A 和 B 从 global memory copy 到 shared memory，将 tile MMA 发送到 TMEM accumulator，通过 registers 读回该 accumulator，并存储结果。尽管 kernel 很小，但它是我们在 {ref}`chap_gemm_basics` 中攀爬的 GEMM 阶梯的第一步，它会带着完整的演练返回。
 
 每个 TIRx kernel 都是从相同的进口产品开始的，因此值得一睹它们的风采：
 
@@ -184,11 +184,11 @@ print("PASS")
 
 使用演示时，请注意三个问题：
 
-- **范围：谁运行操作？** `Tx.cta.copy(...)` 的范围是 CTA，因此所有 128 个 threads 都有助于 GMEM -> SMEM 副本。 `Tx.gemm_async(...)` 由当选的 thread 发布一次，因为每个降低的 `tcgen05.mma` 指令已经是合作的 MMA 发布。 `Tx.wg.copy_async(...)` 是 warpgroup 范围的，因此 warpgroup 的 128 threads 将 TMEM 回读逐行拆分。
+- **范围：谁运行操作？** `Tx.cta.copy(...)` 的范围是 CTA，因此所有 128 个 threads 都参与 GMEM -> SMEM copy。`Tx.gemm_async(...)` 由 elected thread issue 一次，因为每个降低后的 `tcgen05.mma` 指令已经是 cooperative MMA issue。`Tx.wg.copy_async(...)` 是 warpgroup 范围的，因此 warpgroup 的 128 threads 将 TMEM 回读逐行拆分。
 - **layout：每个 tile 位于哪里？** A 和 B 使用 `tcgen05.mma` 期望的混合 SMEM layouts。累加器位于 `TLane`/`TCol` layout 下的 TMEM 中。寄存器回读视图将行映射到 `tid_in_wg`，因此每个 warpgroup thread 拥有一个行片段。
-- **调度：哪个硬件路径执行它？** `Tx.gemm_async(..., dispatch="tcgen05", ...)` 选择 Blackwell Tensor Core 路径。复制操作也有 dispatch 选择：第一个 kernel 使用普通的 thread 副本，后面的 GEMM 步骤将这些副本交换为 TMA，而不更改周围的 scope 或 layout。
+- **调度：哪个硬件路径执行它？** `Tx.gemm_async(..., dispatch="tcgen05", ...)` 选择 Blackwell Tensor Core 路径。copy 操作也有 dispatch 选择：第一个 kernel 使用普通的 thread copy，后面的 GEMM 步骤将这些 copy 换成 TMA，而不更改周围的 scope 或 layout。
 
-**与您的代理一起尝试**：从第一个 kernel 中选择三行：一份副本、一份 MMA 和一份 TMEM 回读。要求它用 scope、layout 和 dispatch 标记每一行，然后检查答案是否与代码中的守卫、缓冲区 layouts 和 `dispatch=` 参数匹配。
+**与您的代理一起尝试**：从第一个 kernel 中选择三行：一个 copy、一个 MMA 和一个 TMEM 回读。要求它用 scope、layout 和 dispatch 标记每一行，然后检查答案是否与代码中的 guard、缓冲区 layouts 和 `dispatch=` 参数匹配。
 
 ## 编译的工作原理
 

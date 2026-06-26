@@ -153,7 +153,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -451,7 +451,7 @@ python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;i
 <td><p>生成了 Tensor Core 路径</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cp.async.bulk.tensor</span></code></p></td>
-<td><p>副本降为 TMA</p></td>
+<td><p>copy 降为 TMA</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cta_sync();</span></code></p></td>
 <td><p>CTA 全护栏；它不能位于 <code class="docutils literal notranslate"><span class="pre">wg_id</span></code> 分支内</p></td>
@@ -489,7 +489,7 @@ python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;i
 <p>在更改算法之前检查这些：</p>
 <ul class="simple">
 <li><p>barrier 初始化位于顶层，而不是在 <code class="docutils literal notranslate"><span class="pre">wg_id</span></code> 防护内。</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tcgen05_alloc</span></code> 和 <code class="docutils literal notranslate"><span class="pre">tcgen05_dealloc</span></code> 有一个 warp 守卫，但没有 lane 守卫；发行 warp 的所有泳道参与。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tcgen05_alloc</span></code> 和 <code class="docutils literal notranslate"><span class="pre">tcgen05_dealloc</span></code> 有一个 warp guard，但没有 lane guard；issuing warp 的所有 lanes 参与。</p></li>
 <li><p>TMA 和 MMA 循环均迭代 <code class="docutils literal notranslate"><span class="pre">K_TILES</span></code> 次。</p></li>
 <li><p>阶段初始化为生产者=<code class="docutils literal notranslate"><span class="pre">1</span></code>，消费者=<code class="docutils literal notranslate"><span class="pre">0</span></code>。</p></li>
 </ul>
@@ -609,8 +609,8 @@ python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;i
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>生成的 CUDA 没有<code class="docutils literal notranslate"><span class="pre">cp.async.bulk.tensor</span></code></p></td>
-<td><p>副本没有降低到 TMA</p></td>
+<tr class="row-even"><td><p>生成的 CUDA 没有 <code class="docutils literal notranslate"><span class="pre">cp.async.bulk.tensor</span></code></p></td>
+<td><p>copy 没有降低到 TMA</p></td>
 <td><p>检查 <code class="docutils literal notranslate"><span class="pre">dispatch=&quot;tma&quot;</span></code>、目标能力和操作数 layout</p></td>
 </tr>
 <tr class="row-odd"><td><p>生成的 CUDA 没有<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code>路径</p></td>

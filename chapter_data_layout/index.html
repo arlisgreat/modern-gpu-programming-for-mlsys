@@ -54,7 +54,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Tensor Core 各代 GPU 操作数 layout" href="../chapter_layout_generations/index.html" />
-    <link rel="prev" title="是什么让内核变得更快" href="../chapter_performance/index.html" />
+    <link rel="prev" title="是什么让 kernel 变得更快" href="../chapter_performance/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -153,7 +153,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -278,10 +278,10 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">平铺 layout</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">命名轴</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">分布式 layout</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem">内核内复制模式：TMEM 中的比例因子</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-scale-factor">内核内复制模式：TMEM 中的 scale factor</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">混合 layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzled-layout">swizzled layout</a></li>
 </ul>
             </nav>
         </div>
@@ -298,9 +298,9 @@
 <div class="overview admonition">
 <p class="admonition-title">概述</p>
 <ul class="simple">
-<li><p><em>数据 layout</em> 将张量的逻辑索引映射到物理位置，并决定合并、bank 冲突以及引擎是否可以读取 tile。</p></li>
+<li><p><em>数据 layout</em> 将张量的逻辑索引映射到物理位置，并决定 coalescing、bank conflict 以及引擎是否可以读取 tile。</p></li>
 <li><p>本书用一种表示法编写 layouts：<code class="docutils literal notranslate"><span class="pre">S[(shape)</span> <span class="pre">:</span> <span class="pre">(strides)]</span></code>，带有命名轴（<code class="docutils literal notranslate"><span class="pre">&#64;laneid</span></code>、<code class="docutils literal notranslate"><span class="pre">&#64;TLane</span></code>，…）和用于广播或复制数据的复制术语 <code class="docutils literal notranslate"><span class="pre">R[...]</span></code>。</p></li>
-<li><p>Swizzle 是地址的 XOR 重新映射，可消除共享 bank 冲突。</p></li>
+<li><p>Swizzle 是地址的 XOR 重新映射，可消除 shared memory bank conflict。</p></li>
 </ul>
 </div>
 <p>以不同物理排列写入内存的相同数字在同一 GPU 上运行的数量级可能相差一个数量级。</p>
@@ -309,11 +309,11 @@
 <p>本章介绍了现代 GPU 编程中出现的主要 layouts。为了使讨论易于处理，我们开发了一种紧凑的<strong>符号</strong>来描述机器学习系统遇到的情况。我们以 <strong>swizzling</strong> 结束，该机制可以同时高效地按行和按列访问 tile。</p>
 <section id="id1">
 <h2>形状-步幅模型<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
-<p>在我们讨论 GPU 特定的 layouts 之前，值得从最简单的开始，因为本章中的其他所有内容都是建立在它之上的。从本质上讲，layout 只有两件事：<strong>形状</strong>和一组匹配的<strong>步幅</strong>。我们将这对写为 <code class="docutils literal notranslate"><span class="pre">S[(shape)</span> <span class="pre">:</span> <span class="pre">(strides)]</span></code>，为了找到逻辑索引所在的位置，我们采用该索引与步幅的点积。例如，行主 4×4 矩阵如下所示：</p>
+<p>在我们讨论 GPU 特定的 layouts 之前，值得从最简单的开始，因为本章中的其他所有内容都是建立在它之上的。从本质上讲，layout 只有两件事：<strong>形状</strong>和一组匹配的<strong>步幅</strong>。我们将这对写为 <code class="docutils literal notranslate"><span class="pre">S[(shape)</span> <span class="pre">:</span> <span class="pre">(strides)]</span></code>，为了找到逻辑索引所在的位置，我们采用该索引与步幅的点积。例如，row-major 4×4 矩阵如下所示：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>S[(4, 4) : (4, 1)]        addr(i, j) = i·4 + j·1
 </pre></div>
 </div>
-<p>这只不过是经典的形状/步幅模型，编写紧凑（CuTe 表示法的行主要简化），并且接下来的所有内容都是根据它构建的。</p>
+<p>这只不过是经典的形状/步幅模型，编写紧凑（比 CuTe 表示法的 row-major 版本更简洁），并且接下来的所有内容都是根据它构建的。</p>
 <p>事实上，您几乎肯定已经使用过这个模型。任何编写过 PyTorch 或 NumPy 的人都会这样做，因为这些库中的张量<em>就是</em>精确的形状以及平面存储缓冲区上的跨距：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
@@ -345,7 +345,7 @@
 <section id="id3">
 <h2>命名轴<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
 <p>到目前为止，<code class="docutils literal notranslate"><span class="pre">S[...]</span></code> 中的每一步都已命名为线性内存中的偏移量，并且我们已将地址视为其中的位置。不过，在 GPU 上，数据可以驻留在多个位置：除了内存之外，tile 还可以分布在 warp lane、thread 寄存器或 TMEM lane 和列上。为了统一描述所有这些，我们用<strong>命名轴</strong>扩展符号。这个想法是让每个步幅系数带有一个轴标签，说明它移动的空间：<code class="docutils literal notranslate"><span class="pre">&#64;m</span></code>用于普通内存，<code class="docutils literal notranslate"><span class="pre">&#64;laneid</span></code>用于 warp lane，<code class="docutils literal notranslate"><span class="pre">&#64;reg</span></code>用于寄存器，<code class="docutils literal notranslate"><span class="pre">&#64;warpid</span></code>用于 warps，以及<code class="docutils literal notranslate"><span class="pre">&#64;TLane</span></code> / <code class="docutils literal notranslate"><span class="pre">&#64;TCol</span></code> 为 TMEM 坐标。有了标签，单个 layout 不仅可以描述数据在内存中的位置，还可以描述数据如何分布在运行其上的硬件资源上。</p>
-<p>一旦内存标签变得明确，内存中的行主 8×16 块就很简单了</p>
+<p>一旦内存标签变得明确，内存中的 row-major 8×16 块就很简单了</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>S[(8, 16) : (16@m, 1@m)]
 </pre></div>
 </div>
@@ -363,33 +363,33 @@
 <p>下面的演示展示了小型 GPU 网格上的组合分区和复制模式。单击任何单元格即可查看哪个设备拥有它，并观察 <code class="docutils literal notranslate"><span class="pre">&#64;gpuid_x</span></code> 复制如何在配对设备上放置相同的副本；按钮在完全分片、分片 + 副本和分片 + 偏移 layouts 之间切换。</p>
 <iframe src="../demo/tile_distributed.html" title="Distributed layout across a GPU mesh" loading="lazy"
         style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互式：layout 分布在 2×2 GPU 网格上；单击一个单元格即可查看哪个 device(s) 持有它。</em></p>
-<section id="tmem">
-<h3>内核内复制模式：TMEM 中的比例因子<a class="headerlink" href="#tmem" title="Link to this heading">#</a></h3>
-<p>我们刚刚为 GPU 网格引入的复制维度 <code class="docutils literal notranslate"><span class="pre">R[...]</span></code> 不仅仅涉及多个设备。事实证明，相同的构造也描述了完全在单个 kernel 内部发生的事情：硬件“跨 lane 广播”的数据。 Blackwell 的 block-scaled MMA (<a class="reference internal" href="../chapter_layout_generations/index.html#chap-layout-generations"><span class="std std-ref">Tensor Core 各代 GPU 操作数 layout</span></a>) 就是一个很好的例子。它的比例因子位于 TMEM 中，其中 128 行比例向量仅存储在 <strong>32 个 TMEM lane</strong>中，其中逻辑行 <code class="docutils literal notranslate"><span class="pre">r</span></code> 转到 TMEM lane <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">%</span> <span class="pre">32</span></code>，其中 <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">//</span> <span class="pre">32</span></code> 沿列运行。然后，这 32 个存储的 TMEM lane<strong>沿 TMEM <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 轴</strong>复制，从 32 个到 128 个 TMEM lane，以便读数 warpgroup 中的四个 warps 中的每一个都在其拥有 32 laneTMEM 窗口。这是一个 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播，我们用复制维度来编写它。读取本身由 warps’ threads 执行：</p>
+<section id="tmem-scale-factor">
+<h3>内核内复制模式：TMEM 中的 scale factor<a class="headerlink" href="#tmem-scale-factor" title="Link to this heading">#</a></h3>
+<p>我们刚刚为 GPU 网格引入的复制维度 <code class="docutils literal notranslate"><span class="pre">R[...]</span></code> 不仅仅涉及多个设备。事实证明，相同的构造也描述了完全在单个 kernel 内部发生的事情：硬件“跨 lane 广播”的数据。 Blackwell 的 block-scaled MMA (<a class="reference internal" href="../chapter_layout_generations/index.html#chap-layout-generations"><span class="std std-ref">Tensor Core 各代 GPU 操作数 layout</span></a>) 就是一个很好的例子。它的 scale factor 位于 TMEM 中，其中 128 行 scale vector 仅存储在 <strong>32 个 TMEM lane</strong> 中，其中逻辑行 <code class="docutils literal notranslate"><span class="pre">r</span></code> 转到 TMEM lane <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">%</span> <span class="pre">32</span></code>，其中 <code class="docutils literal notranslate"><span class="pre">r</span> <span class="pre">//</span> <span class="pre">32</span></code> 沿列运行。然后，这 32 个存储的 TMEM lane <strong>沿 TMEM <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 轴</strong>复制，从 32 个到 128 个 TMEM lane，以便读取 warpgroup 中的四个 warps 中的每一个都拥有自己的 32-lane TMEM 窗口。这是一个 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播，我们用复制维度来编写它。读取本身由 warps’ threads 执行：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>S[(32, …) : (1@TLane, …)] + R[4 : 32@TLane]
 </pre></div>
 </div>
 <p>这以 32 个 TMEM lane 的跨度提供了四个副本：TMEM lane <code class="docutils literal notranslate"><span class="pre">l</span></code>、<code class="docutils literal notranslate"><span class="pre">l+32</span></code>、<code class="docutils literal notranslate"><span class="pre">l+64</span></code> 和 <code class="docutils literal notranslate"><span class="pre">l+96</span></code> 都保持相同的比例。和以前一样，复制维度没有携带新数据；它只是说“相同的值，位于四个 TMEM lane 位置”，就像 <code class="docutils literal notranslate"><span class="pre">&#64;gpuid_x</span></code> 刚才在 GPU 网格上广播一行一样。</p>
 <p>下面的交互式演示同时显示了这两个步骤：紧凑打包到 32 个 TMEM lane 中，然后 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播到 128 个读取 lane。</p>
 <iframe src="../demo/sf_tmem.html" title="Scale factors in TMEM: packing and warpx4 replication" loading="lazy"
-        style="width:100%; min-width:1040px; height:560px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互：点击比例因子<code class="docutils literal notranslate"><span class="pre">SFA[m,</span> <span class="pre">sf]</span></code>；它在 lane <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">mod</span> <span class="pre">32</span></code>、列 <code class="docutils literal notranslate"><span class="pre">(m</span> <span class="pre">//</span> <span class="pre">32)·4</span> <span class="pre">+</span> <span class="pre">sf</span></code> 处打包到 TMEM 中，然后通过 <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 轴将 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播到四个 lane 副本（<code class="docutils literal notranslate"><span class="pre">l</span></code>、<code class="docutils literal notranslate"><span class="pre">l+32</span></code>、<code class="docutils literal notranslate"><span class="pre">l+64</span></code>、<code class="docutils literal notranslate"><span class="pre">l+96</span></code>)，每个 warp 的 32 lane 窗口一个。</em></p>
+        style="width:100%; min-width:1040px; height:560px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互：点击 scale factor <code class="docutils literal notranslate"><span class="pre">SFA[m,</span> <span class="pre">sf]</span></code>；它在 lane <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">mod</span> <span class="pre">32</span></code>、列 <code class="docutils literal notranslate"><span class="pre">(m</span> <span class="pre">//</span> <span class="pre">32)·4</span> <span class="pre">+</span> <span class="pre">sf</span></code> 处打包到 TMEM 中，然后通过 <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 轴将 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播到四个 lane 副本（<code class="docutils literal notranslate"><span class="pre">l</span></code>、<code class="docutils literal notranslate"><span class="pre">l+32</span></code>、<code class="docutils literal notranslate"><span class="pre">l+64</span></code>、<code class="docutils literal notranslate"><span class="pre">l+96</span></code>），每个 warp 的 32-lane 窗口一个。</em></p>
 <p>每列内的字节打包（<code class="docutils literal notranslate"><span class="pre">scale_vec</span></code> 1X/2X/4X 模式）和 <code class="docutils literal notranslate"><span class="pre">cta_group::2</span></code> 分割在 <a class="reference internal" href="../chapter_layout_generations/index.html#chap-layout-generations"><span class="std std-ref">Tensor Core 各代 GPU 操作数 layout</span></a> 中介绍。</p>
-<p>已经了解 CuTe 的读者可以将本章中的符号视为它的行主变体，并使用显式硬件命名轴和专用复制结构进行扩展。</p>
+<p>已经了解 CuTe 的读者可以将本章中的符号视为它的 row-major 变体，并使用显式硬件命名轴和专用复制结构进行扩展。</p>
 </section>
 </section>
-<section id="id5">
-<h2>混合 layout<a class="headerlink" href="#id5" title="Link to this heading">#</a></h2>
-<p>本章中最后一个 layout 的存在是为了解决一个特定的硬件问题。 GPU 上的共享内存被组织成 bank，当不同 lane 落在不同库上时，访问运行速度最快。当多个 lane 到达“同一”bank 中的不同地址时，硬件别无选择，只能将它们序列化，并且我们付出了<strong>bank 冲突</strong>的代价。</p>
-<p>在张量程序中，这是很难避免的，因为内存不是以纯线性顺序访问的。使用矩阵时，我们通常需要读取同一 tile 的行切片和列切片，这会产生真正的紧张：对行访问有效的 layout 往往会在列访问中产生库冲突，而有利于列的访问会损害行。 <strong>Swizzling</strong> 是旨在打破这种紧张的技术。</p>
+<section id="swizzled-layout">
+<h2>swizzled layout<a class="headerlink" href="#swizzled-layout" title="Link to this heading">#</a></h2>
+<p>本章中最后一个 layout 的存在是为了解决一个特定的硬件问题。 GPU 上的 shared memory 被组织成 banks，当不同 lane 落在 different banks 上时，访问运行速度最快。当多个 lane 到达 same bank 中的不同地址时，硬件别无选择，只能将它们序列化，并且我们付出了 <strong>bank conflict</strong> 的代价。</p>
+<p>在张量程序中，这是很难避免的，因为内存不是以纯线性顺序访问的。使用矩阵时，我们通常需要读取同一 tile 的行切片和列切片，这会产生真正的紧张：对行访问有效的 layout 往往会在列访问中产生 bank conflict，而有利于列的访问会损害行。 <strong>Swizzling</strong> 是旨在打破这种紧张的技术。</p>
 <p>swizzle 背后的想法是排列地址映射，通常通过对列索引与行进行异或，以便行和列访问最终分布在 bank 中。它提供的无冲突保证是特定的：它适用于匹配元素宽度、swizzle 模式和访问模式（引擎描述符期望的模式），而不适用于任意元素宽度或对齐方式。</p>
-<p>下面的第一个交互式演示使这一点变得具体。单击列索引并观察每个元素落在哪个 bank 中：在左侧的普通行主 tile 中，一列将所有八个元素汇集到一个 bank 中，因此读取序列化为八个周期；在右侧的 XOR 混合 layout 中，同一列分布在八个不同的 bank 中，并在一个周期中读取。</p>
+<p>下面的第一个交互式演示使这一点变得具体。单击列索引并观察每个元素落在哪个 bank 中：在左侧的普通 row-major tile 中，一列将所有八个元素汇集到一个 bank 中，因此读取序列化为八个周期；在右侧的 XOR swizzled layout 中，同一列分布在八个不同的 bank 中，并在一个周期中读取。</p>
 <iframe src="../demo/swizzle_8x8.html" title="8x8 XOR swizzle" loading="lazy"
-        style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互式：8×8 块，按普通行优先的列发生银行冲突，XOR swizzle 后无冲突。</em></p>
-<p>这个 8×8 的小例子抓住了核心思想，但真正的 GPU 存储器的 bank 比玩具图片显示的要多得多。为了使混合工作全面进行，我们不会将整个 tile 视为一个整体对象。相反，我们将内存切成小段，并在每个段内应用 swizzle 模式。实践中最常见的情况是 <code class="docutils literal notranslate"><span class="pre">SWIZZLE_128B</span></code>，它围绕 128 字节段组织，因此相同的行/列重新映射技巧自然适合 32 组内存系统。</p>
+        style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互式：8×8 块，按普通 row-major 的列发生 bank conflict，XOR swizzle 后无冲突。</em></p>
+<p>这个 8×8 的小例子抓住了核心思想，但真正的 GPU 存储器的 bank 比玩具图片显示的要多得多。为了使 swizzling 全面进行，我们不会将整个 tile 视为一个整体对象。相反，我们将内存切成小段，并在每个段内应用 swizzle 模式。实践中最常见的情况是 <code class="docutils literal notranslate"><span class="pre">SWIZZLE_128B</span></code>，它围绕 128 字节段组织，因此相同的行/列重新映射技巧自然适合 32-bank memory system。</p>
 <p>下面的交互式演示显示了一个具体硬件 swizzle、<code class="docutils literal notranslate"><span class="pre">SWIZZLE_128B</span></code>，因此在我们推广跨格式之前，逐段重复的模式是可见的。</p>
 <iframe src="../demo/swizzle_128B.html" title="SWIZZLE_128B layout" loading="lazy"
         style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互式：128 字节段内的<code class="docutils literal notranslate"><span class="pre">SWIZZLE_128B</span></code>模式；逐步执行读取周期以查看 <code class="docutils literal notranslate"><span class="pre">physical_sector</span> <span class="pre">=</span> <span class="pre">logical_sector</span> <span class="pre">XOR</span> <span class="pre">row</span></code> 将每列分布在不同的 bank 中。</em></p>
-<p>同样的想法也适用于 128 字节的情况。为了简化可视化，我们现在将使用单一色块来引用一个段，而不是绘制单独的银行。一般来说，硬件定义了一个小的重复<strong>原子</strong>，在其上应用排列，并且不同的 swizzle 模式选择不同的原子大小。 <code class="docutils literal notranslate"><span class="pre">SWIZZLE_128B</span></code>使用 8×128 B 原子，<code class="docutils literal notranslate"><span class="pre">SWIZZLE_64B</span></code>使用 8×64 B 原子，<code class="docutils literal notranslate"><span class="pre">SWIZZLE_32B</span></code>使用 8×32 B 原子；然后，整个 tile 将由正在使用的原子进行平铺。</p>
+<p>同样的想法也适用于 128 字节的情况。为了简化可视化，我们现在将使用单一色块来引用一个段，而不是绘制单独的 bank。一般来说，硬件定义了一个小的重复<strong>原子</strong>，在其上应用排列，并且不同的 swizzle 模式选择不同的原子大小。 <code class="docutils literal notranslate"><span class="pre">SWIZZLE_128B</span></code> 使用 8×128 B 原子，<code class="docutils literal notranslate"><span class="pre">SWIZZLE_64B</span></code> 使用 8×64 B 原子，<code class="docutils literal notranslate"><span class="pre">SWIZZLE_32B</span></code> 使用 8×32 B 原子；然后，整个 tile 将由正在使用的原子进行平铺。</p>
 <p>最终的交互式演示可让您在这些格式之间切换（包括 16 B 交错模式），选择一种数据类型，并将鼠标悬停在任何单元格上以直接检查一个原子内的元素排列，这是推理加载/存储指令所需的 swizzle 的正确详细程度。</p>
 <iframe src="../demo/swizzle_atom_general.html" title="Swizzle atom layout per format (128B/64B/32B)" loading="lazy"
         style="width:100%; min-width:1320px; height:640px; border:1px solid var(--pst-color-border, #d0d0d0); border-radius:6px;"></iframe><p><em>交互式：选择 swizzle 格式（和数据类型）以查看其原子形状（8 × N B）；将鼠标悬停在单元格上即可查看其元素如何排列。</em></p>
@@ -416,7 +416,7 @@
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">是什么让内核变得更快</p>
+        <p class="prev-next-title">是什么让 kernel 变得更快</p>
       </div>
     </a>
     <a class="right-next"
@@ -450,10 +450,10 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">平铺 layout</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">命名轴</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">分布式 layout</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem">内核内复制模式：TMEM 中的比例因子</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-scale-factor">内核内复制模式：TMEM 中的 scale factor</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">混合 layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzled-layout">swizzled layout</a></li>
 </ul>
   </nav></div>
 

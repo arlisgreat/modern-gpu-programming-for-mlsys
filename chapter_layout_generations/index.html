@@ -153,7 +153,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -275,18 +275,18 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">两个从未消失的限制</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-lane">Ampere：注册经线 lane 上的片段</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-warp-lane-register-fragment">Ampere：warp lane 上的 register fragment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-tensor-core">Ampere Tensor Core 的期望是什么</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-shared-memory"><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>：Shared Memory 注册片段</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere">写回 Ampere 片段</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">调配 Ampere</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-shared-memory-register-fragment"><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>：Shared Memory 到 register fragment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-register-fragment">写回 Ampere register fragment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-swizzle">Ampere 上的 swizzle</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hopper-wgmmashared-memory-swizzle">Hopper：<code class="docutils literal notranslate"><span class="pre">wgmma</span></code>、Shared Memory 描述符和 Swizzle 格式</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hopper-tensor-core">Hopper Tensor Core 的期望是什么</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hopper">Hopper 输出仍使用寄存器</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blackwell-tcgen05-tmem">Blackwell：<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> 和 TMEM</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-layout">TMEM 中的比例因子 layout</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">重复出现的片段</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">直通线</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-scale-factor-layout">TMEM 中的 scale factor layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">重复出现的片段</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">直通线</a></li>
 </ul>
             </nav>
         </div>
@@ -304,42 +304,42 @@
 <p class="admonition-title">概述</p>
 <ul class="simple">
 <li><p>在 Ampere、Hopper 和 Blackwell 中，Tensor Core 仍然执行相同的高级操作：<code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">A</span> <span class="pre">B</span> <span class="pre">+</span> <span class="pre">C</span></code>。</p></li>
-<li><p>从一代到下一代的变化是操作数如何到达 Tensor Core、支持哪些 tile shape 和数据类型以及累加器所在的位置。</p></li>
-<li><p>Ampere 使用 warp 级寄存器片段。共享内存块通过 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 加载到片段中，累加器保留在寄存器中。</p></li>
-<li><p>Hopper 让 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 通过矩阵描述符直接从共享内存读取操作数。该描述符命名 Tensor Core 期望的共享内存 swizzle 格式。</p></li>
-<li><p>Blackwell 保留共享内存操作数路径，但将累加器移至 TMEM。块缩放 MMA 还通过 TMEM 分级其缩放因子。</p></li>
-<li><p>所有世代中仍然存在两个内存限制：全局内存合并和共享 bank 冲突。</p></li>
+<li><p>从一代到下一代的变化是操作数如何到达 Tensor Core、支持哪些 tile shape 和数据类型以及 accumulator 所在的位置。</p></li>
+<li><p>Ampere 使用 warp 级 register fragment。shared memory block 通过 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 加载到 fragment 中，accumulator 保留在 registers 中。</p></li>
+<li><p>Hopper 让 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 通过矩阵描述符直接从 shared memory 读取操作数。该描述符命名 Tensor Core 期望的 shared memory swizzle 格式。</p></li>
+<li><p>Blackwell 保留 shared memory 操作数路径，但将 accumulator 移至 TMEM。block-scaled MMA 还通过 TMEM stage 其 scale factor。</p></li>
+<li><p>所有世代中仍然存在两个内存限制：global memory coalescing 和 shared memory bank conflict。</p></li>
 </ul>
 </div>
-<p>从远处看，Tensor Core 运行稳定。它将 A 和 B 的 tile 相乘，加上累加器 C，并生成 D。该形式自 Volta 以来一直相同。</p>
+<p>从远处看，Tensor Core 运行稳定。它将 A 和 B 的 tile 相乘，加上 accumulator C，并生成 D。该形式自 Volta 以来一直相同。</p>
 <p>有关该行动的细节尚未确定。在一代上速度很快的 kernel 在下一代上可能会很慢。使用错误 layout 的 kernel 也可能计算出错误的答案，即使逻辑数学仍然显示 <code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">A</span> <span class="pre">B</span> <span class="pre">+</span> <span class="pre">C</span></code>。原因是 Tensor Core 不消耗抽象矩阵。它消耗非常特定的硬件 layouts 中的操作数。</p>
-<p>本章遵循跨三代的 layout 合约。 Ampere 通过 warp 级寄存器片段公开 Tensor Core。 Hopper 将输入操作数移动到共享内存描述符。 Blackwell 保留共享内存操作数，但将累加器移至 TMEM。运算仍然是矩阵乘法累加，但进出 Tensor Core 的路径每次都会改变。</p>
+<p>本章遵循跨三代的 layout 合约。 Ampere 通过 warp 级 register fragment 公开 Tensor Core。 Hopper 将输入操作数移动到 shared memory descriptor。 Blackwell 保留 shared memory 操作数，但将 accumulator 移至 TMEM。运算仍然是矩阵乘法累加，但进出 Tensor Core 的路径每次都会改变。</p>
 <p><a class="reference internal" href="../chapter_data_layout/index.html#chap-data-layout"><span class="std std-ref">Data Layout</span></a> 章节中的 layout 表示法是我们用来描述这些合约的语言。 Blackwell TMEM 详细信息在 <a class="reference internal" href="../chapter_tmem/index.html#chap-tmem"><span class="std std-ref">特殊存储器：TMEM</span></a> 中单独介绍。</p>
 <section id="id1">
 <h2>两个从未消失的限制<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <p>在涉及 Tensor Core 之前，两个普通内存约束已经形成了 GPU kernel 的 layout。</p>
-<p>第一个是全局内存合并。当 warp 的 32 个 lane 发出全局内存负载时，内存系统希望地址落入少量连续、对齐的内存段中。如果地址分散，则 warp 负载将变成多个内存事务。相同的逻辑数据移动需要更多的带宽和更多的时间。</p>
-<p>第二个是共享 bank 冲突。共享内存分为 32 个库。如果 warp 中的 lane 访问映射到同一 bank 的不同地址，则无法同时为这些访问提供全部服务。硬件将它们序列化。 layout 作为平面共享内存阵列看起来无害，但由于其 bank 模式，速度可能会很慢。</p>
+<p>第一个是 global memory coalescing。当 warp 的 32 个 lane 发出 global memory load 时，内存系统希望地址落入少量连续、对齐的 memory segments 中。如果地址分散，则 warp 负载将变成多个 memory transactions。相同的逻辑数据移动需要更多的带宽和更多的时间。</p>
+<p>第二个是 shared memory bank conflict。SMEM 分为 32 个 banks。如果 warp 中的 lane 访问映射到 same bank 的不同地址，则无法同时为这些访问提供全部服务。硬件将它们序列化。 layout 作为平面 SMEM array 看起来无害，但由于其 bank pattern，速度可能会很慢。</p>
 <p>Swizzling 是修复共享内存方面的常用方法。逻辑块保持不变，但物理地址映射被排列，以便访问模式分布在各个 bank 上，而不是堆叠到一个 bank 上。</p>
-<p>这两个约束甚至适用于从不使用 Tensor Cores 的 kernels。 Tensor Core kernels 添加第三个约束：操作数必须排列在 Tensor Core 指令本身所期望的 layout 中。本章的其余部分将介绍第三个约束在 Ampere、Hopper 和 Blackwell 中如何变化。</p>
+<p>这两个约束甚至适用于从不使用 Tensor Cores 的 kernels。Tensor Core kernels 添加第三个约束：操作数必须排列在 Tensor Core 指令本身所期望的 layout 中。本章的其余部分将介绍第三个约束在 Ampere、Hopper 和 Blackwell 中如何变化。</p>
 </section>
-<section id="ampere-lane">
-<h2>Ampere：注册经线 lane 上的片段<a class="headerlink" href="#ampere-lane" title="Link to this heading">#</a></h2>
+<section id="ampere-warp-lane-register-fragment">
+<h2>Ampere：warp lane 上的 register fragment<a class="headerlink" href="#ampere-warp-lane-register-fragment" title="Link to this heading">#</a></h2>
 <p>在 Ampere 级 GPUs 上，主要的 Tensor Core 指令是 warp 级 <code class="docutils literal notranslate"><span class="pre">mma.sync.aligned.m16n8k*</span></code> 系列。重要的事实是指令读取和写入数据的位置：寄存器。</p>
-<p>A、B 以及 C 或 D 累加器都是分布在 warp 的 32 个 lane 上的每个 thread 寄存器片段。共享内存只是暂存区。在 MMA 运行之前，必须将操作数块从共享内存移至指令所需的确切寄存器片段 layout 中。</p>
+<p>A、B 以及 C 或 D accumulator 都是分布在 warp 的 32 个 lane 上的每个 thread register fragment。shared memory 只是暂存区。在 MMA 运行之前，必须将操作数块从 shared memory 移至指令所需的确切 register fragment layout 中。</p>
 <p>数据路径如下所示：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SMEM to registers with ldmatrix
 registers to registers with mma.sync
 registers back to SMEM with ordinary stores
 </pre></div>
 </div>
-<p>Ampere layout 的大部分故事都遵循这条路径。 kernel 必须以可有效加载的形式将块存储在共享内存中，然后使用 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 生成 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 所需的寄存器片段。</p>
+<p>Ampere layout 的大部分故事都遵循这条路径。 kernel 必须以可有效加载的形式将块存储在 shared memory 中，然后使用 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 生成 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 所需的 register fragment。</p>
 </section>
 <section id="ampere-tensor-core">
 <h2>Ampere Tensor Core 的期望是什么<a class="headerlink" href="#ampere-tensor-core" title="Link to this heading">#</a></h2>
-<p>Ampere Tensor Core 读取由 8 x 8 子 tile 单元构建的寄存器片段。这些是 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 加载和 MMA 消耗的单位。</p>
-<p>以 <code class="docutils literal notranslate"><span class="pre">mma.m16n8k16</span></code> 与 fp16 或 bf16 输入和 fp32 累积为例。蓄能器 tile 的形状为 <code class="docutils literal notranslate"><span class="pre">16</span> <span class="pre">by</span> <span class="pre">8</span></code>。它以固定的模式分布在 32 条 lane 上。</p>
-<p>对于 C 或 D 累加器，lane <code class="docutils literal notranslate"><span class="pre">l</span></code> 保存行：</p>
+<p>Ampere Tensor Core 读取由 8 x 8 子 tile 单元构建的 register fragment。这些是 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 加载和 MMA 消耗的单位。</p>
+<p>以 <code class="docutils literal notranslate"><span class="pre">mma.m16n8k16</span></code> 与 fp16 或 bf16 输入和 fp32 accumulation 为例。accumulator tile 的形状为 <code class="docutils literal notranslate"><span class="pre">16</span> <span class="pre">by</span> <span class="pre">8</span></code>。它以固定的模式分布在 32 条 lane 上。</p>
+<p>对于 C 或 D accumulator，lane <code class="docutils literal notranslate"><span class="pre">l</span></code> 保存行：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>l / 4
 l / 4 + 8
 </pre></div>
@@ -349,19 +349,19 @@ l / 4 + 8
 2 * (l % 4) + 1
 </pre></div>
 </div>
-<p>因此，每个 lane 拥有四个 fp32 累加器值：来自两个 8 行半部的两行，与两个相邻列交叉。四个连续的 lane 覆盖一排的八列。</p>
+<p>因此，每个 lane 拥有四个 fp32 accumulator values：来自两个 8 行半部的两行，与两个相邻列交叉。四个连续的 lane 覆盖一排的八列。</p>
 <p>A 操作数使用相同的 M 侧行雕刻。 K 维度分布在 <code class="docutils literal notranslate"><span class="pre">l</span> <span class="pre">%</span> <span class="pre">4</span></code> 和 lane 所持有的寄存器中。对于 fp16 或 bf16，每个 32 位寄存器包含两个 K 值。</p>
 <p>B 操作数使用匹配的 K layout，并将 N 侧分布在 lane 组和寄存器上。</p>
-<p>确切的细节因指令形状和数据类型而异，但原理是固定的。 Tensor Core 需要特定的每 lane 寄存器片段。如果这些值不在该模式的寄存器中，则指令将乘以错误的元素。</p>
-<p>在 layout 表示法中，m8n8 片段是用命名 lane 轴编写的模式，例如：</p>
+<p>确切的细节因指令形状和数据类型而异，但原理是固定的。 Tensor Core 需要特定的每 lane register fragment。如果这些值不在该模式的寄存器中，则指令将乘以错误的元素。</p>
+<p>在 layout 表示法中，m8n8 fragment 是用命名 lane 轴编写的模式，例如：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>S[(8, 4, 2) : (4@laneid, 1@laneid, 1@m)]
 </pre></div>
 </div>
-<p>两个 <code class="docutils literal notranslate"><span class="pre">laneid</span></code> 迭代器一起描述行和列片段如何跨 lane 分散，而最终的 <code class="docutils literal notranslate"><span class="pre">m</span></code> 组件描述每 lane 寄存器槽。</p>
+<p>两个 <code class="docutils literal notranslate"><span class="pre">laneid</span></code> 迭代器一起描述行和列 fragment 如何跨 lane 分散，而最终的 <code class="docutils literal notranslate"><span class="pre">m</span></code> 组件描述每 lane register slot。</p>
 </section>
-<section id="ldmatrix-shared-memory">
-<h2><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>：Shared Memory 注册片段<a class="headerlink" href="#ldmatrix-shared-memory" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 是桥接共享内存和 Tensor Core 寄存器片段的 Ampere 指令。它是 warp-集体负载。一条指令将一个或多个 8 x 8 16 位矩阵从共享内存移动到 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 所期望的分布式寄存器 layout 中。</p>
+<section id="ldmatrix-shared-memory-register-fragment">
+<h2><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>：Shared Memory 到 register fragment<a class="headerlink" href="#ldmatrix-shared-memory-register-fragment" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 是桥接 shared memory 和 Tensor Core register fragment 的 Ampere 指令。它是 warp-collective load。一条指令将一个或多个 8 x 8 16 位矩阵从 shared memory 移动到 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 所期望的分布式 register layout 中。</p>
 <p>指令形式为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ldmatrix.sync.aligned.m8n8.x1.shared.b16
 ldmatrix.sync.aligned.m8n8.x2.shared.b16
@@ -370,33 +370,33 @@ ldmatrix.sync.aligned.m8n8.x4.shared.b16
 </div>
 <p>带有可选的 <code class="docutils literal notranslate"><span class="pre">.trans</span></code> 限定符。</p>
 <p><code class="docutils literal notranslate"><span class="pre">.x1</span></code>、<code class="docutils literal notranslate"><span class="pre">.x2</span></code> 和 <code class="docutils literal notranslate"><span class="pre">.x4</span></code> 形成加载一个、两个或四个 8 x 8 矩阵。行基地址由 lane 提供。对于矩阵 <code class="docutils literal notranslate"><span class="pre">m</span></code> 和行 <code class="docutils literal notranslate"><span class="pre">r</span></code>，基地址来自 lane <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">*</span> <span class="pre">8</span> <span class="pre">+</span> <span class="pre">r</span></code>。这意味着 <code class="docutils literal notranslate"><span class="pre">.x1</span></code> 使用 lane 0 到 7 作为行地址，<code class="docutils literal notranslate"><span class="pre">.x2</span></code> 使用 lane 0 到 15，<code class="docutils literal notranslate"><span class="pre">.x4</span></code> 使用 lane 0 到 31。</p>
-<p>结果直接落在 MMA 片段中。对于基本的 8 x 8 情况，lane <code class="docutils literal notranslate"><span class="pre">l</span></code> 接收 Tensor Core 期望的行和列对。每 lane <code class="docutils literal notranslate"><span class="pre">ld.shared</span></code> 指令的普通循环必须手动重现该分散。 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 作为一条 warp 集体指令执行共享内存到片段的重新排列。</p>
+<p>结果直接落在 MMA fragment 中。对于基本的 8 x 8 情况，lane <code class="docutils literal notranslate"><span class="pre">l</span></code> 接收 Tensor Core 期望的行和列对。每 lane <code class="docutils literal notranslate"><span class="pre">ld.shared</span></code> 指令的普通循环必须手动重现该分散。 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 作为一条 warp collective instruction 执行 shared memory 到 fragment 的重新排列。</p>
 <p><code class="docutils literal notranslate"><span class="pre">.trans</span></code> 形式在加载时转置每个 8 x 8 矩阵。当操作数以与 MMA 指令期望的相反方向存储时使用。</p>
-<p><img alt="ldmatrix 将 8x8 共享内存块加载到 warp 寄存器片段中； Ampere 上的反向方向使用普通存储，稍后在 Hopper 上出现专用的 stmatrix 指令" src="../_images/ldstmatrix.svg" /></p>
+<p><img alt="ldmatrix 将 8x8 shared memory block 加载到 warp register fragment 中；Ampere 上的反向方向使用普通 store，稍后在 Hopper 上出现专用的 stmatrix 指令" src="../_images/ldstmatrix.svg" /></p>
 </section>
-<section id="ampere">
-<h2>写回 Ampere 片段<a class="headerlink" href="#ampere" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">mma.sync</span></code>完成后，累加器仍然是一个寄存器片段。 epilogue 必须将该片段移出。</p>
-<p>在 Ampere 上，没有<code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>的专用反向。 kernel 使用普通的 per-thread 存储，有时在存储之前进行 warp 混洗或本地重新排列，将累加器写入有用的 layout 中的共享内存或全局内存。</p>
-<p>这使 Ampere 模型保持简单，但也将大量 layout 工作暴露给 kernel。输入端使用<code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>来创建片段。计算指令读取和写入寄存器片段。输出端由这些片段的普通存储处理。</p>
+<section id="ampere-register-fragment">
+<h2>写回 Ampere register fragment<a class="headerlink" href="#ampere-register-fragment" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 完成后，accumulator 仍然是一个 register fragment。epilogue 必须将该 fragment 移出。</p>
+<p>在 Ampere 上，没有 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 的专用反向。 kernel 使用普通的 per-thread store，有时在 store 之前进行 warp shuffle 或本地重新排列，将 accumulator 写入有用 layout 下的 shared memory 或 global memory。</p>
+<p>这使 Ampere 模型保持简单，但也将大量 layout 工作暴露给 kernel。输入端使用 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 来创建 fragment。计算指令读取和写入 register fragment。输出端由这些 fragment 的普通 store 处理。</p>
 </section>
-<section id="id2">
-<h2>调配 Ampere<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<section id="ampere-swizzle">
+<h2>Ampere 上的 swizzle<a class="headerlink" href="#ampere-swizzle" title="Link to this heading">#</a></h2>
 <p>Ampere kernels 已经需要共享内存 swizzles。原因是共享内存块通常以一种访问模式写入并以另一种访问模式读取。</p>
-<p>假设一个 tile 是从全局内存中沿着行填充的。行主 layout 使写入合并并且银行友好。但 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 稍后可能会以有效沿着列或跨 8 x 8 子 tile 的模式读取 tile。使用普通的行主 layout，这些读取可以堆叠到同一共享内存组上。</p>
+<p>假设一个 tile 是从全局内存中沿着行填充的。row-major layout 使写入 coalesced 且 bank-friendly。但 <code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 稍后可能会以有效沿着列或跨 8 x 8 子 tile 的模式读取 tile。使用普通的 row-major layout，这些读取可以堆叠到同一 shared memory bank 上。</p>
 <p>对于简单的 <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> float16 tile，一行是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>64 * 2 bytes = 128 bytes
 </pre></div>
 </div>
 <p>这正是一个完整的共享 bank 行。沿着固定列走下去，每行前进 128 个字节，因此 bank 索引会重复。八行可以折叠到同一行上，从而产生八向冲突。</p>
-<p>更改为普通列主 layout 并不能解决整个问题。它通常将冲突转移到其他访问。行写入变得更差，而列式读取变得更好。</p>
+<p>更改为普通 column-major layout 并不能解决整个问题。它通常将冲突转移到其他访问。row-wise 写入变得更差，而 column-wise 读取变得更好。</p>
 <p>XOR swizzle 通过使物理列依赖于行来修复此问题。一个简单的版本是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>physical_col = logical_col xor row
 </pre></div>
 </div>
-<p>逻辑 tile 没有改变。共享内存中的物理 layout 经过排列，以便行式写入和 Tensor Core 读取模式都可以避免 bank 冲突。</p>
+<p>逻辑 tile 没有改变。共享内存中的物理 layout 经过排列，以便 row-wise 写入和 Tensor Core 读取模式都可以避免 bank conflict。</p>
 <p>在 Ampere 上，这个 swizzle 通常是通过手写共享内存索引数学来表示的。后来的几代使其成为硬件引擎使用的描述符格式的一部分。</p>
-<p><img alt="在普通的行优先 tile 上，行写入会跨 bank 传播，而列读取会在一个 bank 上发生冲突； XOR swizzle 将列读取分散到 bank 上，而不放弃合并的行写入" src="../_images/swizzle_conflict.svg" /></p>
+<p><img alt="在普通的 row-major tile 上，行写入会跨 bank 传播，而列读取会在一个 bank 上发生冲突； XOR swizzle 将列读取分散到 bank 上，而不放弃合并的行写入" src="../_images/swizzle_conflict.svg" /></p>
 </section>
 <section id="hopper-wgmmashared-memory-swizzle">
 <h2>Hopper：<code class="docutils literal notranslate"><span class="pre">wgmma</span></code>、Shared Memory 描述符和 Swizzle 格式<a class="headerlink" href="#hopper-wgmmashared-memory-swizzle" title="Link to this heading">#</a></h2>
@@ -424,40 +424,40 @@ SWIZZLE_128B
 </pre></div>
 </div>
 <p>swizzle 模式决定两件事。它确定描述符使用的原子形状，并确定该原子内部应用的异或排列。例如，128 字节 swizzle 模式将操作数视为 8 行 x 128 字节原子的 grid，并在每个原子内部应用 swizzle。</p>
-<p>kernel 仍然必须正确放置字节。 TMA 通常填充共享内存块，并且 TMA 描述符必须使用与 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 描述符后来命名的相同的 swizzle 格式。如果 TMA 写入 128 字节调配 tile，则 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 描述符必须将其读取为 128 字节调配 tile。如果描述符和数据不一致，Tensor Core 将读取加扰的操作数。</p>
+<p>kernel 仍然必须正确放置字节。 TMA 通常填充共享内存块，并且 TMA 描述符必须使用与 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 描述符后来命名的相同的 swizzle 格式。如果 TMA 写入 128 字节 swizzle tile，则 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 描述符必须将其读取为 128 字节 swizzle tile。如果描述符和数据不一致，Tensor Core 将读取加扰的操作数。</p>
 <p>这是 Ampere 的主要转变。 swizzle 不再仅仅隐藏在手写共享内存索引中。 Hopper 使其成为一流的描述符格式。写入 tile 的 TMA load 和读取 tile 的 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 指令都可以命名相同的格式。</p>
 <p><img alt="Hopper 共享内存矩阵描述符将操作数坐标映射到混合的共享内存原子：描述符步幅选择原子，而 swizzle 选择原子内的字节位置" src="../_images/smem_descriptor.svg" /></p>
 </section>
 <section id="hopper">
 <h2>Hopper 输出仍使用寄存器<a class="headerlink" href="#hopper" title="Link to this heading">#</a></h2>
 <p>Hopper 更改输入路径，但累加器仍然位于寄存器中。</p>
-<p><code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 指令将累加器写入每个 thread 寄存器片段中。确切的片段大小和寄存器计数取决于指令形状，例如 <code class="docutils literal notranslate"><span class="pre">m64nNk16</span></code>，其中 N 更改累加器寄存器的数量。但基本思想与 Ampere 相同：epilogue 消耗寄存器片段。</p>
+<p><code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 指令将累加器写入每个 thread register fragment 中。确切的 fragment 大小和 register 数量取决于指令形状，例如 <code class="docutils literal notranslate"><span class="pre">m64nNk16</span></code>，其中 N 更改 accumulator register 的数量。但基本思想与 Ampere 相同：epilogue 消耗 register fragment。</p>
 <p>所以 Hopper 有一个混合的 layout 模型。输入操作数可以直接来自共享内存描述符，由硬件描述为 swizzle。输出累加器仍然是寄存器 layout 的问题。</p>
 <p>Blackwell 改变输出侧。</p>
 </section>
 <section id="blackwell-tcgen05-tmem">
 <h2>Blackwell：<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> 和 TMEM<a class="headerlink" href="#blackwell-tcgen05-tmem" title="Link to this heading">#</a></h2>
 <p>Blackwell 保留数据操作数的共享内存描述符思想。 A 和 B 仍然在 Tensor Core 期望的 layout 中的共享内存中准备就绪。某些模式还可以从 TMEM 读取 A 操作数。</p>
-<p>主要的变化是累加器。 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 将其累加器写入 Tensor Memory 或 TMEM，而不是将其保留为长寿命寄存器片段。在计算阶段，累加器保持在 TMEM 中。 epilogue 稍后使用 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 将其加载回寄存器。</p>
+<p>主要的变化是累加器。 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 将其累加器写入 Tensor Memory 或 TMEM，而不是将其保留为长寿命 register fragment。在计算阶段，累加器保持在 TMEM 中。 epilogue 稍后使用 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 将其加载回寄存器。</p>
 <p>这会将输出 layout 问题从寄存器移至 TMEM。 kernel 必须分配 TMEM，选择正确的 TMEM layout，等待 MMA 完成，然后使用匹配的 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 路径恢复 epilogue 的累加器片段。</p>
-<p><code class="docutils literal notranslate"><span class="pre">cta_group::1</span></code> 和 <code class="docutils literal notranslate"><span class="pre">cta_group::2</span></code> 如何将累加器拆分到一个或两个 CTAs 的详细信息在 <a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a> 中介绍。 layout 与前几代产品最不同的是 block-scaled 比例因子 layout。</p>
+<p><code class="docutils literal notranslate"><span class="pre">cta_group::1</span></code> 和 <code class="docutils literal notranslate"><span class="pre">cta_group::2</span></code> 如何将累加器拆分到一个或两个 CTAs 的详细信息在 <a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a> 中介绍。 layout 与前几代产品最不同的是 block-scaled scale factor layout。</p>
 </section>
-<section id="tmem-layout">
-<h2>TMEM 中的比例因子 layout<a class="headerlink" href="#tmem-layout" title="Link to this heading">#</a></h2>
-<p>块缩放 MMA 模式（例如 <code class="docutils literal notranslate"><span class="pre">mxfp8</span></code> 和 <code class="docutils literal notranslate"><span class="pre">nvfp4</span></code>）添加比例因子操作数。除了 A 和 B 之外，MMA 还写着：</p>
+<section id="tmem-scale-factor-layout">
+<h2>TMEM 中的 scale factor layout<a class="headerlink" href="#tmem-scale-factor-layout" title="Link to this heading">#</a></h2>
+<p>block-scaled MMA 模式（例如 <code class="docutils literal notranslate"><span class="pre">mxfp8</span></code> 和 <code class="docutils literal notranslate"><span class="pre">nvfp4</span></code>）添加 scale factor 操作数。除了 A 和 B 之外，MMA 还写着：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>SFA(M, SFK)
 SFB(N, SFK)
 </pre></div>
 </div>
-<p>其中 <code class="docutils literal notranslate"><span class="pre">SFK</span></code> 是 K 刻度块的数量。</p>
-<p>数据操作数 A 和 B 位于共享内存中。比例因子位于 TMEM 中。这给了他们不同的运动路径。</p>
-<p>TMA 从全局内存加载到共享内存。它不会直接加载到 TMEM 中。因此比例因子通常分两步移动：</p>
+<p>其中 <code class="docutils literal notranslate"><span class="pre">SFK</span></code> 是 K scale block 的数量。</p>
+<p>数据操作数 A 和 B 位于共享内存中。scale factor 位于 TMEM 中。这给了它们不同的移动路径。</p>
+<p>TMA 从全局内存加载到共享内存。它不会直接加载到 TMEM 中。因此 scale factor 通常分两步移动：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>global memory to shared memory with TMA
 shared memory to TMEM with tcgen05.cp
 </pre></div>
 </div>
-<p>只有在该副本之后，<code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 期望读取它们的内存空间中的比例因子才会出现。</p>
-<p>TMEM 比例因子 layout 使用 TMEM 硬件坐标 Lane 和 Col。在 TIRx layout 表示法中，这些轴写为 <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 和 <code class="docutils literal notranslate"><span class="pre">TCol</span></code>。</p>
+<p>只有在该 copy 之后，<code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 期望读取的 scale factor 才会出现在正确的内存空间中。</p>
+<p>TMEM scale factor layout 使用 TMEM 硬件坐标 Lane 和 Col。在 TIRx layout 表示法中，这些轴写为 <code class="docutils literal notranslate"><span class="pre">TLane</span></code> 和 <code class="docutils literal notranslate"><span class="pre">TCol</span></code>。</p>
 <p>128 行缩放向量被压缩为 32 lane 组，然后在 TMEM 的四个 32 lane 窗口中复制。在 layout 表示法中，核心模式是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>S[(32, sf_per_mma) : (1@TLane, 1@TCol)] + R[4 : 32@TLane]
 </pre></div>
@@ -472,7 +472,7 @@ TCol  = s
 TCol  = s
 </pre></div>
 </div>
-<p>这是 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播模式。在整个 128 lane TMEM 空间中都可以看到相同的紧凑比例因子组。</p>
+<p>这是 <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> 广播模式。在整个 128 lane TMEM 空间中都可以看到相同的紧凑 scale factor group。</p>
 <p>32 位 <code class="docutils literal notranslate"><span class="pre">TCol</span></code> 单元内还有字节封装。包装取决于<code class="docutils literal notranslate"><span class="pre">scale_vec</span></code>模式：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>1X: one scale value is broadcast across the 32-bit cell
 2X: two scale values are packed, each duplicated
@@ -480,22 +480,22 @@ TCol  = s
 </pre></div>
 </div>
 <p><img alt="scale_vec 字节打包：1X 在 4 字节单元中广播一个比例； 2X 包装两个秤，每个秤都是重复的； 4X 装四个 K 块秤" src="../_images/sf_scale_vec.svg" /></p>
-<p>此封装没有直接的 Ampere 或 Hopper 类似物，因为这些代没有 <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> block-scaled MMA 的 TMEM 比例因子操作数。</p>
-<p>在 <code class="docutils literal notranslate"><span class="pre">cta_group::2</span></code> 中，比例因子遵循它们缩放的数据。 SFA 缩放 A，因此它在两个 CTAs 上按 M 分割，匹配每个 CTA 拥有的 A 行。 SFB 缩放 B，由计算的两个 CTA 部分共享，因此 SFB 被多播到两个 CTAs (<a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a>)。</p>
+<p>此 packing 没有直接的 Ampere 或 Hopper 类似物，因为这些代没有 <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> block-scaled MMA 的 TMEM scale factor 操作数。</p>
+<p>在 <code class="docutils literal notranslate"><span class="pre">cta_group::2</span></code> 中，scale factor 遵循它们缩放的数据。SFA 缩放 A，因此它在两个 CTAs 上按 M 分割，匹配每个 CTA 拥有的 A 行。SFB 缩放 B，由计算的两个 CTA 部分共享，因此 SFB 被多播到两个 CTAs (<a class="reference internal" href="../chapter_tensor_cores/index.html#chap-tensor-cores"><span class="std std-ref">Tensor Cores: tcgen05</span></a>)。</p>
+</section>
+<section id="id2">
+<h2>重复出现的片段<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<p>尽管周围的内存路径发生了变化，但一种结构不断返回：m8n8 样式的 register fragment。</p>
+<p>在 Ampere 上，<code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 构建该片段，以便 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 可以读取它。</p>
+<p>在 Hopper 上，<code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 将其累加器写入为 epilogue 的 register fragment。</p>
+<p>在 Blackwell 上，累加器在计算期间位于 TMEM 中，但 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 在 epilogue 处理并存储它之前将其加载回 register fragment 中 (<a class="reference internal" href="../chapter_tmem/index.html#chap-tmem"><span class="std std-ref">特殊存储器：TMEM</span></a>)。</p>
+<p>所以 fragment 不会消失。它的角色发生了变化。早期版本在整个计算阶段都将 accumulator 保留在那里。Blackwell 主要用在 TMEM 和 epilogue 之间的边界处。</p>
 </section>
 <section id="id3">
-<h2>重复出现的片段<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
-<p>尽管周围的内存路径发生了变化，但一种结构不断返回：m8n8 样式的寄存器片段。</p>
-<p>在 Ampere 上，<code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> 构建该片段，以便 <code class="docutils literal notranslate"><span class="pre">mma.sync</span></code> 可以读取它。</p>
-<p>在 Hopper 上，<code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 将其累加器写入为 epilogue 的寄存器片段。</p>
-<p>在 Blackwell 上，累加器在计算期间位于 TMEM 中，但 <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code> 在 epilogue 处理并存储它之前将其加载回寄存器片段中 (<a class="reference internal" href="../chapter_tmem/index.html#chap-tmem"><span class="std std-ref">特殊存储器：TMEM</span></a>)。</p>
-<p>所以碎片不会消失。它的角色发生了变化。早期版本在整个计算阶段都将累加器保留在那里。 Blackwell 主要用在 TMEM 和 epilogue 之间的边界处。</p>
-</section>
-<section id="id4">
-<h2>直通线<a class="headerlink" href="#id4" title="Link to this heading">#</a></h2>
-<p>在 Ampere 上，kernel 显式构建 Tensor Core 寄存器片段。通过索引数学，共享内存 swizzle 主要是 kernel 的责任。</p>
+<h2>直通线<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
+<p>在 Ampere 上，kernel 显式构建 Tensor Core register fragment。通过索引数学，共享内存 swizzle 主要是 kernel 的责任。</p>
 <p>在 Hopper 上，Tensor Core 可以通过矩阵描述符直接从共享内存中读取操作数。 Swizzle 成为 TMA 和 <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> 共享的命名描述符格式。</p>
-<p>在 Blackwell 上，输入端仍然使用共享内存操作数，但累加器移至 TMEM。块缩放 MMA 还添加了必须分级到 TMEM 中的缩放因子操作数。</p>
+<p>在 Blackwell 上，输入端仍然使用共享内存操作数，但累加器移至 TMEM。block-scaled MMA 还添加了必须 stage 到 TMEM 中的 scale factor 操作数。</p>
 <p>该描述符不会删除 layout 工作。他们使合同变得明确。 kernel 仍然必须确保数据移动路径、存储器 layout 和 Tensor Core 指令全部一致。写入混​​合 SMEM tile 的 TMA 描述符、读取该 tile 的 MMA 描述符以及附加到缓冲区的 layout 必须全部描述相同的物理排列。</p>
 <p>如果这些部分中的任何一个不同意，硬件仍然会运行。它只会读取错误的字节或读取缓慢。这就是为什么 layout 不是 Tensor Core kernel 周围的装饰。它是指令界面的一部分。</p>
 </section>
@@ -549,18 +549,18 @@ TCol  = s
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">两个从未消失的限制</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-lane">Ampere：注册经线 lane 上的片段</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-warp-lane-register-fragment">Ampere：warp lane 上的 register fragment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-tensor-core">Ampere Tensor Core 的期望是什么</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-shared-memory"><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>：Shared Memory 注册片段</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere">写回 Ampere 片段</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">调配 Ampere</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-shared-memory-register-fragment"><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code>：Shared Memory 到 register fragment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-register-fragment">写回 Ampere register fragment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ampere-swizzle">Ampere 上的 swizzle</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hopper-wgmmashared-memory-swizzle">Hopper：<code class="docutils literal notranslate"><span class="pre">wgmma</span></code>、Shared Memory 描述符和 Swizzle 格式</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hopper-tensor-core">Hopper Tensor Core 的期望是什么</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hopper">Hopper 输出仍使用寄存器</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blackwell-tcgen05-tmem">Blackwell：<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> 和 TMEM</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-layout">TMEM 中的比例因子 layout</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">重复出现的片段</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">直通线</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-scale-factor-layout">TMEM 中的 scale factor layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">重复出现的片段</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">直通线</a></li>
 </ul>
   </nav></div>
 

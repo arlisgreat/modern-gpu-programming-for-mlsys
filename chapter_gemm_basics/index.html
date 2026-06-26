@@ -155,7 +155,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -323,7 +323,7 @@
 <p>GEMM 是整本书围绕的工作负载。它位于主导 GPU 时间的线性层、Attention 投影和卷积层之下，因此正确的 GEMM 和快速的 GEMM 之间的区别就是让大部分芯片空闲和使其饱和之间的区别。</p>
 <p>这个差距太大了，无法一跃跨越。饱和的 kernel 使您可以同时调试内存移动、累积、平铺和 Tensor Core 调度，没有任何值得信赖的可比较。更安全的路径是从产生正确答案的最小 kernel 开始，然后一次增加一个决策。</p>
 <p>本章先写正确的平铺 GEMM。前面的章节抽象介绍了 TIRx scope / layout / dispatch 模型；这里我们将其应用到真实的 kernel 上。我们从一个 128 x 128 输出 tile 开始，将其发展为处理全尺寸矩阵的 kernel，添加 K 维度累积，然后在许多 CTAs 上进行空间 tile。</p>
-<p>这是从头到尾介绍单个 GEMM 优化路径的三章中的第一章。在本例中，我们构建了一个正确的平铺 kernel 并就此停止。下一章 (<a class="reference internal" href="../chapter_gemm_async/index.html#chap-gemm-async"><span class="std std-ref">将 GEMM 与 TMA 进行 pipeline 处理</span></a>) 将 thread 副本替换为 TMA，并通过 pipeline 将数据移动与计算重叠，而 <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">通过 Warp 专业化和 cluster 扩展 GEMM</span></a> 更进一步，使用 warp specialization 和 CTA clusters。每一章都建立在前一章的基础上，因此 kernels 会积累功能而不是重新开始。</p>
+<p>这是从头到尾介绍单个 GEMM 优化路径的三章中的第一章。在本例中，我们构建了一个正确的平铺 kernel 并就此停止。下一章 (<a class="reference internal" href="../chapter_gemm_async/index.html#chap-gemm-async"><span class="std std-ref">将 GEMM 与 TMA 进行 pipeline 处理</span></a>) 将 thread copy 替换为 TMA，并通过 pipeline 将数据移动与计算重叠，而 <a class="reference internal" href="../chapter_gemm_advanced/index.html#chap-gemm-advanced"><span class="std std-ref">通过 Warp 专业化和 cluster 扩展 GEMM</span></a> 更进一步，使用 warp specialization 和 CTA clusters。每一章都建立在前一章的基础上，因此 kernels 会积累功能而不是重新开始。</p>
 <p>它有助于将每个步骤视为对具有三个术语的单个合约的编辑：哪个 <strong>scope</strong> 运行该操作，哪个 <strong>layout</strong> 操作数块使用哪个 <strong>dispatch</strong> 路径执行它。大多数步骤都有一个主要更改，因此我们用一张小卡片打开它们，该小卡片会命名更改并调出确保重用安全所需的任何同步详细信息。步骤 1 建立路径其余部分编辑的基线。</p>
 <section id="id1">
 <h2>GEMM<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
@@ -349,7 +349,7 @@
 <h2>优化路径<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
 <p>上面的简单数据路径足以获得正确答案，但它使大部分硬件闲置。本教程的其余部分通过每次添加一个 Blackwell 功能来缩小这一差距，每个功能都通过 TIRx tile primitive 表示。我们将遵循的路径依次访问这些功能：</p>
 <ul class="simple">
-<li><p><strong>TMA 异步移动</strong> 通过 Blackwell 的硬件复制路径移动 GMEM &lt;-&gt; SMEM 块，并有 barrier 跟踪完成。</p></li>
+<li><p><strong>TMA 异步移动</strong> 通过 Blackwell 的 hardware copy path 移动 GMEM &lt;-&gt; SMEM 块，并有 barrier 跟踪完成。</p></li>
 <li><p><strong>软件 pipeline</strong>使用多个 SMEM 阶段，以便下一个 K 区块的数据移动可以与当前区块上的 Tensor Core 计算重叠。</p></li>
 <li><p><strong>持久调度</strong> 保留固定的 CTAs 池，每个池通过 tile scheduler 处理许多输出 tile，而不是每个 tile 启动一个 CTA。</p></li>
 <li><p><strong>Warp 专业化</strong> 将生产者、MMA 消费者和写回角色划分为不同的 warpgroups。</p></li>
@@ -365,8 +365,8 @@
 <div><p><strong>此步骤建立的内容：基线</strong></p>
 <ul class="simple">
 <li><p>范围：128 个 threads 中的单个 warpgroup 按顺序走完全程，一个阶段又一个阶段。</p></li>
-<li><p>layout：A 和 B 块位于 SMEM 中，累加器位于 TMEM 中，结果通过寄存器分级输出。</p></li>
-<li><p>调度：同步<code class="docutils literal notranslate"><span class="pre">Tx.copy</span></code>承载负载，<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code>运行 MMA。</p></li>
+<li><p>layout：A 和 B 块位于 SMEM 中，accumulator 位于 TMEM 中，结果通过 registers stage 输出。</p></li>
+<li><p>调度：同步 <code class="docutils literal notranslate"><span class="pre">Tx.copy</span></code> 承载 load，<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> 运行 MMA。</p></li>
 </ul>
 </div></blockquote>
 <section id="tile">
@@ -374,8 +374,8 @@
 <p>确定基线合同后，接下来要确定的是一个 tile 穿过它的顺序。第一个 kernel 只在核心 GEMM 数据路径上行走一次，与数据流图中的 GMEM -&gt; SMEM -&gt; TMEM -&gt; 寄存器 -&gt; GMEM 链相同，没有循环。它分配工作内存，加载操作数，计算乘积，写回结果，并自行清理：</p>
 <ol class="arabic simple">
 <li><p><strong>分配</strong>：SMEM（池分配器）、TMEM (<code class="docutils literal notranslate"><span class="pre">tcgen05.alloc</span></code>)、mbarrier</p></li>
-<li><p><strong>加载</strong>：所有 128 个 threads 协作将 A 和 B tile 从 GMEM 复制到 SMEM（同步<code class="docutils literal notranslate"><span class="pre">Tx.copy</span></code>）</p></li>
-<li><p><strong>计算</strong>：单选 thread 发出<code class="docutils literal notranslate"><span class="pre">Tx.gemm_async</span></code> + <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code>；所有 threads 等待 mbarrier</p></li>
+<li><p><strong>load</strong>：所有 128 个 threads 协作将 A 和 B tile 从 GMEM copy 到 SMEM（同步 <code class="docutils literal notranslate"><span class="pre">Tx.copy</span></code>）</p></li>
+<li><p><strong>compute</strong>：单个 elected thread 发出 <code class="docutils literal notranslate"><span class="pre">Tx.gemm_async</span></code> + <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code>；所有 threads 等待 mbarrier</p></li>
 <li><p><strong>回写</strong>：Warpgroup 读取 TMEM→寄存器；每个 thread 转换 fp32→fp16 并写入 GMEM</p></li>
 <li><p><strong>解除分配</strong>：TMEM 解除分配</p></li>
 </ol>
@@ -394,13 +394,13 @@
 </pre></div>
 </div>
 <p>这里有两个细节值得暂停。 <code class="docutils literal notranslate"><span class="pre">pool.move_base_to(1024)</span></code> 将 Asmem 和 Bsmem 推出到偏移量 1024，为它们上方的小元数据片段保留低地址，以便庞大的操作数块落在干净的边界上。并且 <code class="docutils literal notranslate"><span class="pre">layout=A_layout</span></code> 向 <code class="docutils literal notranslate"><span class="pre">tma_shared_layout</span></code> 请求 SMEM 的混合位置，TMA 和 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 都可以直接读取，这正是 layout 作为合同义务第二部分描述的那种。</p>
-<p><strong>同步加载。</strong> 缓冲区就位后，操作数仍必须到达 SMEM。在第一个版本中，我们让 CTA 自己的 threads 进行复制：</p>
+<p><strong>同步 load。</strong> 缓冲区就位后，操作数仍必须到达 SMEM。在第一个版本中，我们让 CTA 自己的 threads 进行 copy：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Tx</span><span class="o">.</span><span class="n">cta</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Asmem</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">A</span><span class="p">[:,</span> <span class="p">:])</span>
 <span class="n">Tx</span><span class="o">.</span><span class="n">cta</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Bsmem</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">B</span><span class="p">[:,</span> <span class="p">:])</span>
 <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cta_sync</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>因为这里只有一个 tile（M=N=128，K=64），所以复制整个 A 和 B 就是整个负载。 <code class="docutils literal notranslate"><span class="pre">Tx.cta.copy(...)</span></code> 使 CTA 在该副本上进行协作，每个 thread 负责自己的数据片。接下来的 <code class="docutils literal notranslate"><span class="pre">T.cuda.cta_sync()</span></code> 执行双重任务：它等待每个 thread 完成并发布其共享内存写入，以便当 MMA 稍后读取 <code class="docutils literal notranslate"><span class="pre">Asmem</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Bsmem</span></code> 时，它会看到完整的 tile 而不是半填充的缓冲区。这个 thread 驱动的副本也是我们要替换的第一个东西；下一章（<a class="reference internal" href="../chapter_gemm_async/index.html#chap-gemm-async"><span class="std std-ref">将 GEMM 与 TMA 进行 pipeline 处理</span></a>）将其替换为 TMA。</p>
+<p>因为这里只有一个 tile（M=N=128，K=64），所以 copy 整个 A 和 B 就是整个 load。<code class="docutils literal notranslate"><span class="pre">Tx.cta.copy(...)</span></code> 使 CTA 在该 copy 上进行协作，每个 thread 负责自己的数据片。接下来的 <code class="docutils literal notranslate"><span class="pre">T.cuda.cta_sync()</span></code> 执行双重任务：它等待每个 thread 完成并发布其共享内存写入，以便当 MMA 稍后读取 <code class="docutils literal notranslate"><span class="pre">Asmem</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Bsmem</span></code> 时，它会看到完整的 tile 而不是半填充的缓冲区。这个 thread-driven copy 也是我们要替换的第一个东西；下一章（<a class="reference internal" href="../chapter_gemm_async/index.html#chap-gemm-async"><span class="std std-ref">将 GEMM 与 TMA 进行 pipeline 处理</span></a>）将其替换为 TMA。</p>
 <p><strong>MMA dispatch。</strong> 现在操作数位于 SMEM 中，我们可以发出 MMA，并且我们从单个选定的 thread 中执行此操作：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">warp_id</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">elect_sync</span><span class="p">():</span>
@@ -409,8 +409,8 @@
         <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">mma_bar</span><span class="o">.</span><span class="n">ptr_to</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">cta_group</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>两个嵌套的守卫分两步缩小了发行者的范围。外部 <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">warp_id</span> <span class="pre">==</span> <span class="pre">0</span></code> 仅保留 warpgroup 的 warp 0，然后内部 <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">T.ptx.elect_sync():</span></code> 在该 warp 内选择单个活动 lane。他们总共留下了一个 thread 来运行 <code class="docutils literal notranslate"><span class="pre">Tx.gemm_async</span></code> 和 <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code>。</p>
-<p>值得澄清的是，单个 thread 的含义是什么，不含义是什么，因为自然阅读会产生误导。单个发行 thread 并不意味着单 thread 乘法。计算仍然是完整的 tile 级 MMA：硬件对 SMEM 操作数 layouts 和 TMEM 累加器 layout 描述的 tile 执行协作乘法。关键是 <code class="docutils literal notranslate"><span class="pre">Tx.gemm_async</span></code> 是一条“平铺操作”，而不是一条硬件指令。 K = 64 区块比硬件 MMA K-atom (<code class="docutils literal notranslate"><span class="pre">MMA_K</span> <span class="pre">=</span> <span class="pre">16</span></code>) 更宽，因此该区块操作降低为沿 K 步进的一小段原始 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 指令，并且 warpgroup 协同驱动它们。只有一个 thread 发出 tile 操作的原因是每个底层 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 本身就是一个“单指令”协作操作：一次启动驱动 tile MMA 的 K 原子。如果所有 128 个 threads 都发布该序列，则同一作品将简单地发布 128 次。最后，<code class="docutils literal notranslate"><span class="pre">accum=False</span></code> 标志告诉 MMA 覆盖 TMEM 目的地而不是添加到其中，这正是我们在这里想要的，因为没有先前的部分和要扩展。</p>
+<p>两个嵌套的 guard 分两步缩小了 issuer 的范围。外部 <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">warp_id</span> <span class="pre">==</span> <span class="pre">0</span></code> 仅保留 warpgroup 的 warp 0，然后内部 <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">T.ptx.elect_sync():</span></code> 在该 warp 内选择单个 active lane。它们总共留下一个 thread 来运行 <code class="docutils literal notranslate"><span class="pre">Tx.gemm_async</span></code> 和 <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code>。</p>
+<p>值得澄清的是，单个 thread 的含义是什么，不含义是什么，因为自然阅读会产生误导。单个 issuing thread 并不意味着 single-thread 乘法。计算仍然是完整的 tile 级 MMA：硬件对 SMEM 操作数 layouts 和 TMEM accumulator layout 描述的 tile 执行协作乘法。关键是 <code class="docutils literal notranslate"><span class="pre">Tx.gemm_async</span></code> 是一条 tile operation，而不是一条硬件指令。K = 64 区块比硬件 MMA K-atom (<code class="docutils literal notranslate"><span class="pre">MMA_K</span> <span class="pre">=</span> <span class="pre">16</span></code>) 更宽，因此该 tile operation 降低为沿 K 步进的一小段原始 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 指令，并且 warpgroup 协同驱动它们。只有一个 thread issue tile operation 的原因是每个底层 <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> 本身就是一个 single-instruction cooperative operation：一次启动驱动 tile MMA 的 K atom。如果所有 128 个 threads 都 issue 该序列，则同一工作会被 issue 128 次。最后，<code class="docutils literal notranslate"><span class="pre">accum=False</span></code> 标志告诉 MMA 覆盖 TMEM 目的地而不是添加到其中，这正是我们在这里想要的，因为没有先前的部分和要扩展。</p>
 <p><strong>回写。</strong> 产品现在位于 TMEM 中，但调用者希望将其返回到 GMEM 中，作为 fp16。因此，epilogue 必须通过寄存器将结果记录下来并一路投射：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Dreg</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_local</span><span class="p">((</span><span class="n">BLK_N</span><span class="p">,),</span> <span class="n">acc_type</span><span class="p">)</span>        <span class="c1"># per-thread fp32 register row</span>
 <span class="n">Dreg_f16</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_local</span><span class="p">((</span><span class="n">BLK_N</span><span class="p">,),</span> <span class="n">d_type</span><span class="p">)</span>      <span class="c1"># same row, cast to fp16</span>
@@ -596,7 +596,7 @@
 <ul class="simple">
 <li><p>它仅处理单个 K 块，因此它无法收缩大型 K。</p></li>
 <li><p>它仅处理单个输出 tile，因此 M 和 N 固定为 128。</p></li>
-<li><p>它使用同步 GMEM -&gt; SMEM 副本而不是 TMA。</p></li>
+<li><p>它使用同步 GMEM -&gt; SMEM copy 而不是 TMA。</p></li>
 <li><p>它不会将数据移动与计算重叠，因此两者不会同时运行。</p></li>
 </ul>
 <hr class="docutils" />

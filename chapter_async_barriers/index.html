@@ -153,7 +153,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Part I, 理解 GPU</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../chapter_background/index.html">GPU 执行模型</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让内核变得更快</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../chapter_performance/index.html">是什么让 kernel 变得更快</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_data_layout/index.html">数据 layout 及其表示法</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_layout_generations/index.html">Tensor Core 各代 GPU 操作数 layout</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../chapter_tma/index.html">异步数据移动：TMA</a></li>
@@ -311,8 +311,8 @@
 </div><p><em>交互式：<code class="docutils literal notranslate"><span class="pre">mbarrier</span></code> 状态视图，显示到达计数器、phase 位以及 <code class="docutils literal notranslate"><span class="pre">init</span></code>、<code class="docutils literal notranslate"><span class="pre">arrive</span></code> 和 <code class="docutils literal notranslate"><span class="pre">wait</span></code> 操作；单击一个字段以将其聚焦。</em></p>
 <p>barrier 从初始化开始。在 <code class="docutils literal notranslate"><span class="pre">init</span></code> 期间，kernel 设置此 barrier 预计到达的人数。 barrier 从阶段 0 开始，其计数器加载到预期到达计数。从那时起，barrier 正在等待资源的所有必需生产者或用户报告他们已完成。</p>
 <p>到达减少了 barrier 仍在等待的工作量。 kernel 的不同部分可以以不同的方式到达 barrier，并且区别很重要。</p>
-<p>对于 TMA 负载，通常的到达路径是 tx 计数到达。像 <code class="docutils literal notranslate"><span class="pre">mbarrier.arrive.expect_tx(bytes)</span></code> 这样的操作会做两件事。首先，它算作发行 thread 到达 barrier。其次，它记录 TMA 引擎预计传输的字节数。仅仅因为发行的 thread 已经到达，barrier 并不完整。它还等待 TMA 引擎在传输完成时耗尽字节计数。仅在满足两个条件后才会发生 phase 翻转：正常到达计数已达到零，并且待处理的 tx 字节计数已达到零。</p>
-<p>这就是为什么 <code class="docutils literal notranslate"><span class="pre">expect_tx</span></code> 不应被解读为“又一个普通的到来”。它为异步复制设置字节预算。硬件稍后会通过 complete-tx 更新来考虑实际的复制完成情况。仅当到达和字节传输都完成时，barrier 才完成。</p>
+<p>对于 TMA load，通常的到达路径是 tx-count arrive。像 <code class="docutils literal notranslate"><span class="pre">mbarrier.arrive.expect_tx(bytes)</span></code> 这样的操作会做两件事。首先，它算作 issuing thread 到达 barrier。其次，它记录 TMA engine 预计传输的字节数。仅仅因为 issuing thread 已经到达，barrier 并不完整。它还等待 TMA engine 在传输完成时 drain 字节计数。仅在满足两个条件后才会发生 phase 翻转：正常到达计数已达到零，并且待处理的 tx 字节计数已达到零。</p>
+<p>这就是为什么 <code class="docutils literal notranslate"><span class="pre">expect_tx</span></code> 不应被解读为“又一个普通 arrive”。它为 async copy 设置字节预算。硬件稍后会通过 complete-tx 更新来计入实际的 copy 完成情况。仅当 arrive 和字节传输都完成时，barrier 才完成。</p>
 <p>对于 Tensor Core 工作，到达路径不同。 <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA 不会仅仅因为发出了 MMA 就自动推进 barrier。 kernel 必须显式地将 barrier 到达附加到提交路径，例如使用 <code class="docutils literal notranslate"><span class="pre">tcgen05.commit.mbarrier::arrive</span></code> 操作。当该提交组完成时，Tensor Core 侧执行 barrier 到达。如果 kernel 忘记提交到达，则在 barrier 上等待的消费者将永远等待。</p>
 <p>普通的 thread 也可以直接到达 barrier。当普通 thread 代码是生产者时，或者当一组 threads 宣布它已完成资源的使用时，使用此方法。例如，在消费者完成读取共享内存缓冲区后，它可以到达一个 barrier，告诉生产者该缓冲区可以自由重用。</p>
 <p>等待是同一协议的消费者端。消费者等待直到 barrier 完成当前迭代预期的阶段。只有这样才能安全地读取数据或重用受该 barrier 保护的资源。</p>
